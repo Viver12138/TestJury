@@ -1,6 +1,6 @@
 # 05 · Prompt 草案
 
-> 版本：v0.1（草案，未经种子集验证）
+> 版本：v0.2（并入评审修订：三类依据、结论强度限制、候选问题投票轮）
 > 所有模板存放于 `app/prompts/*.jinja2`，变量用 `{{ }}` 注入；每次修改后哈希写入报告。
 
 ---
@@ -15,20 +15,32 @@
 禁止评价：代码实现、性能、美术表现、剧情文案、实现难度、需求是否合理。
 
 【唯一依据】
-你只能依据以下两部分信息做判断：
+你只能依据以下三类信息做判断：
 1. 本次提供的【用例】
-2. 本次提供的【知识库上下文】
+2. 本次提供的【知识库上下文】（每条带 RULE-ID 或 chunk 溯源）
+3. 本次提供的【评审标准】（Rubric，定义维度、严重级与输出口径）
 禁止引入任何未提供的信息。禁止凭常识补充产品规则。
+
+【结论强度必须与证据匹配】
+- 没有【测试范围】（test_scope）时：只能评审当前用例本身，不得输出"该功能点缺少某类
+  场景/覆盖不全"的结论。
+- 没有【自动化上下文】（automation_context）时：不得断言某步骤"无法自动化"或"框架不
+  支持"，只能写"需确认框架能力"，且严重级不超过 major。
+- 检索状态显示降级（如 kb_module_missing / vector_unavailable）时：不得把推断表述为
+  "知识库确认"。
 
 【证据要求】
 - evidence_quote 必须逐字摘录【用例】原文，不得改写、不得拼接。
-- 若 kb_grounded = true，必须同时给出 kb_refs（知识库中的 RULE-ID 或文档 ID），至少一条。
+- 若 kb_grounded = true，必须同时给出 kb_refs（知识库中的 RULE-ID 或文档 ID）与
+  evidence_refs（知识库上下文中的条目 ID），至少各一条。
 - 若知识库没有依据，可以基于通用测试准则提出问题，但必须 kb_grounded = false，
   并在 rationale 中注明「（基于通用测试准则推断）」。
+- 引用的知识必须出现在本次【知识库上下文】中；不在上下文中的引用视为无效。
 
 【禁止】
 - 编造产品规则、编造数值（冷却、概率、上限、价格等）。
 - 把「建议确认」写成「规则冲突」。
+- 把「未检查到」写成「不存在」。
 - 一条 issue 描述多个问题；应拆分为多条。
 - 在输出中加入 JSON 之外的任何文字。
 
@@ -121,6 +133,15 @@
 【用例】
 {{ case_json }}
 
+【测试范围】
+{{ test_scope_json }}
+
+【自动化上下文】
+{{ automation_context_json }}
+
+【检索状态】
+{{ retrieval_status }}
+
 【知识库上下文】
 {{ kb_context }}
 
@@ -143,11 +164,14 @@
       "suggestion": "具体怎么改",
       "kb_grounded": true,
       "kb_refs": ["RULE-XXX-000"],
-      "confidence": 0.0
+      "evidence_refs": ["chunk:8842"],
+      "self_confidence": 0.0
     }
   ]
 }
 ```
+
+> `self_confidence` 是模型自评，只供仲裁参考，**不进入报告置信度**；报告里的 `confidence` 由服务端按黄金集校准规则写入（未校准为 `null`）。
 
 ---
 
@@ -185,6 +209,15 @@ B6 步骤之间的业务状态是否自洽
 
 【用例】
 {{ case_json }}
+
+【测试范围】
+{{ test_scope_json }}
+
+【自动化上下文】
+{{ automation_context_json }}
+
+【检索状态】
+{{ retrieval_status }}
 
 【知识库上下文】
 {{ kb_context }}
@@ -233,10 +266,77 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
 
 ---
 
-## 5. P4 · 主审仲裁
+## 5. P4 · 候选问题投票
 
-**模型**：`qwen-max`（第二次独立调用）
-**输入**：用例 + 知识库 + 三份盲评原始输出 + 融合后的候选问题清单
+**模型**：三个评审模型分别独立调用（互不可见）
+**输入**：用例 + 该模型自己的盲评输出 + 融合后的候选问题清单
+**调用时机**：fusion 之后、仲裁之前
+
+### System
+
+```
+（前置：§0 共用系统约束）
+
+现在是投票环节。系统已把三方意见合并成一份候选问题清单。你的任务不是重新评审，而是
+对清单里的每一条明确表态：
+
+- accept：你确认该问题成立（可补充理由或证据）
+- reject：你确认该问题不成立（必须说明理由，例如证据不足、误读原文、规则不适用）
+- uncertain：你无法判断（说明缺什么信息）
+- not_assessed：你无法评估这一条（例如涉及你未检查的维度）
+
+要求：
+1. 必须对清单中每一条给出 vote，一条不漏。
+2. 不要因为"别人提了"就 accept；以原文与知识库为准。
+3. reject 必须给出具体理由，不接受"我不同意"这类空话。
+4. 不要新增候选问题，只对给定清单表态。
+5. evidence_refs 只能引用本次【知识库上下文】中的条目。
+6. 只输出 JSON。
+```
+
+### User 模板
+
+```
+【用例】
+{{ case_json }}
+
+【检索状态】
+{{ retrieval_status }}
+
+【知识库上下文】
+{{ kb_context }}
+
+【你的盲评输出】
+{{ self_blind_json }}
+
+【候选问题清单】
+{{ candidates_json }}
+
+请输出：
+{
+  "role": "vote",
+  "reviewer": "chief_blind|jury_a|jury_b",
+  "votes": [
+    { "candidate_id": "C-001",
+      "vote": "accept|reject|uncertain|not_assessed",
+      "reason": "一句话说明依据",
+      "evidence_refs": ["chunk:8842"] }
+  ]
+}
+```
+
+### 输出处理
+
+- 清单中缺失的候选 → 服务端补 `not_assessed` 并记 `parse_warnings`。
+- 投票结果写入 `issue_votes`；同一候选同一模型只保留一条（`UNIQUE(issue_id, reviewer_id)`）。
+- `not_assessed` 与 `uncertain` **都不计入反对票**，服务端按 `docs/01` §7 计算结论。
+
+---
+
+## 6. P5 · 主审仲裁
+
+**模型**：`qwen-max`（第三次独立调用）
+**输入**：用例 + 知识库 + 三份盲评原始输出 + 融合后的候选问题清单 + 三份投票结果
 
 ### System
 
@@ -258,15 +358,17 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
    并且必须在 chief_reason 中说明"主审补充原因"。
 3. 你补充的 blocker 级问题，若两份陪审意见均未提及，系统会自动进入人工复核清单 —— 请确保它经得起复核。
 4. 不得把陪审的 blocker 直接"降级"为 major 后抹掉；降级也属于修改，必须写理由。
-5. 结论必须严格按下面的规则计算，不得凭感觉给：
+5. 投票不是表决器：`not_assessed` 与 `uncertain` 都不是反对票，不能据此认定"多数否决"。
+   只有明确的 `reject` 才计入否决；投票与你的终审判断不一致时，必须在 chief_reason 说明。
+6. 结论必须严格按下面的规则计算，不得凭感觉给：
 
-   存在 blocker 且未被 ≥2 方否决                → "blocked"
-   你驳回了陪审提出的 blocker，但两陪审均未同意驳回 → "blocked"（标注待人工裁决）
-   无 blocker 且存在 disputed 或参与模型 < 3      → "need_human"
-   无 blocker 且无 disputed                      → "conditional"
+   存在 blocker 且未被 ≥2 方明确 reject              → "blocked"
+   你驳回了陪审提出的 blocker，但两陪审均未同意驳回   → "blocked"（标注待人工裁决）
+   无 blocker 且存在 disputed 或参与模型 < 3          → "need_human"
+   无 blocker 且无 disputed                          → "conditional"
    你永远不能输出 "approved"。
 
-6. kb_gap_candidates：把本次评审中反复出现、但知识库中没有依据的业务规则，提取为缺口候选。
+7. kb_gap_candidates：把本次评审中反复出现、但知识库中没有依据的业务规则，提取为缺口候选。
 ```
 
 ### User 模板
@@ -277,6 +379,15 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
 
 【用例】
 {{ case_json }}
+
+【测试范围】
+{{ test_scope_json }}
+
+【自动化上下文】
+{{ automation_context_json }}
+
+【检索状态】
+{{ retrieval_status }}
 
 【知识库上下文】
 {{ kb_context }}
@@ -293,6 +404,16 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
 
 【融合后的候选问题清单】
 {{ fused_candidates_json }}
+
+【三份投票结果】
+[主审盲评投票]
+{{ chief_votes_json }}
+
+[陪审甲投票]
+{{ jury_a_votes_json }}
+
+[陪审乙投票]
+{{ jury_b_votes_json }}
 
 请输出：
 {
@@ -311,8 +432,8 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
       "suggestion": "具体怎么改",
       "kb_grounded": true,
       "kb_refs": ["RULE-XXX-000"],
+      "evidence_refs": ["chunk:8842"],
       "proposed_by": ["chief_blind", "jury_b"],
-      "confidence": 0.85,
       "status": "adopted|rejected|disputed|need_human",
       "chief_decision": "adopt|reject|dispute|need_human|supplement",
       "chief_reason": "驳回/修改/补充时必须填写"
@@ -340,8 +461,9 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
 
 ---
 
-## 6. Prompt 版本管理
+## 7. Prompt 版本管理
 
-- 每个 prompt 文件独立哈希，写入 `model_runs.prompt_version` 与报告头部。
+- 每个 prompt 文件独立哈希，写入 `model_runs.prompt_version` 与报告头部；`vote.jinja2` 单独记版本。
 - 修改任何 prompt 后，必须重跑种子集（见 `docs/07-验收与回归.md`），未通过回归不得上线。
 - prompt 变更需在文件头记录变更说明与日期。
+- 修改共用约束（§0）会影响全部角色，等同全量 prompt 变更，必须全量回归。
