@@ -1,4 +1,4 @@
-# 08 · 提交与推送协议（Git 协作规范）
+# 12 · 提交与推送协议（Git 协作规范）
 
 > **范围**：`https://ngitlab.testplus.cn/songjiahao/testjury.git` 上的多人协作提交与推送约定。
 > **原则**：`main` 永远可发布；每一次提交都自包含、可回滚；不在受保护分支上 force push。
