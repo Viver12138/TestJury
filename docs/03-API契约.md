@@ -1,6 +1,6 @@
 # 03 · API 契约
 
-> 版本：v0.5（并入补充评审：服务端角色、候选问题实体、审批事件化、生成链）
+> 版本：v0.6（并入补充评审：同步/异步校验分层、候选向量、claim 证据、case_version、报告锁定）
 
 - Base：`/v1`
 - 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
@@ -23,6 +23,7 @@
 {
   "case": {
     "case_id": "TC-DIG-0012",
+    "case_version": 3,
     "module": "挖宝",
     "title": "洛阳挖宝 - 藏宝点发现与挖掘",
     "priority": "P1",
@@ -64,6 +65,7 @@
 | 字段 | 必填 | 说明 |
 |---|---|---|
 | `case.case_id` | 是 | 全局唯一用例标识；同一 ID 多次提交按幂等键判定 |
+| `case.case_version` | 否 | 用例内容版本，默认 1；内容实质修改应递增，否则旧报告会被幂等命中 |
 | `case.module` | 是 | 用于知识库检索；未命中则降级评审 |
 | `case.title` | 是 | 用例标题 |
 | `case.preconditions` | 否 | 数组，缺失时由评审提示 |
@@ -97,6 +99,7 @@
   "review_id": "8f1c...",
   "status": "queued",
   "generation": 1,
+  "case_version": 1,
   "poll_url": "/v1/reviews/8f1c..."
 }
 ```
@@ -116,7 +119,8 @@
 
 - `status` 与任务状态机一致：`queued` / `processing` / `retrying` / `done` / `completed_with_warnings` / `failed`。
 - `report_available=true` 时才返回 `report_json`；否则返回 `poll_url` 等待。
-- `force=true` 时返回新 `review_id` 与递增的 `generation`。
+- **硬校验在创建任务前完成**：字段/Schema/空内容/超长等不合法直接返回 400/422，不创建任务、不返回 202；Worker 只做软校验（记 `input_quality`），不再返回 422。
+- `force=true` 时返回新 `review_id` 与递增的 `generation`；用例内容变更另产生新 `case_version`。
 
 ### 1.1 Webhook 语义
 
@@ -143,6 +147,7 @@
   "status": "done",
   "stage": "done",
   "generation": 1,
+  "case_version": 1,
   "parent_review_id": null,
   "report_schema_version": "report-1.0",
   "ai_verdict": "blocked",
@@ -154,7 +159,7 @@
     "blind": "3/3",
     "vote": "3/3",
     "arbitration": "ok",
-    "stages_completed": ["input_check", "preprocess", "kb_retrieve", "blind_review", "fusion", "vote", "arbitration", "render"],
+    "stages_completed": ["input_check", "preprocess", "kb_retrieve", "blind_review", "fusion", "vote", "arbitration", "verdict", "render"],
     "complete": true
   },
   "input_quality": {
@@ -235,6 +240,7 @@
   "kb_refs": ["RULE-DIG-012"],
   "evidence_type": "requirement",
   "evidence_strength": "strong",
+  "evidence_status": "partially_grounded",
   "evidence_refs": [
     {
       "ref": "chunk:8842",
@@ -273,6 +279,7 @@
 - `votes` 必须覆盖每个参与模型；未表态一律记 `validity=not_assessed`，不得省略。
 - `validity` 与 `severity` 是两个独立字段：前者回答"问题是否成立"，后者回答"多严重"；不认同严重级别不得因此否定问题成立。
 - `not_assessed` 不计入 `reject`，服务端按 `docs/01` §7 重新计算结论。
+- `evidence_status` 取值：`grounded` / `partially_grounded` / `ungrounded` / `conflicted` / `insufficient`；`conflicted` 必须转人工。
 - `severity_disputed=true`（accept 票中最高与最低相差 ≥2 级）时该条转人工。
 - `confidence` 未校准时为 `null`，报告展示 `support_ratio` 与计数；校准后才写数值并标 `confidence_source=calibrated`。
 - `evidence_refs` 至少一条对应 `kb_grounded=true` 的知识条目；无 KB 依据时为空数组。
@@ -350,8 +357,8 @@
 
 | 子任务情况 | 批次 `status` |
 |---|---|
-| 全部 `done` / `completed_with_warnings` | `done`（存在 warnings 时 `completed_with_warnings`） |
-| 部分完成、部分失败 | `partial` |
+| 全部 `done` / `completed_with_warnings` | `completed` |
+| 部分完成、部分失败 | `partially_completed` |
 | 仍有 `queued` / `processing` / `retrying` | `processing` |
 | 全部失败 | `failed` |
 
@@ -432,7 +439,7 @@
 | 409 | `DUPLICATE` | 命中幂等键且未 force（此时正常返回已有结果，见 §1） |
 | 409 | `DECISION_CONFLICT` | 并发审批冲突（`expected_updated_at` 不匹配），需重新拉取后重试 |
 | 409 | `INVALID_DECISION_STATE` | 当前状态不允许该决定（如终态后改判） |
-| 422 | `INPUT_INVALID` | 输入质量硬错误（内容为空、无 steps/raw_text、超长、字段非法） |
+| 422 | `INPUT_INVALID` | API 同步硬校验失败（内容为空、无 steps/raw_text、超长、字段非法），不创建任务 |
 | 422 | `TOO_MANY_CASES` | 批量超过 50 份 |
 | 422 | `INVALID_DECISION` | `decision` 非法，或 `reject`/`request_changes` 缺少理由 |
 | 429 | `QUEUE_FULL` | 队列已满，返回 `Retry-After` |

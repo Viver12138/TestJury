@@ -1,6 +1,6 @@
 # 05 · Prompt 草案
 
-> 版本：v0.5（并入补充评审：提示注入防护、投票材料去来源、规则事实源）
+> 版本：v0.6（并入补充评审：投票隐藏 severity_proposal、claim 级证据、真值表对齐）
 > 所有模板存放于 `app/prompts/*.jinja2`，变量用 `{{ }}` 注入；每次修改后哈希写入报告。
 
 ---
@@ -179,6 +179,7 @@
       "evidence_refs": ["chunk:8842"],
       "evidence_type": "business_rule|requirement|known_limit|historical_bug|testing_standard|inference",
       "evidence_strength": "strong|medium|weak",
+      "evidence_status": "grounded|partially_grounded|ungrounded|conflicted|insufficient",
       "self_confidence": 0.0
     }
   ]
@@ -291,8 +292,9 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
 ```
 （前置：§0 共用系统约束）
 
-现在是投票环节。系统已把三方意见合并成一份候选问题清单，并隐去了提出者与原始论证。
-你的任务不是重新评审，而是对清单里的每一条回答两个独立问题：
+现在是投票环节。系统已把三方意见合并成一份候选问题清单，并隐去了提出者、原始论证、
+他人投票与严重级建议（severity_proposal）。你的任务不是重新评审，而是对清单里的每一条
+回答两个独立问题：
 
 问题一【是否成立】validity：
 - accept：你确认该问题成立
@@ -327,7 +329,7 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
 【知识库上下文】
 {{ kb_context }}
 
-【候选问题清单（中性描述，已隐藏来源）】
+【候选问题清单（中性描述，已隐藏来源、他人论证、他人投票与 severity_proposal）】
 {{ candidates_json }}
 
 请输出：
@@ -347,7 +349,7 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
 ### 输出处理
 
 - 清单中缺失的候选 → 服务端补 `validity=not_assessed` 并记 `parse_warnings`。
-- 投票结果写入 `issue_votes`；同一候选同一模型只保留一条（`UNIQUE(issue_id, reviewer_id)`）。
+- 投票结果写入 `issue_votes`；同一候选同一模型只保留一条（`UNIQUE(candidate_id, reviewer_id)`）。
 - `validity` 与 `severity` 分开落库；`severity` 只在 `validity=accept` 时有效。
 - `not_assessed` 与 `uncertain` **都不计入反对票**，服务端按 `docs/01` §7 计算结论。
 - 服务端对比"初审判断"与"投票判断"，记录翻转，用于分析锚定效应（不向模型展示该对比）。
@@ -496,6 +498,7 @@ Prompt 只能"要求"JSON，不能"保证"JSON。每次模型返回（预处理 
 | 4. 引用有效性 | `kb_refs` / `evidence_refs` 必须存在于本次证据包 | 该条判无效依据 |
 | 5. 数值范围 | `self_confidence` ∈ [0,1]，`step_index` 在用例范围内 | 越界判无效 |
 | 6. 业务规则 | blocker 是否有证据、`historical_bug` 是否被当作当前缺陷、`not_assessed` 是否被当反对票 | 违规降级或判无效 |
+| 7. 证据归属 | 每个 claim 的证据只能支持该 claim；合并不得提高 `evidence_status` | 降级/判无效 |
 
 原则：
 
@@ -503,6 +506,7 @@ Prompt 只能"要求"JSON，不能"保证"JSON。每次模型返回（预处理 
 - 校验失败写入 `model_runs.parse_warnings`，并在报告中体现；不影响其它角色继续执行。
 - 同一角色连续两次校验失败 → 按该角色失败处理（见 `docs/01` §8）。
 - 仲裁输出必须覆盖候选清单每一条；缺失补 `need_human`，不能默认采纳。
+- 最终 `ai_verdict` 不取模型输出，按 `docs/12-评审决策真值表.md` 由 `verdict.py` 计算。
 
 ## 8. Prompt 版本管理
 
