@@ -1,9 +1,10 @@
 # 03 · API 契约
 
-> 版本：v0.4（并入补充评审：投票信息隔离、成立性/严重级分离、完整性字段、幂等真实状态）
+> 版本：v0.5（并入补充评审：服务端角色、候选问题实体、审批事件化、生成链）
 
 - Base：`/v1`
-- 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`，角色 `X-Role: reviewer|approver|admin`（审批与发布接口校验角色）
+- 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
+- 角色：服务端按 API Key 查授权角色（`reviewer` / `approver` / `admin`）；客户端传入的 `X-Role` **不作为授权依据**，仅用于日志对照
 - 内容类型：`application/json; charset=utf-8`
 - 时间：ISO 8601（`2026-11-09T10:00:00+08:00`）
 - 错误统一结构：
@@ -142,6 +143,7 @@
   "status": "done",
   "stage": "done",
   "generation": 1,
+  "parent_review_id": null,
   "report_schema_version": "report-1.0",
   "ai_verdict": "blocked",
   "human_status": "pending",
@@ -221,6 +223,7 @@
 ```json
 {
   "issue_no": 1,
+  "candidate_id": "c-3f8a...",
   "step_index": 3,
   "dimension": "test_design",
   "severity": "blocker",
@@ -364,7 +367,6 @@
 
 ```json
 {
-  "reviewer": "zhangsan",
   "issues": [
     { "issue_no": 1, "verdict": "adopted", "note": "确认是问题" },
     { "issue_no": 2, "verdict": "rejected", "note": "主审驳回正确" },
@@ -373,6 +375,8 @@
   ]
 }
 ```
+
+> `reviewer` 由服务端按 API Key 写入，请求体不传。
 
 - `feedback` 是 issue 级事实，用于评测、调优与漏检统计，**不等于报告审批**。
 - `missed` 必须带 `step_index` 与 `severity`。
@@ -383,16 +387,17 @@
 `POST /v1/reviews/{review_id}/decisions`
 
 ```json
-{ "decision": "request_changes", "reviewer": "zhangsan", "reason": "第 3 步预期不明确，补充后重提" }
+{ "decision": "request_changes", "reason": "第 3 步预期不明确，补充后重提", "expected_updated_at": "2026-11-10T10:00:00+08:00" }
 ```
 
+- 审批人身份由服务端按 API Key 写入，请求体不传 `reviewer`。
 - `decision` 取值：`approve` / `reject` / `request_changes`；`reject` 与 `request_changes` 必须带 `reason`。
 - 可选 `expected_updated_at` 做乐观锁；不匹配返回 409 `DECISION_CONFLICT`。
 - 仅 `approver` 可 `approve` / `reject`；`reviewer` 只能 `request_changes`。
-- 决定 append-only；返回新记录与派生后的 `human_status`。
+- 决定 append-only：只 INSERT，不修改历史；当前状态取 `decision_no` 最大的一条。
 - 与 `ai_verdict` 分离：审批不修改 AI 结论，也不消除降级标记（见 `docs/09`）。
 
-`GET /v1/reviews/{review_id}/decisions` 返回审批历史（按时间正序，含 `superseded_by` 链）。
+`GET /v1/reviews/{review_id}/decisions` 返回审批历史（按 `decision_no` 正序，不返回 `superseded_by`）。同一用例的历史链可用 `GET /v1/reviews?case_id=...` 按 `generation` 查看。
 
 ---
 
