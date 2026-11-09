@@ -1,6 +1,6 @@
 # 03 · API 契约
 
-> 版本：v0.3（并入补充评审：AI/人工结论分离、决议接口、Webhook 安全、批次状态语义）
+> 版本：v0.4（并入补充评审：投票信息隔离、成立性/严重级分离、完整性字段、幂等真实状态）
 
 - Base：`/v1`
 - 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`，角色 `X-Role: reviewer|approver|admin`（审批与发布接口校验角色）
@@ -100,7 +100,22 @@
 }
 ```
 
-若命中幂等键且未 `force`，返回 **200** + 已有报告（`status=done`）。`force=true` 时返回新 `review_id` 与递增的 `generation`。
+若命中幂等键且未 `force`，返回 **200**，并**返回原任务真实状态**，不得统一写成 `done`：
+
+```json
+{
+  "review_id": "8f1c...",
+  "status": "processing",
+  "generation": 1,
+  "idempotent_hit": true,
+  "report_available": false,
+  "poll_url": "/v1/reviews/8f1c..."
+}
+```
+
+- `status` 与任务状态机一致：`queued` / `processing` / `retrying` / `done` / `completed_with_warnings` / `failed`。
+- `report_available=true` 时才返回 `report_json`；否则返回 `poll_url` 等待。
+- `force=true` 时返回新 `review_id` 与递增的 `generation`。
 
 ### 1.1 Webhook 语义
 
@@ -124,7 +139,7 @@
   "review_id": "8f1c...",
   "case_id": "TC-DIG-0012",
   "module": "挖宝",
-  "status": "completed_with_warnings",
+  "status": "done",
   "stage": "done",
   "generation": 1,
   "report_schema_version": "report-1.0",
@@ -133,6 +148,17 @@
   "degraded": false,
   "degraded_reasons": [],
   "participants": ["chief:qwen-max", "jury_a:deepseek-flash", "jury_b:kimi-k3"],
+  "review_completeness": {
+    "blind": "3/3",
+    "vote": "3/3",
+    "arbitration": "ok",
+    "stages_completed": ["input_check", "preprocess", "kb_retrieve", "blind_review", "fusion", "vote", "arbitration", "render"],
+    "complete": true
+  },
+  "input_quality": {
+    "hard_errors": [],
+    "soft_issues": ["steps[3].expected 缺失", "test_data 未提供具体值"]
+  },
   "retrieval": {
     "mode": "hybrid",
     "channels": ["filter", "trigram", "vector", "rrf", "rerank"],
@@ -188,7 +214,7 @@
 
 `degraded_reasons` 取值：`kb_module_missing`、`raw_text_unparsed`、`vector_unavailable`、`keyword_unavailable`、`rerank_skipped`、`model_missing`、`scope_missing`、`automation_context_missing`、`budget_exceeded`。前六项是链路降级，其余限制结论强度，都必须在报告顶部明示。
 
-> `ai_verdict` 是 AI 结论，永不为 `approved`；`human_status` 是人工审批状态。两者不可互相替代，详见 `docs/09`。
+> `ai_verdict` 是 AI 结论，永不为 `approved`；`human_status` 是人工审批状态。两者不可互相替代，详见 `docs/09`。可用模型不足（1/3 及以下）时 `ai_verdict=null`，表示未形成正式 AI 结论。
 
 ### 2.1 issue 结构
 
@@ -220,13 +246,15 @@
   ],
   "proposed_by": ["chief_blind", "jury_b"],
   "votes": {
-    "chief_blind": "accept",
-    "jury_a": "not_assessed",
-    "jury_b": "accept"
+    "chief_blind": { "validity": "accept", "severity": "blocker" },
+    "jury_a": { "validity": "not_assessed", "severity": null },
+    "jury_b": { "validity": "accept", "severity": "major" }
   },
   "vote_summary": {
     "support": 2, "reject": 0, "not_assessed": 1, "uncertain": 0,
-    "support_ratio": 0.67
+    "support_ratio": 0.67,
+    "severity_distribution": { "blocker": 1, "major": 1, "suggestion": 0 },
+    "severity_disputed": false
   },
   "confidence": null,
   "confidence_source": "uncalibrated",
@@ -239,8 +267,10 @@
 
 字段约定：
 
-- `votes` 必须覆盖每个参与模型；未表态一律记 `not_assessed`，不得省略。
+- `votes` 必须覆盖每个参与模型；未表态一律记 `validity=not_assessed`，不得省略。
+- `validity` 与 `severity` 是两个独立字段：前者回答"问题是否成立"，后者回答"多严重"；不认同严重级别不得因此否定问题成立。
 - `not_assessed` 不计入 `reject`，服务端按 `docs/01` §7 重新计算结论。
+- `severity_disputed=true`（accept 票中最高与最低相差 ≥2 级）时该条转人工。
 - `confidence` 未校准时为 `null`，报告展示 `support_ratio` 与计数；校准后才写数值并标 `confidence_source=calibrated`。
 - `evidence_refs` 至少一条对应 `kb_grounded=true` 的知识条目；无 KB 依据时为空数组。
 - `evidence_type` 取值：`business_rule` / `requirement` / `known_limit` / `historical_bug` / `testing_standard` / `inference`；`historical_bug` 不得表述为当前缺陷。
@@ -397,6 +427,7 @@
 | 409 | `DUPLICATE` | 命中幂等键且未 force（此时正常返回已有结果，见 §1） |
 | 409 | `DECISION_CONFLICT` | 并发审批冲突（`expected_updated_at` 不匹配），需重新拉取后重试 |
 | 409 | `INVALID_DECISION_STATE` | 当前状态不允许该决定（如终态后改判） |
+| 422 | `INPUT_INVALID` | 输入质量硬错误（内容为空、无 steps/raw_text、超长、字段非法） |
 | 422 | `TOO_MANY_CASES` | 批量超过 50 份 |
 | 422 | `INVALID_DECISION` | `decision` 非法，或 `reject`/`request_changes` 缺少理由 |
 | 429 | `QUEUE_FULL` | 队列已满，返回 `Retry-After` |
