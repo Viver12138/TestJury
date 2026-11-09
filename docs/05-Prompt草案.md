@@ -1,6 +1,6 @@
 # 05 · Prompt 草案
 
-> 版本：v0.2（并入评审修订：三类依据、结论强度限制、候选问题投票轮）
+> 版本：v0.3（并入补充评审：证据类型/强度、结论边界、服务端输出校验）
 > 所有模板存放于 `app/prompts/*.jinja2`，变量用 `{{ }}` 注入；每次修改后哈希写入报告。
 
 ---
@@ -22,8 +22,8 @@
 禁止引入任何未提供的信息。禁止凭常识补充产品规则。
 
 【结论强度必须与证据匹配】
-- 没有【测试范围】（test_scope）时：只能评审当前用例本身，不得输出"该功能点缺少某类
-  场景/覆盖不全"的结论。
+- v1 只评审当前用例本身。即使提供【测试范围】（test_scope），也只能指出"当前用例未覆盖
+  其中某条已列场景"，不得输出功能点覆盖率或整体覆盖结论。
 - 没有【自动化上下文】（automation_context）时：不得断言某步骤"无法自动化"或"框架不
   支持"，只能写"需确认框架能力"，且严重级不超过 major。
 - 检索状态显示降级（如 kb_module_missing / vector_unavailable）时：不得把推断表述为
@@ -33,6 +33,13 @@
 - evidence_quote 必须逐字摘录【用例】原文，不得改写、不得拼接。
 - 若 kb_grounded = true，必须同时给出 kb_refs（知识库中的 RULE-ID 或文档 ID）与
   evidence_refs（知识库上下文中的条目 ID），至少各一条。
+- 每条 issue 必须给出 evidence_type：
+  business_rule | requirement | known_limit | historical_bug | testing_standard | inference
+  以及 evidence_strength：strong | medium | weak。
+- evidence_type = inference 时必须 kb_grounded = false，并在 rationale 标注「（推断）」。
+- evidence_type = historical_bug 时，只能写"历史曾出现，需确认当前版本"，不得直接判
+  当前版本存在该缺陷，不得据此标 blocker 的"规则冲突"。
+- evidence_type = testing_standard 时，只能支撑测试设计建议，不得当作产品业务事实。
 - 若知识库没有依据，可以基于通用测试准则提出问题，但必须 kb_grounded = false，
   并在 rationale 中注明「（基于通用测试准则推断）」。
 - 引用的知识必须出现在本次【知识库上下文】中；不在上下文中的引用视为无效。
@@ -57,7 +64,7 @@
 
 ## 1. P0 · 纯文本用例结构化预处理
 
-**模型**：预处理模型（配置项 `PREPROCESS_MODEL`，建议用最便宜的可用模型）
+**模型**：预处理模型（`config/models.yaml` 的 `preprocess` 角色，建议用最便宜的可用模型）
 **调用时机**：仅当 `case.steps` 为空且提供了 `raw_text`
 
 ### System
@@ -165,6 +172,8 @@
       "kb_grounded": true,
       "kb_refs": ["RULE-XXX-000"],
       "evidence_refs": ["chunk:8842"],
+      "evidence_type": "business_rule|requirement|known_limit|historical_bug|testing_standard|inference",
+      "evidence_strength": "strong|medium|weak",
       "self_confidence": 0.0
     }
   ]
@@ -418,7 +427,7 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
 请输出：
 {
   "role": "arbitration",
-  "verdict": "blocked|conditional|need_human",
+  "ai_verdict": "blocked|conditional|need_human",
   "summary": "不超过 150 字的终审结论，说明主要风险",
   "issues": [
     {
@@ -433,6 +442,8 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
       "kb_grounded": true,
       "kb_refs": ["RULE-XXX-000"],
       "evidence_refs": ["chunk:8842"],
+      "evidence_type": "business_rule|requirement|known_limit|historical_bug|testing_standard|inference",
+      "evidence_strength": "strong|medium|weak",
       "proposed_by": ["chief_blind", "jury_b"],
       "status": "adopted|rejected|disputed|need_human",
       "chief_decision": "adopt|reject|dispute|need_human|supplement",
@@ -456,12 +467,32 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
 ### 输出处理
 
 - 仲裁输出必须覆盖融合清单中的**每一条**；缺失的条目由服务端补为 `status=need_human` 并记 `parse_warnings`。
-- `verdict` 由服务端**重新计算校验**；与模型输出不一致时以服务端规则为准，并在 `report_summary` 中记录差异（这本身是模型不稳定的信号）。
+- `ai_verdict` 由服务端**重新计算校验**；与模型输出不一致时以服务端规则为准，并在 `report_summary` 中记录差异（这本身是模型不稳定的信号）。
 - `human_review_items` 至少包含：主审驳回的 blocker、主审补充的 blocker、所有 disputed 项。
 
 ---
 
-## 7. Prompt 版本管理
+## 7. 服务端输出校验
+
+Prompt 只能"要求"JSON，不能"保证"JSON。每次模型返回（预处理 / 盲评 / 投票 / 仲裁）在进入下一步前必须通过：
+
+| 校验 | 内容 | 失败处理 |
+|---|---|---|
+| 1. JSON 解析 | 严格解析，不截断、不修补 | 重试 1 次；仍失败按角色失败 |
+| 2. Schema | 必填字段、类型、嵌套结构 | 同上 |
+| 3. 枚举 | `severity` / `dimension` / `vote` / `status` / `evidence_type` 等 | 非法值判该条无效，不猜测 |
+| 4. 引用有效性 | `kb_refs` / `evidence_refs` 必须存在于本次证据包 | 该条判无效依据 |
+| 5. 数值范围 | `self_confidence` ∈ [0,1]，`step_index` 在用例范围内 | 越界判无效 |
+| 6. 业务规则 | blocker 是否有证据、`historical_bug` 是否被当作当前缺陷、`not_assessed` 是否被当反对票 | 违规降级或判无效 |
+
+原则：
+
+- **禁止静默修复**：缺字段补空、截断 JSON 拼回、把非法枚举改成默认值，都属于"看起来有效"的假数据。
+- 校验失败写入 `model_runs.parse_warnings`，并在报告中体现；不影响其它角色继续执行。
+- 同一角色连续两次校验失败 → 按该角色失败处理（见 `docs/01` §8）。
+- 仲裁输出必须覆盖候选清单每一条；缺失补 `need_human`，不能默认采纳。
+
+## 8. Prompt 版本管理
 
 - 每个 prompt 文件独立哈希，写入 `model_runs.prompt_version` 与报告头部；`vote.jinja2` 单独记版本。
 - 修改任何 prompt 后，必须重跑种子集（见 `docs/07-验收与回归.md`），未通过回归不得上线。

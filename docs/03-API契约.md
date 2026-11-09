@@ -1,9 +1,9 @@
 # 03 · API 契约
 
-> 版本：v0.2（并入评审修订：`test_scope` / `automation_context` / 投票计数 / 证据溯源）
+> 版本：v0.3（并入补充评审：AI/人工结论分离、决议接口、Webhook 安全、批次状态语义）
 
 - Base：`/v1`
-- 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
+- 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`，角色 `X-Role: reviewer|approver|admin`（审批与发布接口校验角色）
 - 内容类型：`application/json; charset=utf-8`
 - 时间：ISO 8601（`2026-11-09T10:00:00+08:00`）
 - 错误统一结构：
@@ -73,9 +73,9 @@
 | `case.raw_text` | 条件必填 | 纯文本用例；服务端预处理结构化，失败则降级 |
 | `case.priority` | 否 | P0/P1/P2/P3 |
 | `case.source` | 否 | `manual` / `auto`，默认 `manual` |
-| `test_scope.feature_point` | 否 | 当前评审所属功能点；缺失时不得输出"功能点整体覆盖"结论 |
-| `test_scope.required_scenarios` | 否 | 该功能点要求覆盖的场景清单（字符串数组） |
-| `test_scope.related_case_ids` | 否 | 同一功能点下的关联用例 ID，用于判断用例间覆盖关系 |
+| `test_scope.feature_point` | 否 | 当前评审所属功能点；v1 仅用于判断"当前用例未覆盖已列场景"，不输出功能点覆盖结论 |
+| `test_scope.required_scenarios` | 否 | 该功能点要求覆盖的场景清单（字符串数组），作为"未覆盖提示"的对照 |
+| `test_scope.related_case_ids` | 否 | 同一功能点下的关联用例 ID；v1 仅记录，不据此计算覆盖率 |
 | `test_scope.scope_version` | 否 | 测试范围定义版本；变更即视为新的评审上下文 |
 | `automation_context.framework` | 否 | 自动化测试框架名称/版本 |
 | `automation_context.supported_operations` | 否 | 框架支持的操作能力 |
@@ -83,7 +83,10 @@
 | `automation_context.data_setup_capabilities` | 否 | 能否程序化准备/清理测试数据 |
 | `automation_context.limitations` | 否 | 已知框架限制；缺失时"不可自动化"结论降级为待确认 |
 | `options.force` | 否 | 跳过幂等检查，强制重评，默认 `false` |
-| `options.webhook_url` | 否 | 完成后回调（POST 报告摘要） |
+| `options.webhook_url` | 否 | 完成后回调（只发摘要，安全要求见 §1.1） |
+| `options.webhook_secret_id` | 否 | 回调签名密钥标识（密钥本身不出现在请求中） |
+| `options.strict_kb` | 否 | 模块未覆盖时是否报错；默认 `false`（降级评审） |
+| `options.budget_tokens` | 否 | 本次评审 token 预算；超限降级或失败，见 `docs/10` §10 |
 
 ### 响应
 
@@ -92,11 +95,23 @@
 {
   "review_id": "8f1c...",
   "status": "queued",
+  "generation": 1,
   "poll_url": "/v1/reviews/8f1c..."
 }
 ```
 
-若命中幂等键且未 `force`，返回 **200** + 已有报告（`status=done`）。
+若命中幂等键且未 `force`，返回 **200** + 已有报告（`status=done`）。`force=true` 时返回新 `review_id` 与递增的 `generation`。
+
+### 1.1 Webhook 语义
+
+| 项 | 规则 |
+|---|---|
+| 触发 | 评审终态（`done` / `completed_with_warnings` / `failed`）各触发一次 |
+| 签名 | `X-Signature: sha256=<HMAC>`，`X-Timestamp`，接收方验签并校验 ±5 分钟 |
+| 幂等 | `X-Event-Id = review_id + event + generation`，重复投递由接收方去重 |
+| 失败 | 最多 5 次指数退避；超限记 `webhook_deliveries` 并告警，不阻塞评审 |
+| 安全 | 仅 https；URL 允许列表；解析后拒绝私网/回环/链路本地地址（防 SSRF） |
+| 内容 | 只含 `review_id`、`ai_verdict`、`human_status`、摘要计数，不含用例正文与原始 Prompt |
 
 ---
 
@@ -109,15 +124,18 @@
   "review_id": "8f1c...",
   "case_id": "TC-DIG-0012",
   "module": "挖宝",
-  "status": "done",
+  "status": "completed_with_warnings",
   "stage": "done",
-  "verdict": "blocked",
+  "generation": 1,
+  "report_schema_version": "report-1.0",
+  "ai_verdict": "blocked",
+  "human_status": "pending",
   "degraded": false,
   "degraded_reasons": [],
   "participants": ["chief:qwen-max", "jury_a:deepseek-flash", "jury_b:kimi-k3"],
   "retrieval": {
     "mode": "hybrid",
-    "channels": ["filter", "fts", "vector", "rrf", "rerank"],
+    "channels": ["filter", "trigram", "vector", "rrf", "rerank"],
     "evidence_count": 9,
     "degraded_reasons": []
   },
@@ -127,6 +145,7 @@
     "prompts": { "chief_blind": "p-1a2b", "arbitration": "p-3c4d", "jury_a": "p-5e6f", "jury_b": "p-7g8h", "vote": "p-8i9j" },
     "retrieval_config": "rc-9f2e",
     "embedding_profile": "qwen3.7-text-embedding-flash@v1/1024/cosine",
+    "model_config": "models-2026-11-09",
     "models": { "qwen-max": "qwen-max-2026-10", "deepseek-flash": "deepseek-chat-v3", "kimi-k3": "kimi-k3-2026-08" }
   },
   "summary": {
@@ -144,7 +163,13 @@
     "feature_point": "藏宝点发现",
     "scope_version": "scope-2026-11-01",
     "provided": true,
-    "coverage_claims_allowed": true
+    "coverage_claims_allowed": false,
+    "note": "v1 仅做单条用例评审；test_scope 只用于判断当前用例未覆盖的已知场景，不输出功能点整体覆盖率"
+  },
+  "decision_summary": {
+    "human_status": "pending",
+    "latest_decision": null,
+    "history_count": 0
   },
   "appendix": {
     "raw_opinions": {
@@ -161,7 +186,9 @@
 }
 ```
 
-`degraded_reasons` 取值：`kb_module_missing`、`raw_text_unparsed`、`vector_unavailable`、`fts_unavailable`、`rerank_skipped`、`model_missing`、`scope_missing`、`automation_context_missing`。前六项是链路降级，后两项限制结论强度，都必须在报告顶部明示。
+`degraded_reasons` 取值：`kb_module_missing`、`raw_text_unparsed`、`vector_unavailable`、`keyword_unavailable`、`rerank_skipped`、`model_missing`、`scope_missing`、`automation_context_missing`、`budget_exceeded`。前六项是链路降级，其余限制结论强度，都必须在报告顶部明示。
+
+> `ai_verdict` 是 AI 结论，永不为 `approved`；`human_status` 是人工审批状态。两者不可互相替代，详见 `docs/09`。
 
 ### 2.1 issue 结构
 
@@ -177,13 +204,17 @@
   "suggestion": "补充物品池范围，并明确至少验证“背包物品数量 +1”与“物品来源为藏宝池”。",
   "kb_grounded": true,
   "kb_refs": ["RULE-DIG-012"],
+  "evidence_type": "requirement",
+  "evidence_strength": "strong",
   "evidence_refs": [
     {
       "ref": "chunk:8842",
       "source_ref": "挖宝/requirements.md#3.2 藏宝点",
       "heading_path": "3 挖宝流程 > 3.2 藏宝点",
       "doc_type": "requirement",
-      "retrieval_channel": "fts+vector",
+      "evidence_type": "requirement",
+      "evidence_strength": "strong",
+      "retrieval_channel": "trigram+vector",
       "rerank_score": 0.91
     }
   ],
@@ -212,6 +243,9 @@
 - `not_assessed` 不计入 `reject`，服务端按 `docs/01` §7 重新计算结论。
 - `confidence` 未校准时为 `null`，报告展示 `support_ratio` 与计数；校准后才写数值并标 `confidence_source=calibrated`。
 - `evidence_refs` 至少一条对应 `kb_grounded=true` 的知识条目；无 KB 依据时为空数组。
+- `evidence_type` 取值：`business_rule` / `requirement` / `known_limit` / `historical_bug` / `testing_standard` / `inference`；`historical_bug` 不得表述为当前缺陷。
+- `evidence_strength` 取值：`strong` / `medium` / `weak`，由证据类型与来源决定（见 `docs/04` §7.4）。
+- 每个 issue 的 `evidence_refs` 必须能在本次证据包中找到；不存在的引用视为无效依据。
 
 ### 2.2 kb_gap 结构
 
@@ -231,6 +265,8 @@
 ## 3. Markdown 报告
 
 `GET /v1/reviews/{review_id}/report`，`Accept: text/markdown`
+
+报告头部固定展示：`ai_verdict`、`human_status`（含最近一次决定与审批历史）、降级情况、版本号。
 
 章节固定为：
 
@@ -268,26 +304,37 @@
   "batch_id": "b-2e9f...",
   "status": "processing",
   "total": 37, "done": 21, "failed": 1, "queued": 15,
-  "items": [ { "case_id": "TC-DIG-0012", "review_id": "8f1c...", "status": "done", "verdict": "blocked" } ],
+  "items": [ { "case_id": "TC-DIG-0012", "review_id": "8f1c...", "status": "done", "ai_verdict": "blocked", "human_status": "pending" } ],
   "overview": {
-    "verdict_distribution": { "blocked": 8, "conditional": 12, "need_human": 1 },
+    "ai_verdict_distribution": { "blocked": 8, "conditional": 12, "need_human": 1 },
+    "human_status_distribution": { "pending": 18, "approved": 2, "rejected": 1 },
     "hot_modules": [ { "module": "挖宝", "blocker": 5 }, { "module": "背包仓库", "blocker": 3 } ]
   }
 }
 ```
 
+批次状态汇总规则：
+
+| 子任务情况 | 批次 `status` |
+|---|---|
+| 全部 `done` / `completed_with_warnings` | `done`（存在 warnings 时 `completed_with_warnings`） |
+| 部分完成、部分失败 | `partial` |
+| 仍有 `queued` / `processing` / `retrying` | `processing` |
+| 全部失败 | `failed` |
+
 批次完成后再提供 `GET /v1/review-batches/{batch_id}/report`（总览 Markdown）。
 
 ---
 
-## 5. 复核回写
+## 5. 复核回写与人工决定
+
+### 5.1 issue 级反馈（评测信号）
 
 `POST /v1/reviews/{review_id}/feedback`
 
 ```json
 {
   "reviewer": "zhangsan",
-  "final_verdict": "approved",
   "issues": [
     { "issue_no": 1, "verdict": "adopted", "note": "确认是问题" },
     { "issue_no": 2, "verdict": "rejected", "note": "主审驳回正确" },
@@ -297,8 +344,25 @@
 }
 ```
 
-- `final_verdict=approved` 是系统结论变“通过”的唯一途径。
-- `missed` 记录用于计算召回率（漏检），必须带 `step_index` 与 `severity`。
+- `feedback` 是 issue 级事实，用于评测、调优与漏检统计，**不等于报告审批**。
+- `missed` 必须带 `step_index` 与 `severity`。
+- 同一 issue 多次反馈保留历史，最新一条用于统计。
+
+### 5.2 报告级人工决定（审批）
+
+`POST /v1/reviews/{review_id}/decisions`
+
+```json
+{ "decision": "request_changes", "reviewer": "zhangsan", "reason": "第 3 步预期不明确，补充后重提" }
+```
+
+- `decision` 取值：`approve` / `reject` / `request_changes`；`reject` 与 `request_changes` 必须带 `reason`。
+- 可选 `expected_updated_at` 做乐观锁；不匹配返回 409 `DECISION_CONFLICT`。
+- 仅 `approver` 可 `approve` / `reject`；`reviewer` 只能 `request_changes`。
+- 决定 append-only；返回新记录与派生后的 `human_status`。
+- 与 `ai_verdict` 分离：审批不修改 AI 结论，也不消除降级标记（见 `docs/09`）。
+
+`GET /v1/reviews/{review_id}/decisions` 返回审批历史（按时间正序，含 `superseded_by` 链）。
 
 ---
 
@@ -318,7 +382,7 @@
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
-| GET | `/v1/reviews?case_id=&module=&verdict=&from=&to=&page=` | 报告列表与筛选 |
+| GET | `/v1/reviews?case_id=&module=&ai_verdict=&human_status=&from=&to=&page=` | 报告列表与筛选 |
 | GET | `/healthz` | 健康检查，含队列深度与 DB 连通性 |
 
 ## 8. 错误码
@@ -327,10 +391,16 @@
 |---|---|---|
 | 400 | `INVALID_CASE` | 用例结构非法（给出具体字段） |
 | 401 | `UNAUTHORIZED` | API Key 缺失或错误 |
+| 403 | `FORBIDDEN` | 角色不足（如 `reviewer` 尝试 `approve`） |
 | 404 | `NOT_FOUND` | review_id / batch_id 不存在 |
 | 409 | `KB_MODULE_MISSING` | 模块未覆盖（**仅在 options.strict_kb=true 时返回**；默认降级不报错） |
 | 409 | `DUPLICATE` | 命中幂等键且未 force（此时正常返回已有结果，见 §1） |
+| 409 | `DECISION_CONFLICT` | 并发审批冲突（`expected_updated_at` 不匹配），需重新拉取后重试 |
+| 409 | `INVALID_DECISION_STATE` | 当前状态不允许该决定（如终态后改判） |
 | 422 | `TOO_MANY_CASES` | 批量超过 50 份 |
+| 422 | `INVALID_DECISION` | `decision` 非法，或 `reject`/`request_changes` 缺少理由 |
 | 429 | `QUEUE_FULL` | 队列已满，返回 `Retry-After` |
+| 429 | `BUDGET_EXCEEDED` | 批次/每日预算超限 |
 | 500 | `INTERNAL` | 服务内部错误 |
+| 502 | `OUTPUT_SCHEMA_INVALID` | 模型输出未通过 Schema/引用校验且重试后仍失败 |
 | 503 | `ALL_MODELS_FAILED` | 三模型全部失败 |
