@@ -1,0 +1,26 @@
+M0 验证记录（工程验收：verified，不等于业务 accepted）
+commit: 07db7247aaf89895d99797a188e6a93fe2082b8d
+date: 2026-11-10T17:27:00+08:00
+environment: Windows 11, Python 3.13.13, PostgreSQL 16.15 + pgvector (docker), Mock models only
+
+== pytest -q ==
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+244 passed, 1 warning in 31.85s
+
+== scripts/check_contracts.py ==
+[NOTE] rubric: Rubric 状态为 'draft'：按 rubric/README 与 docs/08 §7，生产模式必须使用 published 版本
+[NOTE] verdict-cases: verdict 用例 36 条，规则 30 条，不变量 8 条，属性抽样 3200 次
+[NOTE] m0-acceptance: M0 条件 10 项 / 契约项 5 项 / 用例 40 条 / CI Job 5 个
+[NOTE] execution-plan: 执行台账：open 待决 9 项，验证项 13 项
+
+结果: 通过（31 项检查，0 个警告）
+
+== scripts/check_m0_acceptance.py ==
+== M0 验收用例检查 ==
+[NOTE] M0 条件 10 项 / 契约项 5 项 / 用例 40 条 / CI Job 5 个
+
+结果: 通过（1 项检查，0 个警告）
+
+== ruff check app tests ==
+All checks passed!
