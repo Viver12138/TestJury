@@ -319,7 +319,7 @@
 | R57 | **指标改名影响历史** | FDR 与 FPR 不可互换；旧报告指标需重算并标注口径 |
 | R58 | **统计功效不足** | 三模型实验样本不足时只能作探索性结论，不能据此冻结架构 |
 | R59 | **契约脚本与文档一起漂移** | 检查器和被检查文件同时改错时仍会通过；用 `tests/contract/test_contract_drift.py` 变异测试兜底，脚本变更必须跑全量 |
-| R60 | **Verdict 用例与实现脱节** | 实现后可能只跑少量用例；M0-011 要求全量对照，改 `design/verdict_cases.yaml` 必须同步 `verdict.py` 与 `docs/12` |
+| R60 | **Verdict 用例与实现脱节** | 实现后可能只跑少量用例；ACC-M0-011 要求全量对照，改 `design/verdict_cases.yaml` 必须同步 `verdict.py` 与 `docs/12` |
 | R61 | **参考判定器被误用** | `scripts/verdict_reference.py` 只是规范对照，不是生产实现；`app/` 不得 import，代码评审拦截 |
 | R62 | **决策索引覆盖不全** | `design/decisions.yaml` 只索引跨模块契约与门禁相关决策；不得宣称是 docs/08 的全量镜像 |
 | R63 | **M0 用例只跑 happy path** | 每条用例必须带失败判定；ACC-M0-017 用变异测试证明检查能失败，不允许"能启动即通过" |
