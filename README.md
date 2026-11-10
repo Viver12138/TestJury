@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.9**（补充 18 落实：门禁状态判定、V-03 拆分、证据 manifest 与统计口径收口）· 2026-11-10；设计收口，进入 S1/M0
+> **状态**：**design-v1.10**（补充 19 落实：阶段语义一致、证据哈希/版本强校验、状态迁移与审计）· 2026-11-10；设计收口，进入 S1/M0
 
 ---
 
@@ -18,7 +18,7 @@
 
 | 版本维度 | 当前值 | 用途 |
 |---|---|---|
-| 设计基线版本 | `design-v1.9` | 本仓库设计文档整体迭代版本；各文档文首 `vX.Y` 即此版本 |
+| 设计基线版本 | `design-v1.10` | 本仓库设计文档整体迭代版本；各文档文首 `vX.Y` 即此版本 |
 | 产品版本 | `product-v1.0`（规划） | 实际交付给用户的产品范围；见 `docs/00` §10 |
 | Rubric 版本 | `rubric-0.2.0` | 评审标准；`rubric/rubric.yaml` |
 | 报告格式版本 | `report-1.0` | `schemas/report.schema.json` |
@@ -264,6 +264,12 @@
 | 230 | 证据 manifest/历史 | `manifest.yaml` 含版本/哈希/有效性；`history.jsonl` 只追加，门禁校验 |
 | 231 | 统计字段统一 | 只保留 `statistical_design`；补 MDE/基线比例/聚类 bootstrap/主假设/停止规则 |
 | 232 | 正式门禁归档 | 仅 main 正式运行；JSON 结果绑定 sha/branch 并归档为证据 |
+| 233 | 阶段/phase 一致 | V-08 改为 M6 生产前业务验收；S1–S3 不得要求 production 项 |
+| 234 | 证据哈希强校验 | sha256 必填、64 位 hex、重新计算比对，缺失即失败 |
+| 235 | 证据版本锁 | `design/versions.lock.yaml` 对比；code_commit 必填，不适用写 `n/a` |
+| 236 | 状态迁移防篡改 | 完整校验 allowed/conditional/证据/批准；history 增加 `prev_hash` 链 |
+| 237 | Q-14 拆分 | Q-14 为 M2 协议签署；实验执行与结果归 V-06 |
+| 238 | 多证据与验收引用 | `artifacts[]` 支持多份；`acceptance_evidence` 必须能在 manifest 中解析 |
 
 ## 3. 文档索引
 

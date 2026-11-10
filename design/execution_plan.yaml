@@ -2,8 +2,8 @@
 # 事实源：docs/30（说明与证据模板）、docs/08 §2.16（Q-01–Q-18）、design/decisions.yaml。
 # 状态模型：designed → implemented → verified → accepted；脚本检查通过只到 verified。
 # 校验：scripts/check_execution_plan.py；accepted 必须有 acceptance_evidence / acceptance_by / acceptance_at。
-version: "0.2"
-baseline: design-v1.9
+version: "0.3"
+baseline: design-v1.10
 last_updated: "2026-11-10"
 
 status_model: [designed, implemented, verified, accepted]
@@ -258,11 +258,11 @@ verification_items:
     acceptance_by: null
     acceptance_at: null
   - id: V-08
-    title: 报告可用性
+    title: 报告可用性（生产前业务验收）
     status: designed
     owner: null
-    phase: production
-    blocking: [production]
+    phase: M6
+    blocking: [M6, production]
     evidence: [user_acceptance_report]
     acceptance_evidence: null
     acceptance_by: null
