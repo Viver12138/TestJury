@@ -7,7 +7,7 @@
 # status 只表示是否已决策；验证/实施/发布状态分开，不能把 decided 当成已验证。
 # phase 表示该决策最早在哪个阶段被验证/落地：M0/M1/M4/M5/M6/production。
 #   未到 phase 的决策不得被实现人员自行假设；M0 决策必须在 M0 用例通过后把 validation_status 改为 passed。
-version: "1.8"
+version: "1.9"
 last_updated: "2026-11-10"
 
 decisions:
@@ -861,6 +861,62 @@ decisions:
     phase: production
     choice: logs_version_snapshot_replay_human_records_before_platform
     source: [docs/10]
+
+  # ── v1.9（补充 18：门禁与台账一致性） ──
+  - id: D203
+    title: 阶段门禁最低状态
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: stage_gates_min_status_owner_decision_separated
+    source: [design/execution_plan.yaml, docs/30, scripts]
+  - id: D204
+    title: 阶段定义单一事实源
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: stage_mapping_only_no_duplicate_exit_baseline_checked
+    source: [design/execution_plan.yaml, scripts]
+  - id: D205
+    title: Rubric 验证项拆分
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: v03a_effectiveness_and_v03b_production_release
+    source: [design/execution_plan.yaml, docs/30]
+  - id: D206
+    title: 证据 manifest 与状态历史
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: evidence_manifest_and_append_only_history_jsonl
+    source: [evidence/README.md, docs/30]
+  - id: D207
+    title: 统计字段统一与操作化
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M6
+    choice: single_stats_source_mde_cluster_bootstrap_primary_hypotheses
+    source: [design/experiment_protocol.yaml, docs/15]
+  - id: D208
+    title: 正式门禁运行与归档
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: formal_gate_main_only_sha_bound_json_artifact
+    source: [.github/workflows/execution-gate.yml, scripts]
 
 open_questions:
   - id: Q-01

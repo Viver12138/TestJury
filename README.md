@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.8**（补充 17 落实：阶段映射、状态转换、结构/执行门禁分层与统计设计）· 2026-11-10；设计收口，进入 S1/M0
+> **状态**：**design-v1.9**（补充 18 落实：门禁状态判定、V-03 拆分、证据 manifest 与统计口径收口）· 2026-11-10；设计收口，进入 S1/M0
 
 ---
 
@@ -18,7 +18,7 @@
 
 | 版本维度 | 当前值 | 用途 |
 |---|---|---|
-| 设计基线版本 | `design-v1.8` | 本仓库设计文档整体迭代版本；各文档文首 `vX.Y` 即此版本 |
+| 设计基线版本 | `design-v1.9` | 本仓库设计文档整体迭代版本；各文档文首 `vX.Y` 即此版本 |
 | 产品版本 | `product-v1.0`（规划） | 实际交付给用户的产品范围；见 `docs/00` §10 |
 | Rubric 版本 | `rubric-0.2.0` | 评审标准；`rubric/rubric.yaml` |
 | 报告格式版本 | `report-1.0` | `schemas/report.schema.json` |
@@ -258,6 +258,12 @@
 | 224 | 报告长期指标 | 采纳率/驳回率/耗时/重复率/证据帮助/修改转化/误解率/争议率 |
 | 225 | 错误来源分类 | 输入/知识/检索/模型/融合/服务端/人工七类与处理方向 |
 | 226 | 最小质量监控 | 先日志/版本快照/可回放/人工记录，4–6 周后再定告警 |
+| 227 | 门禁最低状态 | `stage_gates` 按项要求 owner_assigned/decision_recorded/implemented/verified/accepted，owner 不能代替完成 |
+| 228 | 阶段单一事实源 | 删除旧 `stages.exit`；`stage_mapping` 唯一；`baseline` 与 README 设计基线一致 |
+| 229 | Rubric 验证拆分 | V-03A 效果验证（M6）与 V-03B 生产发布（production）独立 |
+| 230 | 证据 manifest/历史 | `manifest.yaml` 含版本/哈希/有效性；`history.jsonl` 只追加，门禁校验 |
+| 231 | 统计字段统一 | 只保留 `statistical_design`；补 MDE/基线比例/聚类 bootstrap/主假设/停止规则 |
+| 232 | 正式门禁归档 | 仅 main 正式运行；JSON 结果绑定 sha/branch 并归档为证据 |
 
 ## 3. 文档索引
 

@@ -2,26 +2,13 @@
 # 事实源：docs/30（说明与证据模板）、docs/08 §2.16（Q-01–Q-18）、design/decisions.yaml。
 # 状态模型：designed → implemented → verified → accepted；脚本检查通过只到 verified。
 # 校验：scripts/check_execution_plan.py；accepted 必须有 acceptance_evidence / acceptance_by / acceptance_at。
-version: "0.1"
-baseline: design-v1.7
+version: "0.2"
+baseline: design-v1.9
 last_updated: "2026-11-10"
 
 status_model: [designed, implemented, verified, accepted]
 
-stages:
-  - id: S1
-    name: 业务决策与责任
-    exit: Q-07/Q-08/Q-09/Q-12/Q-13 有结论与责任人
-  - id: S2
-    name: 真实评测条件
-    exit: V-01/V-02/V-03/V-04 与 A–E 协议签署
-  - id: S3
-    name: 业务有效性
-    exit: V-05/V-06/V-07/V-08 证据齐全
-  - id: S4
-    name: 生产准入
-    exit: V-09/V-10/V-11/V-12 证据齐全
-
+# stage_mapping 是唯一阶段定义（旧 stages.exit 已删除，避免两套出口）
 stage_mapping:
   S1:
     milestones: [M0-pre]
@@ -34,12 +21,37 @@ stage_mapping:
     note: Rubric 只要求可加载/可校验，不要求 production 发布
   S3:
     milestones: [M4, M5, M6]
-    requires: [V-05, V-06, V-07, V-08]
-    note: 含 V-03 的效果验证部分
+    requires: [V-03A, V-05, V-06, V-07, V-08]
+    note: 含 Rubric 效果验证（V-03A）
   S4:
     milestones: [production]
-    requires: [V-03, V-09, V-10, V-11, V-12]
-    note: 含 V-03 的正式发布部分
+    requires: [V-03B, V-09, V-10, V-11, V-12]
+    note: 含 Rubric 正式发布（V-03B）
+
+# 阶段出口的最低状态要求（R1）：owner/decision 与状态分开，不由 owner 代替完成
+stage_gates:
+  S1:
+    Q-07: owner_assigned
+    Q-08: decision_recorded
+    Q-09: owner_assigned
+    Q-12: owner_assigned
+    Q-13: owner_assigned
+  S2:
+    V-01: verified
+    V-02: verified
+    V-04: verified
+  S3:
+    V-03A: accepted
+    V-05: accepted
+    V-06: accepted
+    V-07: accepted
+    V-08: accepted
+  S4:
+    V-03B: accepted
+    V-09: accepted
+    V-10: accepted
+    V-11: accepted
+    V-12: accepted
 
 rubric_lifecycle:
   M0: [schema_and_structure_loadable, draft_rejected_in_production]
@@ -56,7 +68,9 @@ state_transitions:
 
 evidence_policy:
   root: evidence/
+  manifest_required: true
   history_required: true
+  history_format: jsonl
   overwrite_original: false
   invalidate_on_version_change: true
 
@@ -77,6 +91,7 @@ open_items:
     status: open
     owner: null
     phase: M2
+    decision_ref: D181
     blocking: [M2]
     next_action: 规则已定（D181）；由模块负责人逐条确认可升级的历史缺陷
     evidence: [kb_rule_upgrade_record, reviewer_signoff]
@@ -182,13 +197,23 @@ verification_items:
     acceptance_evidence: null
     acceptance_by: null
     acceptance_at: null
-  - id: V-03
-    title: Rubric 发布
+  - id: V-03A
+    title: Rubric 效果验证
+    status: designed
+    owner: null
+    phase: M6
+    blocking: [M6, production]
+    evidence: [frozen_rubric_version, effectiveness_eval, regression_report]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: V-03B
+    title: Rubric 生产发布
     status: designed
     owner: null
     phase: production
     blocking: [production]
-    evidence: [rubric_review_record, published_version, regression_report]
+    evidence: [rubric_review_record, published_version, freeze_and_rollback_test]
     acceptance_evidence: null
     acceptance_by: null
     acceptance_at: null
