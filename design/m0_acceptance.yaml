@@ -1,0 +1,610 @@
+# TestJury M0 验收用例与 P0 契约清理用例（机器可读）
+# 事实源：docs/08 §5.2（M0 十项退出条件）、docs/28（用例说明与追踪链）、docs/12（Verdict）。
+# 用法：scripts/check_m0_acceptance.py 校验结构、覆盖度与追踪字段；
+#       CI 按 ci_job 分组执行；result 在 M0 执行后回填为 passed/failed。
+# 约定：
+#   - 每个 M0 退出条件至少 1 条用例；每个 P0 契约项至少 1 条用例；
+#   - automation/test_file/ci_job 不得为空，避免"列出条件但无法执行"；
+#   - 用例 ID 稳定，后续实现不得复用或改号。
+version: "1.0"
+baseline: docs/08 §5.2
+last_updated: "2026-11-10"
+
+ci_jobs:
+  - id: contract
+    description: 文档/Schema/Rubric/决策索引/Verdict/M0 用例的契约检查
+  - id: unit
+    description: 纯单元测试（无 DB、无网络、无真实模型）
+  - id: migration
+    description: 空库迁移、回滚、约束生效
+  - id: mock-e2e
+    description: Mock 供应商全链路（创建→评审→报告→复核）
+  - id: ci-all
+    description: 聚合门禁，要求以上 Job 全部通过
+
+exit_conditions:
+  - id: M0-01
+    module: 工程骨架
+    requirement: FastAPI 启动；配置加载；结构化日志；统一异常/错误码
+  - id: M0-02
+    module: 数据库
+    requirement: PostgreSQL + pgvector 可用；Alembic 空库迁移成功；回滚一次
+  - id: M0-03
+    module: 全局枚举
+    requirement: Python Enum 与 docs/17 一致；CI 校验
+  - id: M0-04
+    module: Report Schema
+    requirement: 加载、校验、识别 report_schema_version
+  - id: M0-05
+    module: Rubric
+    requirement: 加载、Schema/业务校验、冻结版本；draft 拒绝生产模式
+  - id: M0-06
+    module: Verdict
+    requirement: 真值表全部组合单元测试通过；ai_verdict 只由 verdict.py 产生
+  - id: M0-07
+    module: 权限
+    requirement: API Key → 角色；越权/伪造 X-Role 拒绝
+  - id: M0-08
+    module: 状态机
+    requirement: 任务/阶段/复核任务非法迁移被拒；fencing 双 Worker 测试
+  - id: M0-09
+    module: CI
+    requirement: 单测 + 契约检查 + 迁移测试；不依赖真实模型
+  - id: M0-10
+    module: 可观测性
+    requirement: request_id/trace_id 贯穿；关键阶段有指标
+
+contract_items:
+  - id: P0-1
+    title: 幂等/代次契约收口
+    doc: docs/28 §2、docs/03 §1.1
+    acceptance: 重复、并发、force、同键不同体均有明确输入、响应与状态；DB 约束与 API 行为一致
+  - id: P0-2
+    title: 跨文档契约自动检查
+    doc: docs/28 §3
+    acceptance: 干净仓库通过；改动枚举/Schema/Rubric/决策索引后 CI 失败并指出文件与字段
+  - id: P0-3
+    title: M0 退出条件转可执行用例
+    doc: docs/28 §4
+    acceptance: 十项退出条件全部映射到用例；每条用例有失败判定、自动化方式与关联测试文件
+  - id: P0-4
+    title: Verdict 属性与边界测试
+    doc: docs/28 §5
+    acceptance: 真值表可执行；关键规则有正例/反例/边界例；8 条不变量有自动化保护
+
+cases:
+  # ── M0-01 工程骨架 ──
+  - id: ACC-M0-001
+    maps_to: M0-01
+    title: 服务启动、存活探针与统一错误 envelope
+    preconditions: [空数据库, Mock 配置, 无真实模型 Key]
+    input: 启动 API 进程；GET /livez；GET /v1/not-exist
+    steps:
+      - 以 dev 配置启动 uvicorn，等待 ready
+      - 请求 /livez，断言 200 且 body.status=ok
+      - 请求不存在的路由，断言 404 且 error.code=NOT_FOUND、含 request_id
+      - 检查 stdout 日志为 JSON，且包含 request_id 与 method
+    expected:
+      - /livez 返回 200
+      - 错误响应符合 docs/19 §1 envelope
+      - 日志可被 jq 解析且 request_id 与响应头一致
+    failure_criteria: [启动超时, envelope 字段缺失, 日志非 JSON, request_id 不一致]
+    automation: pytest + fastapi.testclient
+    test_file: tests/m0/test_bootstrap.py
+    ci_job: unit
+    result: not_run
+
+  - id: ACC-M0-002
+    maps_to: M0-01
+    title: 配置缺失时快速失败而非带病启动
+    preconditions: [删除 DATABASE_URL 或设为空]
+    input: 启动命令
+    steps:
+      - 在缺少必填配置的环境中启动
+      - 观察退出码与 stderr
+    expected:
+      - 进程以非 0 退出
+      - 错误信息指明缺失的配置项，不打印密钥
+      - 不监听端口
+    failure_criteria: [使用默认值静默启动, 监听端口后崩溃, 打印密钥]
+    automation: subprocess + pytest
+    test_file: tests/m0/test_config.py
+    ci_job: unit
+    result: not_run
+
+  # ── M0-02 数据库 ──
+  - id: ACC-M0-003
+    maps_to: M0-02
+    title: 空库迁移成功并可回滚一次
+    preconditions: [全新 PostgreSQL 16 + pgvector, 空库]
+    input: alembic upgrade head；alembic downgrade -1；再次 upgrade head
+    steps:
+      - upgrade head，断言退出码 0
+      - 查询 pg_extension 确认 vector 存在
+      - 断言核心表存在（review_jobs/review_decisions/review_stages/review_candidates/issue_votes）
+      - downgrade -1 后再次 upgrade head
+    expected:
+      - 两次 upgrade 均成功
+      - 回滚只撤销一个 revision，不破坏其他表
+      - 迁移脚本无破坏性 DROP 历史表
+    failure_criteria: [迁移报错, 扩展缺失, 回滚后无法重建, 重复执行失败]
+    automation: pytest + alembic CLI + psql
+    test_file: tests/migration/test_migrations.py
+    ci_job: migration
+    result: not_run
+
+  - id: ACC-M0-004
+    maps_to: M0-02
+    title: 幂等唯一索引与状态 CHECK 真实生效
+    preconditions: [迁移完成]
+    input: 直接 SQL 插入测试数据
+    steps:
+      - 插入同 idempotency_key 的两条 active 记录，断言唯一冲突
+      - 将旧记录 superseded_by 指向新记录后，断言可再插入下一代次
+      - 插入 status=unknown，断言 CHECK 失败
+      - 插入 generation=0，断言 CHECK 失败
+    expected:
+      - 部分唯一索引阻止双 active
+      - superseded 记录不阻塞新代次
+      - 非法状态与非法代次被数据库拒绝
+    failure_criteria: [双 active 成功, CHECK 未生效, 索引条件写错]
+    automation: pytest + SQLAlchemy
+    test_file: tests/migration/test_constraints.py
+    ci_job: migration
+    result: not_run
+
+  # ── M0-03 全局枚举 ──
+  - id: ACC-M0-005
+    maps_to: M0-03
+    title: Python Enum 与 docs/17 同源
+    preconditions: [代码枚举已落地]
+    input: 导入 app.core.enums，逐个枚举对比 docs/17
+    steps:
+      - 运行 scripts/check_docs.py
+      - 断言 AppStatus/AiVerdict/HumanStatus/IssueStatus/EvidenceStatus 等集合与字典完全相等
+      - 断言不存在字典外取值
+    expected:
+      - 检查脚本退出码 0
+      - 所有枚举集合相等，差异为空
+    failure_criteria: [集合不一致, 脚本未覆盖某枚举, 通过手工复制同步]
+    automation: scripts/check_docs.py + pytest
+    test_file: tests/contract/test_enums.py
+    ci_job: contract
+    result: not_run
+
+  - id: ACC-M0-006
+    maps_to: M0-03
+    title: 非法枚举值被拒绝
+    preconditions: [API 可启动]
+    input: POST /v1/reviews，case.source=unknown；DB 写入 status=unknown
+    steps:
+      - 提交非法 source，断言 422 INPUT_INVALID 且不建任务
+      - 直接写库非法状态，断言 CHECK 失败
+    expected:
+      - API 不猜测、不静默改写非法枚举
+      - 数据库层同样拒绝
+    failure_criteria: [非法值被接受, 被静默改成默认值, 只在前端校验]
+    automation: pytest + TestClient
+    test_file: tests/m0/test_api_validation.py
+    ci_job: unit
+    result: not_run
+
+  # ── M0-04 Report Schema ──
+  - id: ACC-M0-007
+    maps_to: M0-04
+    title: 报告 Schema 加载、校验与版本识别
+    preconditions: [schemas/report.schema.json 存在]
+    input: 一份合法 fixture、一份缺 versions 的 fixture、一份 report_schema_version=report-9.9 的 fixture
+    steps:
+      - 加载 Schema 并断言为合法 JSON Schema
+      - 合法 fixture 通过校验
+      - 缺失必填字段被拒绝，错误定位到字段路径
+      - 未知版本被加载器拒绝，不按最新版强转
+    expected:
+      - 合法报告通过
+      - 非法报告失败且错误含字段路径
+      - 未知 report_schema_version 拒绝加载
+    failure_criteria: [Schema 未校验, 未知版本被强转, 错误只有一句"校验失败"]
+    automation: pytest + jsonschema
+    test_file: tests/unit/test_report_schema.py
+    ci_job: unit
+    result: not_run
+
+  - id: ACC-M0-008
+    maps_to: M0-04
+    title: 报告 Schema 与冻结副本一致
+    preconditions: [schemas/versions/report-1.0.schema.json 存在]
+    input: 比较两份文件
+    steps:
+      - 断言 report.schema.json 与冻结副本 SHA-256 相同
+      - 断言 $id 与 report_schema_version 常量一致
+    expected: 字节级一致；版本号与文件一一对应
+    failure_criteria: [冻结副本被改动, 版本号与文件不匹配]
+    automation: scripts/check_rubric.py --schemas 或 pytest
+    test_file: tests/contract/test_schema_freeze.py
+    ci_job: contract
+    result: not_run
+
+  # ── M0-05 Rubric ──
+  - id: ACC-M0-009
+    maps_to: M0-05
+    title: Rubric 加载、Schema 与业务校验
+    preconditions: [rubric/rubric.yaml 与 schema.json 存在]
+    input: 合法 Rubric；draft 状态；重复 checkpoint ID
+    steps:
+      - 合法 Rubric 通过 Schema + 业务校验
+      - 生产模式下 draft 拒绝启动
+      - 重复 checkpoint ID 被业务校验器拒绝
+    expected:
+      - 加载失败即拒绝启动（生产）
+      - 业务约束（core claim、阈值、严重级）由独立校验器覆盖
+    failure_criteria: [只做 JSON Schema, draft 可进生产, 重复 ID 通过]
+    automation: pytest + jsonschema + scripts/check_rubric.py
+    test_file: tests/unit/test_rubric_loader.py
+    ci_job: unit
+    result: not_run
+
+  - id: ACC-M0-010
+    maps_to: M0-05
+    title: Rubric 与冻结版本副本一致
+    preconditions: [rubric/versions/v0.1.0.yaml 存在]
+    input: 比较 rubric.yaml 与对应版本副本
+    steps:
+      - 读取 rubric.version，定位 versions/vX.Y.Z.yaml
+      - 断言内容一致；缺失副本即失败
+    expected: 当前版本必须有对应冻结副本
+    failure_criteria: [改规则未增版本, 副本缺失, 副本被改]
+    automation: scripts/check_rubric.py
+    test_file: tests/contract/test_rubric_freeze.py
+    ci_job: contract
+    result: not_run
+
+  # ── M0-06 Verdict ──
+  - id: ACC-M0-011
+    maps_to: M0-06
+    title: Verdict 真值表全部用例通过
+    preconditions: [verdict.py 已实现]
+    input: design/verdict_cases.yaml 全部用例
+    steps:
+      - 参数化运行全部固定/边界用例
+      - 逐条比较 ai_verdict、issue 状态、human_review_required、completeness
+      - 断言 ai_verdict 只由 verdict.py 产生
+    expected: 用例 100% 通过，失败信息含 case_id 与规则 ID
+    failure_criteria: [任一用例不一致, 其他模块另写一套判定]
+    automation: pytest 参数化
+    test_file: tests/unit/test_verdict_cases.py
+    ci_job: unit
+    result: not_run
+
+  - id: ACC-M0-012
+    maps_to: M0-06
+    title: Verdict 属性不变量与禁止组合
+    preconditions: [verdict.py 已实现]
+    input: 随机生成票/证据/席位组合（≥1000 组）
+    steps:
+      - 校验 I1–I8 不变量
+      - 校验 docs/12 §8 禁止组合从不出现
+      - 断言 approved 永不产出
+    expected: 属性测试全绿；发现违规时输出反例输入
+    failure_criteria: [属性测试未覆盖, 违规只记日志不失败]
+    automation: pytest + hypothesis 或固定种子随机
+    test_file: tests/unit/test_verdict_properties.py
+    ci_job: unit
+    result: not_run
+
+  - id: ACC-M0-013
+    maps_to: M0-06
+    title: 决策字段信任边界
+    preconditions: [输出校验已实现]
+    input: 模型输出携带 ai_verdict=approved / human_status=approved
+    steps:
+      - 模拟模型返回含决策字段
+      - 断言服务端丢弃并记 parse_warning
+      - 断言报告 ai_verdict 仍由规则计算
+    expected: 模型不能写决策字段；出现即丢弃
+    failure_criteria: [模型字段进入报告, 仅告警不丢弃]
+    automation: pytest
+    test_file: tests/unit/test_verdict_trust_boundary.py
+    ci_job: unit
+    result: not_run
+
+  # ── M0-07 权限 ──
+  - id: ACC-M0-014
+    maps_to: M0-07
+    title: API Key 角色映射与伪造 X-Role 拒绝
+    preconditions: [API Key 授权表存在]
+    input: reviewer Key + X-Role=admin；admin Key；无 Key
+    steps:
+      - reviewer 调审批接口，断言 403
+      - 伪造 X-Role=admin，断言权限不提升，仅记日志
+      - admin 调审批接口，断言 403（admin 不自动含 approver）
+      - 无 Key 断言 401
+    expected: 角色只来自服务端映射
+    failure_criteria: [X-Role 生效, admin 可审批, 401/403 混用]
+    automation: pytest + TestClient
+    test_file: tests/m0/test_permissions.py
+    ci_job: unit
+    result: not_run
+
+  - id: ACC-M0-015
+    maps_to: M0-07
+    title: 审批人与提交人分离
+    preconditions: [DECISION_REQUIRE_SEPARATION=true]
+    input: 同一 API Key 提交并审批
+    steps:
+      - 用同一身份提交评审并 approve
+      - 断言 403 FORBIDDEN，审计记录拒绝原因
+    expected: 自审被拒绝
+    failure_criteria: [自审通过, 关闭开关后行为未记录]
+    automation: pytest
+    test_file: tests/m0/test_approval_separation.py
+    ci_job: unit
+    result: not_run
+
+  # ── M0-09 CI ──
+  - id: ACC-M0-016
+    maps_to: M0-09
+    title: CI 聚合门禁在无真实模型环境下全绿
+    preconditions: [无外网, 无真实模型 Key]
+    input: 运行 contract + unit + migration + mock-e2e
+    steps:
+      - 执行 scripts/check_contracts.py
+      - 执行 pytest tests/unit tests/contract tests/migration
+      - 执行 mock-e2e 冒烟
+    expected: 全部退出码 0；不读取真实 API Key；耗时在阈值内
+    failure_criteria: [依赖真实模型, 任一 Job 失败仍放行, 跳过契约检查]
+    automation: CI pipeline
+    test_file: tests/m0/test_ci_smoke.py
+    ci_job: ci-all
+    result: not_run
+
+  - id: ACC-M0-017
+    maps_to: M0-09
+    title: 契约漂移可被自动发现（变异测试）
+    preconditions: [契约检查脚本可运行]
+    input: 在临时副本中修改 docs/17 的一个枚举值
+    steps:
+      - 复制仓库到临时目录
+      - 修改 docs/17 的 ai_verdict 枚举
+      - 在副本上运行 check_contracts.py
+    expected:
+      - 退出码非 0
+      - 输出包含 docs/17 文件、枚举名、期望与实际差异
+    failure_criteria: [修改后仍通过, 只报"检查失败"无定位]
+    automation: pytest + 临时目录
+    test_file: tests/contract/test_contract_drift.py
+    ci_job: contract
+    result: not_run
+
+  # ── M0-08 状态机 ──
+  - id: ACC-M0-018
+    maps_to: M0-08
+    title: 任务/阶段/复核任务非法迁移被拒
+    preconditions: [状态机模块已实现]
+    input: done→processing、cancelled→processing、queued→done、completed→pending
+    steps:
+      - 逐条调用迁移校验
+      - 断言抛非法迁移错误且不改状态
+    expected: 非法迁移全部拒绝；合法路径通过
+    failure_criteria: [非法迁移被接受, 状态被部分写入]
+    automation: pytest
+    test_file: tests/m0/test_state_machine.py
+    ci_job: unit
+    result: not_run
+
+  - id: ACC-M0-019
+    maps_to: M0-08
+    title: fencing token 双 Worker 写入保护
+    preconditions: [租约与 fencing 已实现]
+    input: Worker A 持有 token=1；租约过期后 B 接管 token=2
+    steps:
+      - B 领取并写阶段结果
+      - A 用 token=1 写终稿
+      - 断言影响行数 0，A 停止写入
+    expected: 旧 Worker 写入被拒绝，新结果不被覆盖
+    failure_criteria: [旧写入成功, 令牌只在应用层校验]
+    automation: pytest + 真实 PostgreSQL
+    test_file: tests/m0/test_fencing.py
+    ci_job: migration
+    result: not_run
+
+  - id: ACC-M0-020
+    maps_to: M0-08
+    title: 阶段完成与跳过语义
+    preconditions: [阶段执行已实现]
+    input: 仲裁被条件跳过；渲染成功
+    steps:
+      - 执行 Mock 评审
+      - 断言 stages_completed 不含 arbitration
+      - 断言 stages_skipped 含 arbitration
+      - 断言 review_completeness.complete 未被误置 true
+    expected: 跳过不算完成，两者分列
+    failure_criteria: [跳过计入 completed, complete 虚高]
+    automation: pytest
+    test_file: tests/m0/test_stage_completion.py
+    ci_job: unit
+    result: not_run
+
+  # ── M0-10 可观测性 ──
+  - id: ACC-M0-021
+    maps_to: M0-10
+    title: request_id / trace_id 贯穿与阶段指标
+    preconditions: [日志与指标已接入]
+    input: 一次 Mock 评审
+    steps:
+      - 断言响应头 X-Request-Id 与日志 request_id 一致
+      - 断言关键阶段日志含 review_id/stage/attempt
+      - 断言 /metrics 暴露阶段耗时分位与失败计数
+    expected: 同一请求可串起全链路；指标可查询
+    failure_criteria: [ID 丢失, 指标缺失, 日志无法关联]
+    automation: pytest + prometheus_client
+    test_file: tests/m0/test_observability.py
+    ci_job: unit
+    result: not_run
+
+  # ── P0-1 幂等/代次契约 ──
+  - id: ACC-CON-001
+    maps_to: P0-1
+    title: 未 force 重复提交返回真实状态
+    preconditions: [API 与 DB 可用]
+    input: 同一 idempotency_key 连续提交两次（第二次任务仍在 processing）
+    steps:
+      - 第一次提交得到 202
+      - 第二次提交，断言 200 + idempotent_replay=true
+      - 断言 status 为真实 processing，report_available=false
+    expected: 200、真实状态、不写库、不返回 done
+    failure_criteria: [返回 done, 返回 202 新任务, 返回 409]
+    automation: pytest + TestClient
+    test_file: tests/integration/test_idempotency_replay.py
+    ci_job: mock-e2e
+    result: not_run
+
+  - id: ACC-CON-002
+    maps_to: P0-1
+    title: force 形成新代次且旧记录被单向取代
+    preconditions: [存在一条 done 记录]
+    input: 同一 key + force=true
+    steps:
+      - 提交 force，断言 202 + 新 review_id
+      - 断言 generation=旧+1、parent_review_id=旧 id
+      - 断言旧记录 superseded_by=新 id
+      - 断言旧报告与审批历史未改动
+    expected: 代次链完整，历史不可变
+    failure_criteria: [覆盖旧记录, generation 未递增, parent 未写]
+    automation: pytest + SQL 断言
+    test_file: tests/integration/test_force_generation.py
+    ci_job: mock-e2e
+    result: not_run
+
+  - id: ACC-CON-003
+    maps_to: P0-1
+    title: 同键并发提交不产生双 active、不返回 409
+    preconditions: [API 可用，任务执行可挂起]
+    input: 10 个并发 POST，同一 key，无 force
+    steps:
+      - 并发提交并收集响应码
+      - 断言只有 1 个 202，其余 200
+      - 断言 DB 中该 key 的 active 记录恰好 1 条
+    expected: 无 409；无双 active
+    failure_criteria: [出现 409, 出现两条 active, 多个 202]
+    automation: pytest + httpx.AsyncClient + 线程/协程
+    test_file: tests/integration/test_idempotency_concurrency.py
+    ci_job: mock-e2e
+    result: not_run
+
+  - id: ACC-CON-004
+    maps_to: P0-1
+    title: 同键不同请求体被拒绝
+    preconditions: [已存在一条记录, 服务层提交函数允许测试注入显式 idempotency_key]
+    input: 同一显式 key 下提交两份不同的请求体；另用两份不同内容正常提交并比较服务端计算的 key
+    steps:
+      - 用服务层 submit(payload_a, idempotency_key="fixed-key") 创建任务
+      - 用 submit(payload_b, idempotency_key="fixed-key") 再次提交，payload_b 与 payload_a 内容不同
+      - 断言第二次返回 422 IDEMPOTENCY_KEY_CONFLICT，已有记录未被改写
+      - 正常提交 payload_a/payload_b 各一次，断言服务端计算出的 idempotency_key 不同
+    expected: 显式同键不同体拒绝；内容变化必须改变 key（生产接口不接受客户端指定 key）
+    failure_criteria: [不同内容复用旧报告, 同键不同体静默接受, 生产接口暴露自定义 key]
+    automation: pytest
+    test_file: tests/integration/test_idempotency_conflict.py
+    ci_job: unit
+    result: not_run
+
+  - id: ACC-CON-005
+    maps_to: P0-1
+    title: 运行中强制重跑被拒
+    preconditions: [存在 processing 记录]
+    input: 同一 key + force=true
+    steps:
+      - 提交 force，断言 409 REVIEW_IN_PROGRESS
+      - 断言未插入新记录、旧记录 superseded_by 仍为空
+      - 等任务终态后再次 force，断言 202
+    expected: 状态冲突与幂等冲突可区分
+    failure_criteria: [运行中并行新建代次, 返回 409 DUPLICATE]
+    automation: pytest
+    test_file: tests/integration/test_force_in_progress.py
+    ci_job: mock-e2e
+    result: not_run
+
+  # ── P0-2 契约检查 ──
+  - id: ACC-CON-006
+    maps_to: P0-2
+    title: 干净仓库契约检查全绿
+    preconditions: [仓库无未提交改动]
+    input: python scripts/check_contracts.py
+    steps:
+      - 运行聚合检查
+      - 断言退出码 0
+      - 断言输出包含检查项计数
+    expected: 全部检查通过
+    failure_criteria: [脚本崩溃, 静默跳过检查, 以警告代替失败]
+    automation: scripts/check_contracts.py
+    test_file: tests/contract/test_contract_drift.py
+    ci_job: contract
+    result: not_run
+
+  - id: ACC-CON-007
+    maps_to: P0-2
+    title: 枚举漂移导致 CI 失败并定位
+    preconditions: [契约检查可运行]
+    input: 临时副本中删除 docs/17 的 need_human
+    steps:
+      - 在副本运行 check_contracts.py
+      - 断言退出码非 0
+      - 断言输出含 docs/17、枚举名、期望集合与实际集合
+    expected: 漂移可见、可定位
+    failure_criteria: [仍通过, 无定位信息]
+    automation: pytest
+    test_file: tests/contract/test_contract_drift.py
+    ci_job: contract
+    result: not_run
+
+  # ── P0-3 M0 用例追踪 ──
+  - id: ACC-CON-008
+    maps_to: P0-3
+    title: M0 十项退出条件全部有可执行用例
+    preconditions: [design/m0_acceptance.yaml 存在]
+    input: scripts/check_m0_acceptance.py
+    steps:
+      - 校验每个 exit_condition 至少 1 条用例
+      - 校验每条用例有 automation/test_file/ci_job
+      - 校验 ci_job 已声明、test_file 路径合法
+    expected: 覆盖度 100%，无空字段
+    failure_criteria: [存在无条件覆盖, 用例无法执行, 追踪字段缺失]
+    automation: scripts/check_m0_acceptance.py
+    test_file: tests/contract/test_m0_traceability.py
+    ci_job: contract
+    result: not_run
+
+  # ── P0-4 Verdict 测试 ──
+  - id: ACC-CON-009
+    maps_to: P0-4
+    title: Verdict 真值表用例与参考判定器一致
+    preconditions: [design/verdict_cases.yaml 存在]
+    input: scripts/check_verdict_cases.py
+    steps:
+      - 校验用例结构、规则覆盖、正/反/边界类型
+      - 对每条用例运行参考判定器并比较
+      - 运行 I1–I8 属性抽样
+    expected: 全部一致；规则与真值表章节全覆盖
+    failure_criteria: [用例与规则脱节, 属性测试未运行, 覆盖缺口]
+    automation: scripts/check_verdict_cases.py
+    test_file: tests/contract/test_verdict_mutation.py
+    ci_job: contract
+    result: not_run
+
+  - id: ACC-CON-010
+    maps_to: P0-4
+    title: 禁止组合在实现与用例层均不可出现
+    preconditions: [verdict.py 已实现]
+    input: 随机/构造输入尝试触发 docs/12 §8 组合
+    steps:
+      - 断言 blocked 必有 blocker
+      - 断言 conditional 不含 disputed
+      - 断言 approved 永不出现
+      - 断言 1/3 与 0/3 不出正式结论
+    expected: 违规立即测试失败，不是仅告警
+    failure_criteria: [违规仅记录, 测试只覆盖 happy path]
+    automation: pytest + 属性测试
+    test_file: tests/unit/test_verdict_forbidden.py
+    ci_job: unit
+    result: not_run

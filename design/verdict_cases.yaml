@@ -1,0 +1,778 @@
+# TestJury Verdict 可执行真值表（机器可读用例）
+# 事实源：docs/12-评审决策真值表.md；参考判定器：scripts/verdict_reference.py。
+# 用途：
+#   1. 固定/参数化/边界用例，逐条对应 docs/12 的规则行；
+#   2. scripts/check_verdict_cases.py 校验用例结构、覆盖度、参考判定器一致性；
+#   3. M0 阶段 app/pipeline/verdict.py 必须对同一批用例给出相同结果（docs/08 §5.2）。
+# 约定：
+#   votes 长度必须等于 participants；每项为 [validity, severity|null]；
+#   validity=not_assessed 表示该席位未给出有效票；
+#   claims 存在时 evidence_status 由 §4.1 聚合算法推导，不得再手填。
+# kind: positive（正例）/ negative（反例）/ boundary（边界）/ property（属性用例）/ invalid（非法输入）
+version: "1.0"
+last_updated: "2026-11-10"
+
+rules:
+  - id: R-VAL-3-ACCEPT
+    doc: docs/12 §2
+    summary: 3 席位，accept ≥2 且 reject <2 → accepted
+  - id: R-VAL-3-REJECT
+    doc: docs/12 §2
+    summary: 3 席位，reject ≥2 → rejected
+  - id: R-VAL-3-SPLIT
+    doc: docs/12 §2
+    summary: 3 席位无多数 → disputed
+  - id: R-VAL-2-ACCEPT
+    doc: docs/12 §2、§6
+    summary: 2 席位，2 票 accept → accepted，结论标不完整
+  - id: R-VAL-2-REJECT
+    doc: docs/12 §2、§6
+    summary: 2 席位，2 票 reject → rejected
+  - id: R-VAL-2-SPLIT
+    doc: docs/12 §2
+    summary: 2 席位，1 accept + 1 reject → disputed
+  - id: R-VAL-2-INSUFFICIENT
+    doc: docs/12 §2、§4
+    summary: 2 席位，仅 1 票明确（另一票 uncertain/not_assessed）→ insufficient → need_human
+  - id: R-VAL-1
+    doc: docs/12 §2、§5
+    summary: 1 席位不形成成立性结论，ai_verdict=null
+  - id: R-VAL-0
+    doc: docs/12 §2、§5
+    summary: 0 席位任务失败，不出结论
+  - id: R-VAL-NOTASSESSED
+    doc: docs/12 §2、§6
+    summary: not_assessed 不计为 reject；有效票 <2 的候选不得形成结论
+  - id: R-SEV-UNANIMOUS
+    doc: docs/12 §3
+    summary: accept 票严重级一致 → 该级别
+  - id: R-SEV-ADJACENT
+    doc: docs/12 §3
+    summary: 最高与最低相差 1 级 → 取较高者，标 severity_provisional
+  - id: R-SEV-GAP2
+    doc: docs/12 §3
+    summary: 相差 ≥2 级 → severity_disputed → need_human
+  - id: R-SEV-MISSING
+    doc: docs/12 §3
+    summary: accept 票严重级全部缺失 → 不计算 severity → need_human
+  - id: R-SEV-PARTIAL
+    doc: docs/12 §3
+    summary: accept 票严重级部分缺失时不得据此判 blocker
+  - id: R-ORDER-EVIDENCE
+    doc: docs/12 §4
+    summary: 证据冲突（顺序 2）先于 reject（顺序 3）判定
+  - id: R-EVID-UNGROUNDED
+    doc: docs/12 §4、§4.1、§8
+    summary: 无 E1/E2 或 evidence_status=ungrounded → 不得判 blocker
+  - id: R-EVID-PARTIAL-BLOCKER
+    doc: docs/12 §4.1
+    summary: partially_grounded 的 blocker 仍可 blocked，但必须进人工复核
+  - id: R-CLAIM-GROUNDED
+    doc: docs/12 §4.1
+    summary: 全部 claim supported 且 core 为 E1/E2 → grounded
+  - id: R-CLAIM-CORE-UNSUPPORTED
+    doc: docs/12 §4.1
+    summary: core claim 非 supported → insufficient → 不得判 blocker
+  - id: R-CLAIM-NONCORE-MISSING
+    doc: docs/12 §4.1
+    summary: core supported、非 core 无证据 → partially_grounded
+  - id: R-CLAIM-CONFLICT
+    doc: docs/12 §4.1
+    summary: 任一 claim conflicted → 问题级 conflicted → need_human
+  - id: R-CLAIM-NO-E1E2
+    doc: docs/12 §4.1
+    summary: 完全没有 E1/E2 → ungrounded
+  - id: R-CLAIM-CORE-E3
+    doc: docs/12 §4.1
+    summary: core 只有 E3/E4 时不得 grounded（即使有 E1 的 supporting）
+  - id: R-REPORT-CONDITIONAL
+    doc: docs/12 §5
+    summary: 无 blocker、无争议、参与数 ≥2 → conditional
+  - id: R-REPORT-BLOCKED
+    doc: docs/12 §5
+    summary: 存在 blocker → blocked
+  - id: R-REPORT-NEED-HUMAN
+    doc: docs/12 §5
+    summary: 无 blocker 但存在 disputed/need_human → need_human
+  - id: R-INV-MODEL-IGNORED
+    doc: docs/12 §5、docs/06 §3.1
+    summary: 模型自报结论/人工状态不得改变 ai_verdict
+  - id: R-INV-CROSS-ISSUE
+    doc: docs/12 §4.1
+    summary: 一个问题的证据不得被另一个问题借用
+  - id: R-INVALID-INPUT
+    doc: docs/12 §1、§8
+    summary: 非法输入必须拒绝，不得猜值
+
+invariants:
+  - id: I1
+    name: 缺票处理
+    statement: not_assessed/uncertain 不计为 reject；有效票 <2 的候选不得形成 accepted/rejected/blocker
+  - id: I2
+    name: 证据阻断
+    statement: 无 E1/E2、ungrounded 或 core claim 非 supported 时不得产出 blocker
+  - id: I3
+    name: AI 结论来源
+    statement: model_claimed_verdict 等模型字段被忽略，ai_verdict 只由规则计算
+  - id: I4
+    name: 人工决定隔离
+    statement: human_status/human_decision 不参与 ai_verdict 计算
+  - id: I5
+    name: Claim 证据归属
+    statement: issue 的证据状态只由自身 claims 决定，不受其他 issue 影响
+  - id: I6
+    name: 输入版本一致性
+    statement: 判定函数只依赖传入的票/证据/席位；版本字段不改变结论
+  - id: I7
+    name: 重复执行稳定性
+    statement: 同一输入重复计算与票序重排结果一致
+  - id: I8
+    name: 边界值
+    statement: 恰好达到/低于阈值、严重级相邻/跨级、证据缺失等边界均有确定结果
+
+cases:
+  # ── §2 成立性 ──
+  - id: VC-001
+    rule: R-VAL-3-ACCEPT
+    kind: positive
+    description: 3 席 2 票 accept（1 票 uncertain），严重级一致 blocker，证据 grounded → blocked
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker], [uncertain, null]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: blocked
+      issue_statuses: {C1: blocker}
+      human_review_required: false
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-002
+    rule: R-VAL-3-REJECT
+    kind: positive
+    description: 3 席 2 票 reject → rejected，报告无 blocker 无争议 → conditional
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[reject, null], [reject, null], [accept, major]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: conditional
+      issue_statuses: {C1: rejected}
+      human_review_required: false
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-003
+    rule: R-VAL-3-SPLIT
+    kind: boundary
+    description: 1 accept + 1 reject + 1 uncertain → disputed → need_human，需仲裁
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, major], [reject, null], [uncertain, null]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: disputed}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: true
+
+  - id: VC-004
+    rule: R-VAL-2-ACCEPT
+    kind: positive
+    description: 2/3 参与，2 票 accept blocker，证据部分支持 → blocked，但必须进人工复核
+    input:
+      participants: 2
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker]]
+          evidence_status: partially_grounded
+    expected:
+      ai_verdict: blocked
+      issue_statuses: {C1: blocker}
+      human_review_required: true
+      review_completeness: partial
+      arbitration_required: false
+
+  - id: VC-005
+    rule: R-VAL-2-REJECT
+    kind: positive
+    description: 2 席 2 票 reject → rejected，结论标不完整
+    input:
+      participants: 2
+      issues:
+        - candidate_id: C1
+          votes: [[reject, null], [reject, null]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: conditional
+      issue_statuses: {C1: rejected}
+      human_review_required: false
+      review_completeness: partial
+      arbitration_required: false
+
+  - id: VC-006
+    rule: R-VAL-2-SPLIT
+    kind: boundary
+    description: 2 席 1 accept + 1 reject → disputed → need_human
+    input:
+      participants: 2
+      issues:
+        - candidate_id: C1
+          votes: [[accept, suggestion], [reject, null]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: disputed}
+      human_review_required: true
+      review_completeness: partial
+      arbitration_required: true
+
+  - id: VC-007
+    rule: R-VAL-2-INSUFFICIENT
+    kind: boundary
+    description: 2 席中 1 accept + 1 uncertain → insufficient → need_human（不得按多数通过）
+    input:
+      participants: 2
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [uncertain, null]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: need_human}
+      human_review_required: true
+      review_completeness: partial
+      arbitration_required: false
+
+  - id: VC-008
+    rule: R-VAL-2-INSUFFICIENT
+    kind: boundary
+    description: 2 席中 1 reject + 1 uncertain → insufficient → need_human（对称边界）
+    input:
+      participants: 2
+      issues:
+        - candidate_id: C1
+          votes: [[reject, null], [uncertain, null]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: need_human}
+      human_review_required: true
+      review_completeness: partial
+      arbitration_required: false
+
+  - id: VC-009
+    rule: R-VAL-1
+    kind: boundary
+    description: 仅 1 席参与 → 不出正式结论，ai_verdict=null
+    input:
+      participants: 1
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: null
+      issue_statuses: {C1: need_human}
+      human_review_required: true
+      review_completeness: insufficient
+      arbitration_required: false
+
+  - id: VC-010
+    rule: R-VAL-0
+    kind: boundary
+    description: 0 席参与 → 任务失败，不出结论
+    input:
+      participants: 0
+      issues: []
+    expected:
+      ai_verdict: null
+      issue_statuses: {}
+      human_review_required: false
+      review_completeness: failed
+      arbitration_required: false
+
+  - id: VC-011
+    rule: R-VAL-NOTASSESSED
+    kind: negative
+    description: 3 席中仅 1 票有效、2 票 not_assessed → 有效票 <2 → need_human，not_assessed 不算 reject
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, major], [not_assessed, null], [not_assessed, null]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: need_human}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: false
+
+  # ── §3 严重级 ──
+  - id: VC-012
+    rule: R-SEV-UNANIMOUS
+    kind: positive
+    description: 3 票 accept 严重级均为 major → major，报告 conditional
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, major], [accept, major], [accept, major]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: conditional
+      issue_statuses: {C1: major}
+      human_review_required: false
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-013
+    rule: R-SEV-ADJACENT
+    kind: boundary
+    description: suggestion 与 major 相差 1 级 → 取 major，标 severity_provisional
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, suggestion], [accept, major], [accept, major]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: conditional
+      issue_statuses: {C1: major}
+      human_review_required: false
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-014
+    rule: R-SEV-GAP2
+    kind: boundary
+    description: blocker 与 suggestion 相差 2 级 → severity_disputed → need_human
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker], [accept, suggestion]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: need_human}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: true
+
+  - id: VC-015
+    rule: R-SEV-MISSING
+    kind: negative
+    description: accept 票严重级全部缺失 → 不计算 severity → need_human
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, null], [accept, null], [accept, null]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: need_human}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-016
+    rule: R-SEV-PARTIAL
+    kind: boundary
+    description: blocker 票部分缺失严重级 → 不得据此判 blocker → need_human
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, null], [accept, blocker]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: need_human}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: false
+
+  # ── §4 问题级顺序与证据 ──
+  - id: VC-017
+    rule: R-ORDER-EVIDENCE
+    kind: negative
+    description: 3 票 reject 但证据 conflicted → 证据冲突（顺序 2）优先于 reject（顺序 3）→ need_human
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[reject, null], [reject, null], [reject, null]]
+          evidence_status: conflicted
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: need_human}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: true
+
+  - id: VC-018
+    rule: R-EVID-UNGROUNDED
+    kind: negative
+    description: 3 票判 blocker 但完全无 E1/E2 证据 → 不得判 blocker → need_human
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker], [accept, blocker]]
+          evidence_status: ungrounded
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: need_human}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-019
+    rule: R-EVID-PARTIAL-BLOCKER
+    kind: boundary
+    description: 部分证据支持的 blocker 仍可 blocked，但必须进人工复核
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker], [uncertain, null]]
+          evidence_status: partially_grounded
+    expected:
+      ai_verdict: blocked
+      issue_statuses: {C1: blocker}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-020
+    rule: R-EVID-UNGROUNDED
+    kind: negative
+    description: 无知识库证据的 major 可以保留（只有 blocker 受 E1/E2 门槛约束）
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, major], [accept, major], [accept, major]]
+          evidence_status: ungrounded
+    expected:
+      ai_verdict: conditional
+      issue_statuses: {C1: major}
+      human_review_required: false
+      review_completeness: full
+      arbitration_required: false
+
+  # ── §4.1 claim 聚合 ──
+  - id: VC-021
+    rule: R-CLAIM-GROUNDED
+    kind: positive
+    description: core E1 supported + supporting E3 supported → grounded → blocker
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker], [accept, blocker]]
+          claims:
+            - {role: core, status: supported, level: E1}
+            - {role: supporting, status: supported, level: E3}
+    expected:
+      ai_verdict: blocked
+      issue_statuses: {C1: blocker}
+      human_review_required: false
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-022
+    rule: R-CLAIM-CORE-UNSUPPORTED
+    kind: negative
+    description: core claim unsupported，即使 supporting 有 E1，也不得判 blocker
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker], [accept, blocker]]
+          claims:
+            - {role: core, status: unsupported, level: E2}
+            - {role: supporting, status: supported, level: E1}
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: need_human}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-023
+    rule: R-CLAIM-NONCORE-MISSING
+    kind: boundary
+    description: core supported、非 core 无证据 → partially_grounded → blocker + 人工复核
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker], [accept, blocker]]
+          claims:
+            - {role: core, status: supported, level: E2}
+            - {role: supporting, status: unsupported, level: E2}
+    expected:
+      ai_verdict: blocked
+      issue_statuses: {C1: blocker}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-024
+    rule: R-CLAIM-CONFLICT
+    kind: negative
+    description: 任一 claim conflicted → 问题级 conflicted → need_human，需仲裁
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, major], [accept, major], [accept, major]]
+          claims:
+            - {role: core, status: conflicted, level: E1}
+            - {role: supporting, status: supported, level: E2}
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: need_human}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: true
+
+  - id: VC-025
+    rule: R-CLAIM-NO-E1E2
+    kind: negative
+    description: 全部 claim 只有 E3 → ungrounded → 不得判 blocker
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker], [accept, blocker]]
+          claims:
+            - {role: core, status: supported, level: E3}
+            - {role: supporting, status: supported, level: E3}
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: need_human}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-026
+    rule: R-CLAIM-CORE-E3
+    kind: boundary
+    description: core 只有 E3、supporting 有 E1 → core 不满足 E1/E2 → 不得 blocker
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker], [accept, blocker]]
+          claims:
+            - {role: core, status: supported, level: E3}
+            - {role: supporting, status: supported, level: E1}
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: need_human}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: false
+
+  # ── §5 报告级 ──
+  - id: VC-027
+    rule: R-REPORT-CONDITIONAL
+    kind: positive
+    description: 只有一个 accepted suggestion，无 blocker 无争议 → conditional
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, suggestion], [accept, suggestion], [accept, suggestion]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: conditional
+      issue_statuses: {C1: suggestion}
+      human_review_required: false
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-028
+    rule: R-REPORT-BLOCKED
+    kind: positive
+    description: blocker 与 rejected 并存 → blocked；blocker 主导报告结论
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker], [accept, blocker]]
+          evidence_status: grounded
+        - candidate_id: C2
+          votes: [[reject, null], [reject, null], [reject, null]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: blocked
+      issue_statuses: {C1: blocker, C2: rejected}
+      human_review_required: false
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-029
+    rule: R-REPORT-NEED-HUMAN
+    kind: positive
+    description: 无 blocker，但存在 disputed → need_human
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, major], [accept, major], [accept, major]]
+          evidence_status: grounded
+        - candidate_id: C2
+          votes: [[accept, major], [reject, null], [uncertain, null]]
+          evidence_status: grounded
+    expected:
+      ai_verdict: need_human
+      issue_statuses: {C1: major, C2: disputed}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: true
+
+  # ── 不变量 ──
+  - id: VC-030
+    rule: R-INV-MODEL-IGNORED
+    kind: property
+    description: 输入携带模型自报 approved 与人工 approved，ai_verdict 仍由规则计算
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker], [accept, blocker]]
+          evidence_status: grounded
+      model_claimed_verdict: approved
+      human_status: approved
+      human_decision: approve
+      model_confidence: 0.99
+    expected:
+      ai_verdict: blocked
+      issue_statuses: {C1: blocker}
+      human_review_required: false
+      review_completeness: full
+      arbitration_required: false
+
+  - id: VC-031
+    rule: R-INV-CROSS-ISSUE
+    kind: property
+    description: C2 只有 E3 证据，不得借用 C1 的 E1 证据，C2 判 need_human
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker], [accept, blocker]]
+          claims:
+            - {role: core, status: supported, level: E1}
+            - {role: supporting, status: supported, level: E2}
+        - candidate_id: C2
+          votes: [[accept, blocker], [accept, blocker], [accept, blocker]]
+          claims:
+            - {role: core, status: supported, level: E3}
+            - {role: supporting, status: supported, level: E3}
+    expected:
+      ai_verdict: blocked
+      issue_statuses: {C1: blocker, C2: need_human}
+      human_review_required: true
+      review_completeness: full
+      arbitration_required: false
+
+  # ── 非法输入（不得猜值或容错） ──
+  - id: VC-032
+    rule: R-INVALID-INPUT
+    kind: invalid
+    description: votes 长度与 participants 不一致
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker]]
+          evidence_status: grounded
+    expected:
+      error: true
+
+  - id: VC-033
+    rule: R-INVALID-INPUT
+    kind: invalid
+    description: validity=reject 却携带 severity
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[reject, blocker], [reject, null], [reject, null]]
+          evidence_status: grounded
+    expected:
+      error: true
+
+  - id: VC-034
+    rule: R-INVALID-INPUT
+    kind: invalid
+    description: 两个 core claim
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[accept, blocker], [accept, blocker], [accept, blocker]]
+          claims:
+            - {role: core, status: supported, level: E1}
+            - {role: core, status: supported, level: E2}
+    expected:
+      error: true
+
+  - id: VC-035
+    rule: R-INVALID-INPUT
+    kind: invalid
+    description: 未知 validity 状态
+    input:
+      participants: 3
+      issues:
+        - candidate_id: C1
+          votes: [[agree, null], [accept, major], [accept, major]]
+          evidence_status: grounded
+    expected:
+      error: true
+
+  - id: VC-036
+    rule: R-INVALID-INPUT
+    kind: invalid
+    description: 4 席位超出 v1 拓扑
+    input:
+      participants: 4
+      issues: []
+    expected:
+      error: true
+
+forbidden:
+  - id: F1
+    name: blocked_without_blocker
+    description: ai_verdict=blocked 但没有任何 issue 状态为 blocker
+    doc: docs/12 §8
+  - id: F2
+    name: conditional_with_dispute
+    description: ai_verdict=conditional 但存在 disputed/need_human
+    doc: docs/12 §8
+  - id: F3
+    name: approved
+    description: 任何情况下输出 approved
+    doc: docs/12 §8
+  - id: F4
+    name: formal_verdict_without_enough_participants
+    description: 0/1 席参与却给出 blocked/conditional/need_human
+    doc: docs/12 §8
+  - id: F5
+    name: blocker_without_evidence
+    description: blocker 且 evidence_status=ungrounded
+    doc: docs/12 §8

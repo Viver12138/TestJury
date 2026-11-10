@@ -1,6 +1,6 @@
 # 03 · API 契约
 
-> 版本：v1.3 · 2026-11-10（M0 前契约收口）
+> 版本：v1.4 · 2026-11-10（补充 14 落实：幂等/代次契约收口与自动化验收）
 
 - Base：`/v1`
 - 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
@@ -137,21 +137,55 @@
 - `status` 与任务状态机一致：`queued` / `processing` / `retrying` / `done` / `completed_with_warnings` / `failed`。
 - `report_available=true` 时才返回 `report_json`；否则返回 `poll_url` 等待。
 - **硬校验在创建任务前完成**：字段/Schema/空内容/超长等不合法直接返回 400/422，不创建任务、不返回 202；Worker 只做软校验（记 `input_quality`），不再返回 422。
-- `force=true` 时返回新 `review_id` 与递增的 `generation`；用例内容变更另产生新 `case_version`。
+- `force=true` 时：已有终态记录 → **202** + 新 `review_id` 与递增的 `generation`；active 仍在运行 → **409 `REVIEW_IN_PROGRESS`**（见 §1.1 S7）；用例内容变更另产生新 `case_version`。
 
 ### 1.1 版本与幂等语义
+
+> 本节是提交幂等与代次的**唯一口径**；`docs/01` §9.3、`docs/02` §3、`docs/10` §8、`docs/19` §4 只引用，不得各自定义。数据库约束见 `docs/02`，并发串行化见 `docs/24` §4.1，测试用例见 `docs/28` §4.2。
 
 | 字段 | 谁生成 | 含义 |
 |---|---|---|
 | `case_version` | 调用方 | 业务对象的版本号；仅用于展示/追溯，不参与内容判重 |
 | `input_hash` | 服务端 | 对规范化后的实际输入（case + scope + context + 影响结论的 options）计算的指纹；内容变则变 |
-| `generation` | 服务端 | 同一输入/配置下主动重跑的执行代次；`force=true` 递增 |
+| `generation` | 服务端 | 同一 `idempotency_key` 下的第几代评审；`force=true` 新建代次时 +1 |
 | `idempotency_key` | 服务端 | `input_hash + 各版本号` 的组合；用于复用已有任务/结果 |
 
 - 内容变化但 `case_version` 未变：`input_hash` 仍会变，**不会命中旧报告**；服务端记录"版本号未递增"告警，但不阻断。
 - `case_version` 变但内容未变：`input_hash` 不变，仍命中同一结果；业务版本变化不触发重评。
 - 规范化规则（空白、换行、字段顺序、附件摘要）必须固定并版本化，否则同一内容可能算出不同 hash。
 - 版本号是否进入幂等键：进入；`case_version` 不进入（内容指纹已覆盖）。
+
+**幂等键（唯一公式，01/02/10 必须与此一致）**：
+
+```
+input_hash      = sha256(规范化 case + test_scope + automation_context + 影响结论的 options)
+idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_version_hash
+                         + embedding_profile_id + retrieval_config_version + model_config_version)
+```
+
+#### 提交行为矩阵
+
+| # | 输入 | 数据库效果 | HTTP | 响应要点 |
+|---|---|---|---|---|
+| S1 | 无历史记录 | 插入 `generation=1` 的新记录 | 202 | `review_id`、`status=queued`、`generation=1` |
+| S2 | 已有 active 记录，未 `force` | 不写库 | 200 | 原记录**真实状态** + `idempotent_replay=true` + `report_available`（不统一写 `done`） |
+| S3 | active 记录已是终态（`done` / `completed_with_warnings` / `failed`），`force=true` | 事务内：旧记录 `superseded_by=新 id`；插入 `generation=旧+1`、`parent_review_id=旧 id` | 202 | 新 `review_id`、递增 `generation` |
+| S4 | 无 active 记录，`force=true` | 按该 key 历史最大 `generation+1` 插入（无历史则为 1） | 202 | 新 `review_id`、正确 `generation` |
+| S5 | 同一 key 两个并发请求 | 按 key 串行化：未 `force` 的后到者按 S2；并发的 `force` 由第一个按 S3 新建代次，后到者看到新代次仍在运行 → S7 | 202 / 200 / 409 | 不产生两份 active；不返回 409 `DUPLICATE` |
+| S6 | 同一 key、请求体不同 | 不写库 | 422 | `IDEMPOTENCY_KEY_CONFLICT`，已有记录不受影响 |
+| S7 | active 记录仍在 `queued`/`processing`/`retrying`，`force=true` | **不新建代次** | 409 | `REVIEW_IN_PROGRESS`：同一输入的并行重跑会污染代次链，需等终态（v1 无取消接口，见 `docs/13` §9） |
+
+> S7 是**状态冲突**，不是幂等命中。幂等命中只可能是 200（S2）或 422（S6）；`409 DUPLICATE` 已废弃，不得再出现。
+
+#### 生命周期、唯一性与重放
+
+1. **唯一性范围**：同一 `idempotency_key` 在任意时刻最多一条 active 记录，由 `review_jobs` 部分唯一索引 `(idempotency_key) WHERE superseded_by IS NULL` 保证；索引是兜底，不是冲突处理路径。
+2. **代次链**：`force` 不删除、不改写旧记录；旧记录 `superseded_by` 单向指向新记录，新记录用 `parent_review_id` 回指。历史报告、审批、审计全部保留。
+3. **终态才可取代**：只有 `done` / `completed_with_warnings` / `failed` 可被 `force` 取代；运行中的任务由 S7 拒绝。
+4. **重放返回真实状态**：200 响应的 `status` 必须取自任务当前状态，`report_available` 由是否存在 `report_json` 决定；不得把进行中写成完成。
+5. **审批不使用 `superseded_by`**：`review_decisions`、`human_review_events` 只追加，当前有效决定按 `decision_no`/最新事件取；新代次不继承旧审批（见 `docs/09` §4、§5.1）。
+6. **报告不因新代次失效**：旧报告保持其 `report_schema_version`、`human_status` 快照与证据引用；更正只能新建代次（见 `docs/14` §7）。
+7. **`409 DUPLICATE` 已废弃**：全仓库不得再出现该错误码；409 仅用于状态冲突（S7、`DECISION_CONFLICT`、`INVALID_DECISION_STATE`、`KB_MODULE_MISSING`）。
 
 ### 1.2 Webhook 语义
 
@@ -568,6 +602,7 @@
 | 422 | `IDEMPOTENCY_KEY_CONFLICT` | 同一幂等键对应不同请求体 |
 | 409 | `DECISION_CONFLICT` | 并发审批冲突（`expected_updated_at` 不匹配），需重新拉取后重试 |
 | 409 | `INVALID_DECISION_STATE` | 当前状态不允许该决定（如终态后改判） |
+| 409 | `REVIEW_IN_PROGRESS` | `force=true` 但旧代次仍在执行 |
 | 422 | `INPUT_INVALID` | API 同步硬校验失败（内容为空、无 steps/raw_text、超长、字段非法），不创建任务 |
 | 422 | `TOO_MANY_CASES` | 批量超过 50 份 |
 | 422 | `INVALID_DECISION` | `decision` 非法，或 `reject`/`request_changes` 缺少理由 |
@@ -577,4 +612,4 @@
 | 502 | `OUTPUT_SCHEMA_INVALID` | 模型输出未通过 Schema/引用校验且重试后仍失败 |
 | 503 | `ALL_MODELS_FAILED` | 三模型全部失败 |
 
-> 完整错误码、`retryable` 语义与响应结构见 `docs/19-API错误码与契约.md`。
+> 本表是速查，权威定义（含 `retryable` 与 envelope）见 `docs/19`；两处不一致时以 19 为准，并由 `scripts/check_docs.py` 校验本表是 19 的子集。

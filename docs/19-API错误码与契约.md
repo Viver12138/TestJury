@@ -1,6 +1,6 @@
 # 19 · API 错误码与契约
 
-> 版本：v1.3 · 2026-11-10（M0 前契约收口）
+> 版本：v1.4 · 2026-11-10（补充 14 落实：幂等错误边界与状态冲突）
 > 目的：让调用方稳定识别"参数错、权限错、状态冲突、限流、模型失败、内部错误"，而不是靠 message 猜。
 > 关联：03、18、20。
 
@@ -37,6 +37,7 @@
 | 409 | `KB_MODULE_MISSING` | `strict_kb=true` 且模块未覆盖 | false |
 | 409 | `DECISION_CONFLICT` | 并发审批冲突 | true（重新拉取后） |
 | 409 | `INVALID_DECISION_STATE` | 终态后改判 | false |
+| 409 | `REVIEW_IN_PROGRESS` | `force=true` 但旧代次仍在执行 | true（等待终态后） |
 | 422 | `INPUT_INVALID` | API 同步硬校验失败，不创建任务 | false |
 | 422 | `IDEMPOTENCY_KEY_CONFLICT` | 同一幂等键对应不同请求体 | false |
 | 422 | `TOO_MANY_CASES` | 批量超过上限 | false |
@@ -67,16 +68,19 @@
 
 ## 4. 幂等与错误
 
+> 行为矩阵以 `docs/03` §1.1 为唯一口径；本节只定义 HTTP 与错误码映射。
+
 | 场景 | 行为 |
 |---|---|
 | 相同 `idempotency_key`，任务进行中 | **200** + 真实状态 + `idempotent_replay=true`（不返回 409） |
 | 相同 key，任务失败 | **200** + `status=failed`；重跑需 `force=true` |
 | 相同 key，任务完成 | **200** + 已有报告 + `idempotent_replay=true` |
 | 相同 key，但请求体不同 | 422 `IDEMPOTENCY_KEY_CONFLICT`（同一 key 不得对应不同输入） |
-| `force=true` | 新 generation；旧记录 `superseded_by` 更新；返回新 review_id |
-| 同一 key 两个并发请求 | 部分唯一索引兜底，一方插入成功，另一方 200 返回已有 |
+| `force=true`，旧记录已终态 | **202** + 新 `review_id` + `generation+1`；旧记录 `superseded_by` 指向新记录；不返回 409 |
+| `force=true`，旧记录仍在运行 | 409 `REVIEW_IN_PROGRESS`（状态冲突，不是幂等命中，也不是已废弃的 `DUPLICATE`） |
+| 同一 key 两个并发请求 | 按 key 串行化；未 force 的后到者 200 返回已有记录；并发 force 由第一个新建代次，后到者因新代次在运行返回 409 `REVIEW_IN_PROGRESS`；**任何情况都不返回 409 `DUPLICATE`** |
 
-> 幂等命中不是错误，统一 200；不再使用 409 `DUPLICATE`。
+> 幂等命中不是错误，未 force 统一 200；force 新建代次统一 202。409 只用于状态冲突：`REVIEW_IN_PROGRESS`、`DECISION_CONFLICT`、`INVALID_DECISION_STATE`、`KB_MODULE_MISSING`。`409 DUPLICATE` 已废弃，仓库内不得再出现。
 
 ## 5. 错误信息与安全
 
