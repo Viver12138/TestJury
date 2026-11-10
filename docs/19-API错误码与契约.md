@@ -1,6 +1,6 @@
 # 19 · API 错误码与契约
 
-> 版本：v1.1 · 2026-11-10（冻结修订）
+> 版本：v1.2 · 2026-11-10（契约一致性冻结修订）
 > 目的：让调用方稳定识别"参数错、权限错、状态冲突、限流、模型失败、内部错误"，而不是靠 message 猜。
 > 关联：03、18、20。
 
@@ -35,10 +35,10 @@
 | 403 | `FORBIDDEN` | 角色不足（如 reviewer 审批） | false |
 | 404 | `NOT_FOUND` | review/batch/decision 不存在 | false |
 | 409 | `KB_MODULE_MISSING` | `strict_kb=true` 且模块未覆盖 | false |
-| 409 | `DUPLICATE` | 幂等命中（正常返回已有结果） | false |
 | 409 | `DECISION_CONFLICT` | 并发审批冲突 | true（重新拉取后） |
 | 409 | `INVALID_DECISION_STATE` | 终态后改判 | false |
 | 422 | `INPUT_INVALID` | API 同步硬校验失败，不创建任务 | false |
+| 422 | `IDEMPOTENCY_KEY_CONFLICT` | 同一幂等键对应不同请求体 | false |
 | 422 | `TOO_MANY_CASES` | 批量超过上限 | false |
 | 422 | `INVALID_DECISION` | 决定非法或缺少理由 | false |
 | 429 | `QUEUE_FULL` | 队列已满 | true（按 Retry-After） |
@@ -69,10 +69,14 @@
 
 | 场景 | 行为 |
 |---|---|
-| 相同 `idempotency_key`，任务进行中 | 200 + 真实状态 + `idempotent_hit=true` |
-| 相同 key，任务失败 | 200 + `status=failed`；重跑需 `force=true` |
-| `force=true` 并发 | 新 generation；旧记录 `superseded_by` 更新 |
-| 同一 key 两个并发请求 | 部分唯一索引兜底，一方插入成功，另一方返回已有 |
+| 相同 `idempotency_key`，任务进行中 | **200** + 真实状态 + `idempotent_replay=true`（不返回 409） |
+| 相同 key，任务失败 | **200** + `status=failed`；重跑需 `force=true` |
+| 相同 key，任务完成 | **200** + 已有报告 + `idempotent_replay=true` |
+| 相同 key，但请求体不同 | 422 `IDEMPOTENCY_KEY_CONFLICT`（同一 key 不得对应不同输入） |
+| `force=true` | 新 generation；旧记录 `superseded_by` 更新；返回新 review_id |
+| 同一 key 两个并发请求 | 部分唯一索引兜底，一方插入成功，另一方 200 返回已有 |
+
+> 幂等命中不是错误，统一 200；不再使用 409 `DUPLICATE`。
 
 ## 5. 错误信息与安全
 

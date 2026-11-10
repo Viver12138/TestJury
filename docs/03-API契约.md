@@ -1,6 +1,6 @@
 # 03 · API 契约
 
-> 版本：v1.1 · 2026-11-10（冻结修订）
+> 版本：v1.2 · 2026-11-10（契约一致性冻结修订）
 
 - Base：`/v1`
 - 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
@@ -128,7 +128,7 @@
   "review_id": "8f1c...",
   "status": "processing",
   "generation": 1,
-  "idempotent_hit": true,
+  "idempotent_replay": true,
   "report_available": false,
   "poll_url": "/v1/reviews/8f1c..."
 }
@@ -214,6 +214,11 @@
   "degraded_reasons": [],
   "participants": ["chief:qwen-max", "jury_a:deepseek-flash", "jury_b:kimi-k3"],
   "topology": "multi",
+  "review_participants": [
+    { "participant_id": "p-01", "role_id": "chief", "status": "active", "model": "qwen-max", "actual_model": "qwen-max-2026-10" },
+    { "participant_id": "p-02", "role_id": "jury_a", "status": "active", "model": "deepseek-chat", "actual_model": "deepseek-chat-v3" },
+    { "participant_id": "p-03", "role_id": "jury_b", "status": "absent", "model": "kimi-k3", "actual_model": null }
+  ],
   "review_completeness": {
     "blind": "3/3",
     "vote": "3/3",
@@ -505,6 +510,8 @@
 | PATCH | `/v1/review-tasks/{task_id}` | 分配/转派/更新状态/重新打开 |
 | GET | `/v1/review-tasks/{task_id}/history` | 处理历史 |
 
+任务结果：Issue 级 `confirmed` / `rejected` / `modified` / `insufficient_information` / `escalated`；Report 级 `approve` / `reject` / `request_changes`。每次操作写事件历史。
+
 ```json
 {
   "task_id": "t-8f1c...",
@@ -514,8 +521,7 @@
   "priority": "evidence_conflict",
   "assignee": "zhangsan",
   "status": "pending",
-  "due_at": "2026-11-12T18:00:00+08:00"
-}
+  "due_at": "2026-11-12T18:00:00+08:00"}
 ```
 
 - 状态：`pending` / `in_progress` / `done` / `cancelled`。
@@ -540,8 +546,11 @@
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
-| GET | `/v1/reviews?case_id=&module=&ai_verdict=&human_status=&from=&to=&page=` | 报告列表与筛选 |
-| GET | `/healthz` | 健康检查，含队列深度与 DB 连通性 |
+| GET | `/v1/reviews?case_id=&module=&ai_verdict=&human_status=&topology=&from=&to=&page=` | 报告列表与筛选 |
+| GET | `/livez` | 进程存活 |
+| GET | `/readyz` | DB 连通、迁移版本、队列可读 |
+| GET | `/healthz` | 兼容别名（等同于 readyz） |
+| GET | `/metrics` | 队列深度、租约过期、阶段失败率、429 率、成本 |
 
 ## 8. 错误码
 
@@ -552,7 +561,7 @@
 | 403 | `FORBIDDEN` | 角色不足（如 `reviewer` 尝试 `approve`） |
 | 404 | `NOT_FOUND` | review_id / batch_id 不存在 |
 | 409 | `KB_MODULE_MISSING` | 模块未覆盖（**仅在 options.strict_kb=true 时返回**；默认降级不报错） |
-| 409 | `DUPLICATE` | 命中幂等键且未 force（此时正常返回已有结果，见 §1） |
+| 422 | `IDEMPOTENCY_KEY_CONFLICT` | 同一幂等键对应不同请求体 |
 | 409 | `DECISION_CONFLICT` | 并发审批冲突（`expected_updated_at` 不匹配），需重新拉取后重试 |
 | 409 | `INVALID_DECISION_STATE` | 当前状态不允许该决定（如终态后改判） |
 | 422 | `INPUT_INVALID` | API 同步硬校验失败（内容为空、无 steps/raw_text、超长、字段非法），不创建任务 |
