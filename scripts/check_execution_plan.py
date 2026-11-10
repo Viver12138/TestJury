@@ -133,6 +133,33 @@ def _check_plan(plan: dict[str, Any], decisions: dict[str, Any], reporter: Repor
             elif decision.get("status") != "decided":
                 reporter.error(CHECK, rel(PLAN), f"{item.get('id')}.decision_ref", f"决策 {ref} 未 decided")
 
+    q14 = next((item for item in plan.get("open_items", []) if item.get("id") == "Q-14"), None)
+    if not q14:
+        reporter.error(CHECK, rel(PLAN), "Q-14", "缺少 Q-14")
+    else:
+        if q14.get("phase") != "M2":
+            reporter.error(CHECK, rel(PLAN), "Q-14.phase", "Q-14 应为 M2（协议签署），实验执行归 V-06")
+        evidence = set(q14.get("evidence") or [])
+        if not {"signed_protocol", "protocol_review_record"} <= evidence:
+            reporter.error(CHECK, rel(PLAN), "Q-14.evidence", "Q-14 只负责协议签署类证据")
+        if {"experiment_report", "topology_decision"} & evidence:
+            reporter.error(CHECK, rel(PLAN), "Q-14.evidence", "实验报告/拓扑决策应归 V-06")
+        if plan.get("stage_mapping", {}).get("S2", {}).get("protocol") != "Q-14":
+            reporter.error(CHECK, rel(PLAN), "S2.protocol", "S2 协议门禁必须引用 Q-14")
+    v06 = next((item for item in plan.get("verification_items", []) if item.get("id") == "V-06"), None)
+    if v06 and not {"experiment_report", "topology_decision"} <= set(v06.get("evidence") or []):
+        reporter.error(CHECK, rel(PLAN), "V-06.evidence", "V-06 必须负责实验报告与拓扑决策")
+
+    deps = plan.get("version_dependencies", {})
+    expected_dep_items = {item.get("id") for item in plan.get("verification_items", [])}
+    if set(deps) != expected_dep_items:
+        reporter.error(CHECK, rel(PLAN), "version_dependencies", "必须为每个验证项声明版本依赖")
+    allowed_deps = {"design", "code_commit", "rubric", "report_schema", "model_config", "prompt", "dataset", "kb", "embedding_profile", "adapter"}
+    for item_id, keys in deps.items():
+        unknown = sorted(set(keys) - allowed_deps)
+        if unknown:
+            reporter.error(CHECK, rel(PLAN), f"version_dependencies.{item_id}", f"未知版本键 {unknown}")
+
     expected_v = ["V-01", "V-02", "V-03A", "V-03B", "V-04", "V-05", "V-06", "V-07", "V-08", "V-09", "V-10", "V-11", "V-12"]
     actual_v = [item.get("id") for item in plan.get("verification_items", [])]
     if actual_v != expected_v:
