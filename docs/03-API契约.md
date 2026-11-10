@@ -1,17 +1,29 @@
 # 03 · API 契约
 
-> 版本：v0.8 · 2026-11-10（v0.8：跨文档冲突清理与 P0 决策冻结）
+> 版本：v0.10 · 2026-11-10（工程协议与契约冻结）
 
 - Base：`/v1`
 - 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
 - 角色：服务端按 API Key 查授权角色（`reviewer` / `approver` / `admin`）；客户端传入的 `X-Role` **不作为授权依据**，仅用于日志对照
 - 内容类型：`application/json; charset=utf-8`
 - 时间：ISO 8601（`2026-11-09T10:00:00+08:00`）
-- 错误统一结构：
+- 错误统一结构（以 `docs/19` 为唯一规范）：
 
 ```json
-{ "error": { "code": "INVALID_CASE", "message": "steps[2].expected 不能为空", "field": "steps[2].expected" } }
+{
+  "error": {
+    "code": "INPUT_INVALID",
+    "message": "steps[2].expected 不能为空",
+    "retryable": false,
+    "request_id": "req-8f1c...",
+    "details": { "field": "steps[2].expected" }
+  }
+}
 ```
+
+- `INVALID_CASE`（400）：请求不是合法用例对象（JSON/Schema/类型）。
+- `INPUT_INVALID`（422）：用例对象合法但内容不可评审（空内容、`steps` 与 `raw_text` 同时为空、超长、模块缺失等业务校验）。
+- 两者不合并：前者是"格式不对"，后者是"内容不能评审"。
 
 ## 1. 提交单份评审
 
@@ -64,8 +76,8 @@
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
-| `case.case_id` | 是 | 全局唯一用例标识；同一 ID 多次提交按幂等键判定 |
-| `case.case_version` | 否 | 用例内容版本，默认 1；内容实质修改应递增，否则旧报告会被幂等命中 |
+| `case.case_id` | 是 | 全局唯一用例标识（v1 单团队，全局唯一）；多团队时引入 `project_id` 组合 |
+| `case.case_version` | 否 | 调用方业务版本号，默认 1；**不承担内容指纹职责**。内容是否变化由服务端 `input_hash` 判断 |
 | `case.module` | 是 | 用于知识库检索；未命中则降级评审 |
 | `case.title` | 是 | 用例标题 |
 | `case.preconditions` | 否 | 数组，缺失时由评审提示 |
@@ -122,7 +134,21 @@
 - **硬校验在创建任务前完成**：字段/Schema/空内容/超长等不合法直接返回 400/422，不创建任务、不返回 202；Worker 只做软校验（记 `input_quality`），不再返回 422。
 - `force=true` 时返回新 `review_id` 与递增的 `generation`；用例内容变更另产生新 `case_version`。
 
-### 1.1 Webhook 语义
+### 1.1 版本与幂等语义
+
+| 字段 | 谁生成 | 含义 |
+|---|---|---|
+| `case_version` | 调用方 | 业务对象的版本号；仅用于展示/追溯，不参与内容判重 |
+| `input_hash` | 服务端 | 对规范化后的实际输入（case + scope + context + 影响结论的 options）计算的指纹；内容变则变 |
+| `generation` | 服务端 | 同一输入/配置下主动重跑的执行代次；`force=true` 递增 |
+| `idempotency_key` | 服务端 | `input_hash + 各版本号` 的组合；用于复用已有任务/结果 |
+
+- 内容变化但 `case_version` 未变：`input_hash` 仍会变，**不会命中旧报告**；服务端记录"版本号未递增"告警，但不阻断。
+- `case_version` 变但内容未变：`input_hash` 不变，仍命中同一结果；业务版本变化不触发重评。
+- 规范化规则（空白、换行、字段顺序、附件摘要）必须固定并版本化，否则同一内容可能算出不同 hash。
+- 版本号是否进入幂等键：进入；`case_version` 不进入（内容指纹已覆盖）。
+
+### 1.2 Webhook 语义
 
 | 项 | 规则 |
 |---|---|
@@ -349,9 +375,16 @@
 ```json
 {
   "cases": [ /* case 对象数组，≤ 50 */ ],
-  "options": { "force": false, "webhook_url": null }
+  "options": { "force": false, "webhook_url": null, "retry_failed_only": true }
 }
 ```
+
+批次幂等：
+
+- 批次请求本身也有 `idempotency_key`（用例集合 + 配置版本）；重复提交未 `force` 时返回原批次。
+- 子任务仍按单条幂等规则处理：已成功的子任务保留原结果。
+- `force=true` 默认**只重跑失败/未完成子任务**；`force_all=true` 才整批重跑（需显式字段，避免误操作）。
+- 用例内容变化（`input_hash` 变）只影响对应子任务，其他子任务不重跑。
 
 响应 202：
 
