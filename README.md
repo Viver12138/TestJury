@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.11**（补充 20 落实：Q-14 定位、按项版本依赖、复核字段与 KB 版本边界）· 2026-11-10；设计收口，进入 S1/M0
+> **状态**：**design-v1.12**（补充 21 落实：KB 双版本贯通、复核/审批单一事实源、Q-14 文本收口）· 2026-11-10；设计收口，进入 S1/M0
 
 ---
 
@@ -18,7 +18,7 @@
 
 | 版本维度 | 当前值 | 用途 |
 |---|---|---|
-| 设计基线版本 | `design-v1.11` | 本仓库设计文档整体迭代版本；各文档文首 `vX.Y` 即此版本 |
+| 设计基线版本 | `design-v1.12` | 本仓库设计文档整体迭代版本；各文档文首 `vX.Y` 即此版本 |
 | 产品版本 | `product-v1.0`（规划） | 实际交付给用户的产品范围；见 `docs/00` §10 |
 | Rubric 版本 | `rubric-0.2.0` | 评审标准；`rubric/rubric.yaml` |
 | 报告格式版本 | `report-1.0` | `schemas/report.schema.json` |
@@ -274,6 +274,9 @@
 | 240 | 按项版本依赖 | 每项声明版本依赖；`code_commit` 与当前 HEAD 严格比较，不用 n/a 绕过 |
 | 241 | 复核字段边界 | issue 级 `result`+`reason`；report 级 `review_decisions.decision` |
 | 242 | KB 内容/构建版本 | `kb_content_version` + `kb_build_version` 成对记录；重建不覆盖旧构建 |
+| 243 | KB 双版本贯通 | DDL/API/幂等键/报告 Schema 全部使用 `kb_build_version`，内容版本单独快照 |
+| 244 | 复核/审批单一事实源 | report 级 task 的 `result` 必须为空；审批只写 `review_decisions.decision`；`reason` 统一 |
+| 245 | Q-14 文本收口 | docs/08 统一为 M2 协议签署；拓扑决策归 V-06；文本级 CI 检查 |
 
 ## 3. 文档索引
 

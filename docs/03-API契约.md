@@ -1,6 +1,6 @@
 # 03 · API 契约
 
-> 版本：v1.8 · 2026-11-10（补充 17 落实：报告风险语义、阶段门禁引用）
+> 版本：v1.12 · 2026-11-10（补充 21 落实：KB 双版本、复核/审批单一事实源）
 
 - Base：`/v1`
 - 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
@@ -163,7 +163,7 @@
 
 ```
 input_hash      = sha256(规范化 case + test_scope + automation_context + 影响结论的 options)
-idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_version_hash
+idempotency_key = sha256(input_hash + kb_build_version + rubric_version + prompt_version_hash
                          + embedding_profile_id + retrieval_config_version + model_config_version)
 ```
 
@@ -323,7 +323,7 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
     "degraded_reasons": []
   },
   "versions": {
-    "kb": "kb-2026-11-09-a3f9",
+    "kb_content_version": "sha256:9f2e...",\n    "kb_build_version": "kb-2026-11-09-a3f9",\n    "kb": "kb-2026-11-09-a3f9",
     "rubric": "rubric-7c21",
     "prompts": { "chief_blind": "p-1a2b", "arbitration": "p-3c4d", "jury_a": "p-5e6f", "jury_b": "p-7g8h", "vote": "p-8i9j" },
     "retrieval_config": "rc-9f2e",
@@ -610,7 +610,7 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
 | PATCH | `/v1/review-tasks/{task_id}` | 分配/转派/更新状态/重新打开 |
 | GET | `/v1/review-tasks/{task_id}/history` | 处理历史 |
 
-任务结果：Issue 级 `confirmed` / `rejected` / `modified` / `insufficient_information` / `escalated`；Report 级 `approve` / `reject` / `request_changes`。每次操作写事件历史。
+任务结果：**仅 Issue 级** `confirmed` / `rejected` / `modified` / `insufficient_information` / `escalated`，必须带 `reason`；Report 级审批只走 `POST /v1/reviews/{review_id}/decisions` 的 `decision`（`approve` / `reject` / `request_changes`），不得写入 `human_review_tasks.result`。Report 级任务若保留，仅承载分配/状态/处理记录，`result` 必须为空。每次操作写事件历史。
 
 ```json
 {

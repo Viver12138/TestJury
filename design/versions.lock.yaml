@@ -2,7 +2,7 @@
 # 每个验证项只校验 execution_plan.yaml `version_dependencies` 声明的版本；
 # code_commit 必须等于当前门禁运行的 Git HEAD（或 GITHUB_SHA），不能用 n/a 绕过。
 version: "0.2"
-baseline: design-v1.11
+baseline: design-v1.12
 
 design: design-v1.11
 code_commit: null          # 运行门禁时由脚本与当前 HEAD/GITHUB_SHA 比较
