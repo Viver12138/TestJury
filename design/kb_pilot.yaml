@@ -1,0 +1,67 @@
+# 知识库首批试点模块清单（补充 16 Q-07）
+# 先 1 个先行试点，通过后再纳入其余；不为凑数量选择资料质量不足的模块。
+# 校验：scripts/check_execution_plan.py；selected/piloting 必须有 owner、来源清单与验收数据集。
+version: "0.1"
+baseline: design-v1.7
+status: proposed   # proposed|selected|piloting|accepted
+last_updated: "2026-11-10"
+
+required_fields: [module_id, module_name, pilot_order, module_owner, kb_creator, kb_reviewer,
+                  source_inventory, expected_rule_count, case_count, acceptance_dataset, status]
+
+modules:
+  - module_id: backpack
+    module_name: 背包/仓库
+    pilot_order: 1
+    module_owner: null
+    kb_creator: null
+    kb_reviewer: null
+    source_inventory: []
+    expected_rule_count: null
+    case_count: null
+    acceptance_dataset: null
+    status: proposed
+  - module_id: dig
+    module_name: 挖宝
+    pilot_order: 2
+    module_owner: null
+    kb_creator: null
+    kb_reviewer: null
+    source_inventory: []
+    expected_rule_count: null
+    case_count: null
+    acceptance_dataset: null
+    status: proposed
+  - module_id: voice_gift
+    module_name: 语音聊天室+打赏
+    pilot_order: 3
+    module_owner: null
+    kb_creator: null
+    kb_reviewer: null
+    source_inventory: []
+    expected_rule_count: null
+    case_count: null
+    acceptance_dataset: null
+    status: proposed
+  - module_id: guild_war
+    module_name: 帮会/约战/宣战
+    pilot_order: 4
+    module_owner: null
+    kb_creator: null
+    kb_reviewer: null
+    source_inventory: []
+    expected_rule_count: null
+    case_count: null
+    acceptance_dataset: null
+    status: proposed
+  - module_id: acupoint
+    module_name: 奇穴装配
+    pilot_order: 5
+    module_owner: null
+    kb_creator: null
+    kb_reviewer: null
+    source_inventory: []
+    expected_rule_count: null
+    case_count: null
+    acceptance_dataset: null
+    status: proposed

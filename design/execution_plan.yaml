@@ -1,0 +1,246 @@
+# TestJury 执行与验收证据台账（机器可读）
+# 事实源：docs/30（说明与证据模板）、docs/08 §2.16（Q-01–Q-18）、design/decisions.yaml。
+# 状态模型：designed → implemented → verified → accepted；脚本检查通过只到 verified。
+# 校验：scripts/check_execution_plan.py；accepted 必须有 acceptance_evidence / acceptance_by / acceptance_at。
+version: "0.1"
+baseline: design-v1.7
+last_updated: "2026-11-10"
+
+status_model: [designed, implemented, verified, accepted]
+
+stages:
+  - id: S1
+    name: 业务决策与责任
+    exit: Q-07/Q-08/Q-09/Q-12/Q-13 有结论与责任人
+  - id: S2
+    name: 真实评测条件
+    exit: V-01/V-02/V-03/V-04 与 A–E 协议签署
+  - id: S3
+    name: 业务有效性
+    exit: V-05/V-06/V-07/V-08 证据齐全
+  - id: S4
+    name: 生产准入
+    exit: V-09/V-10/V-11/V-12 证据齐全
+
+open_items:
+  - id: Q-07
+    title: 知识库首批试点模块
+    status: open
+    owner: null
+    phase: M2
+    blocking: [M2, M6]
+    next_action: 确定 3–5 个模块、先行试点、资料清单、owner 与审核人，更新 kb_pilot.yaml
+    evidence: [kb_pilot_selected, source_inventory, retrieval_golden_set]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: Q-08
+    title: 历史缺陷转正式规则
+    status: open
+    owner: null
+    phase: M2
+    blocking: [M2]
+    next_action: 规则已定（D181）；由模块负责人逐条确认可升级的历史缺陷
+    evidence: [kb_rule_upgrade_record, reviewer_signoff]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: Q-09
+    title: 供应商数据准入
+    status: open
+    owner: null
+    phase: M1
+    blocking: [production]
+    next_action: 逐家核实训练/保留/区域/DPA/删除，填写 vendor admission 矩阵
+    evidence: [vendor_admission_matrix, dpa, deletion_receipt]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: Q-12
+    title: 附件 v1 价值
+    status: open
+    owner: null
+    phase: M5
+    blocking: [M5]
+    next_action: 试点统计附件引用率/打开率/必要性，决定保留还是改外部引用
+    evidence: [attachment_usage_report, pilot_decision]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: Q-13
+    title: 人工复核责任人
+    status: open
+    owner: null
+    phase: M5
+    blocking: [M5, production]
+    next_action: 指定主责/备份/抽检/仲裁并填写 review_roster.yaml
+    evidence: [review_roster_complete, operation_drill_record]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: Q-14
+    title: A–E 模型组合实验
+    status: open
+    owner: null
+    phase: M6
+    blocking: [M6, production]
+    next_action: 填全 experiment_protocol.yaml 阈值并签署，执行 A–E
+    evidence: [signed_protocol, experiment_report, topology_decision]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: Q-15
+    title: 知识库业务增量
+    status: open
+    owner: null
+    phase: M6
+    blocking: [M6]
+    next_action: 执行 K0/K1 配对评测，证明知识库改善至少一项关键指标
+    evidence: [k0_k1_report, evidence_accuracy, human_review_helpfulness]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: Q-16
+    title: 报告真实用户验收
+    status: open
+    owner: null
+    phase: production
+    blocking: [production]
+    next_action: 按三层用户与 T1–T6 任务执行验收，含人工评审基线
+    evidence: [user_acceptance_report, task_metrics, issue_list]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: Q-18
+    title: 删除与恢复演练
+    status: open
+    owner: null
+    phase: production
+    blocking: [production]
+    next_action: 执行灾难恢复与合规删除两类演练并记录 RPO/RTO
+    evidence: [dr_drill_record, deletion_drill_record, consistency_check]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+
+verification_items:
+  - id: V-01
+    title: 真实模型 Adapter
+    status: designed
+    owner: null
+    phase: M1
+    blocking: [M1, production]
+    evidence: [model_admission_record, adapter_contract_test]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: V-02
+    title: 冻结评测集
+    status: designed
+    owner: null
+    phase: M2
+    blocking: [M6]
+    evidence: [dataset_version, annotation_record, adjudication_record]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: V-03
+    title: Rubric 发布
+    status: designed
+    owner: null
+    phase: production
+    blocking: [production]
+    evidence: [rubric_review_record, published_version, regression_report]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: V-04
+    title: 知识库首批发布
+    status: designed
+    owner: null
+    phase: M2
+    blocking: [M2, M6]
+    evidence: [kb_candidate_version, retrieval_regression, publish_record]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: V-05
+    title: 人工复核运营
+    status: designed
+    owner: null
+    phase: M5
+    blocking: [M5, production]
+    evidence: [operation_drill_record, roster]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: V-06
+    title: 模型拓扑
+    status: designed
+    owner: null
+    phase: M6
+    blocking: [production]
+    evidence: [ae_experiment_report, topology_decision]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: V-07
+    title: 知识库增量
+    status: designed
+    owner: null
+    phase: M6
+    blocking: [production]
+    evidence: [k0_k1_report]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: V-08
+    title: 报告可用性
+    status: designed
+    owner: null
+    phase: production
+    blocking: [production]
+    evidence: [user_acceptance_report]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: V-09
+    title: 成本预算
+    status: designed
+    owner: null
+    phase: production
+    blocking: [production]
+    evidence: [price_version, budget_approval, cost_report]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: V-10
+    title: 容量性能
+    status: designed
+    owner: null
+    phase: production
+    blocking: [production]
+    evidence: [load_test_report]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: V-11
+    title: 删除与恢复
+    status: designed
+    owner: null
+    phase: production
+    blocking: [production]
+    evidence: [dr_drill_record, deletion_drill_record]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null
+  - id: V-12
+    title: 生产安全准入
+    status: designed
+    owner: null
+    phase: production
+    blocking: [production]
+    evidence: [vendor_admission_matrix, security_acceptance]
+    acceptance_evidence: null
+    acceptance_by: null
+    acceptance_at: null

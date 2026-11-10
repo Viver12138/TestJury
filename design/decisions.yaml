@@ -7,7 +7,7 @@
 # status 只表示是否已决策；验证/实施/发布状态分开，不能把 decided 当成已验证。
 # phase 表示该决策最早在哪个阶段被验证/落地：M0/M1/M4/M5/M6/production。
 #   未到 phase 的决策不得被实现人员自行假设；M0 决策必须在 M0 用例通过后把 validation_status 改为 passed。
-version: "1.6"
+version: "1.7"
 last_updated: "2026-11-10"
 
 decisions:
@@ -659,6 +659,116 @@ decisions:
     phase: M0
     choice: open_questions_q01_q18_registered_with_phase
     source: [docs/08, design/decisions.yaml]
+
+  # ── v1.7（补充 16 落实：执行台账与可判定规则） ──
+  - id: D181
+    title: 历史缺陷升级规则
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M2
+    choice: seven_conditions_plus_origin_and_version_fields
+    source: [docs/17, docs/29]
+  - id: D182
+    title: A–E 唯一批准规则
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M6
+    choice: single_source_hard_gates_paired_ci_no_post_hoc
+    source: [docs/15]
+  - id: D183
+    title: 知识库帮助度口径
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M6
+    choice: subjective_helpfulness_vs_k0_k1_objective_delta
+    source: [docs/29, docs/15]
+  - id: D184
+    title: 报告用户验收分层
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: production
+    choice: three_experience_tiers_tasks_t1_t6_manual_baseline
+    source: [docs/07]
+  - id: D185
+    title: 成本技术/业务双层
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: production
+    choice: technical_cap_lte_business_approved_budget
+    source: [docs/20]
+  - id: D186
+    title: Rubric 发布流程
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: production
+    choice: review_approve_regression_publish_rollback_history
+    source: [docs/04, rubric]
+  - id: D187
+    title: 四状态模型
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: designed_implemented_verified_accepted_with_evidence
+    source: [docs/08, docs/30]
+  - id: D188
+    title: 模型准入看板
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M1
+    choice: technical_verification_and_data_admission_dual_gate
+    source: [design/model_admission.yaml, docs/06, docs/10]
+  - id: D189
+    title: KB 试点台账
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M2
+    choice: kb_pilot_ledger_with_owner_sources_counts
+    source: [design/kb_pilot.yaml, docs/29]
+  - id: D190
+    title: 复核责任台账
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M5
+    choice: review_roster_primary_backup_sampler_arbitrator
+    source: [design/review_roster.yaml, docs/09]
+  - id: D191
+    title: 实验协议台账
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M6
+    choice: protocol_ledger_signed_requires_thresholds_dataset
+    source: [design/experiment_protocol.yaml, docs/15]
+  - id: D192
+    title: 演练记录台账
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: production
+    choice: dr_and_compliance_deletion_records_with_rpo_rto
+    source: [docs/27, docs/30]
 
 open_questions:
   - id: Q-01

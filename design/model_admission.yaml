@@ -1,0 +1,123 @@
+# 模型准入看板（补充 16 V-01/V-12）
+# 技术验证与数据安全准入是两道独立门槛：两者都通过才允许进入生产拓扑。
+# 校验：scripts/check_execution_plan.py；verified/approved 必须有证据与审核人。
+version: "0.1"
+baseline: design-v1.7
+last_updated: "2026-11-10"
+
+status_values: [unverified, testing, verified, deprecated]
+admission_values: [pending, approved, approved_with_masking, rejected]
+
+roles:
+  - role: chief_blind
+    provider: qwen
+    alias: qwen-max
+    real_model_id: null
+    verification_status: unverified
+    adapter_test: pending
+    data_admission_status: pending
+    allowed_data_level: null
+    allow_raw_case: false
+    requires_masking: true
+    dpa_signed: null
+    evidence: []
+    last_verified_at: null
+    reviewer: null
+  - role: chief_vote
+    provider: qwen
+    alias: qwen-max
+    real_model_id: null
+    verification_status: unverified
+    adapter_test: pending
+    data_admission_status: pending
+    allowed_data_level: null
+    allow_raw_case: false
+    requires_masking: true
+    dpa_signed: null
+    evidence: []
+    last_verified_at: null
+    reviewer: null
+  - role: arbitration
+    provider: qwen
+    alias: qwen-max
+    real_model_id: null
+    verification_status: unverified
+    adapter_test: pending
+    data_admission_status: pending
+    allowed_data_level: null
+    allow_raw_case: false
+    requires_masking: true
+    dpa_signed: null
+    evidence: []
+    last_verified_at: null
+    reviewer: null
+  - role: jury_a
+    provider: deepseek
+    alias: deepseek-flash
+    real_model_id: null
+    verification_status: unverified
+    adapter_test: pending
+    data_admission_status: pending
+    allowed_data_level: null
+    allow_raw_case: false
+    requires_masking: true
+    dpa_signed: null
+    evidence: []
+    last_verified_at: null
+    reviewer: null
+  - role: jury_b
+    provider: kimi
+    alias: kimi-k3
+    real_model_id: null
+    verification_status: unverified
+    adapter_test: pending
+    data_admission_status: pending
+    allowed_data_level: null
+    allow_raw_case: false
+    requires_masking: true
+    dpa_signed: null
+    evidence: []
+    last_verified_at: null
+    reviewer: null
+  - role: preprocess
+    provider: deepseek
+    alias: deepseek-chat
+    real_model_id: null
+    verification_status: unverified
+    adapter_test: pending
+    data_admission_status: pending
+    allowed_data_level: null
+    allow_raw_case: false
+    requires_masking: true
+    dpa_signed: null
+    evidence: []
+    last_verified_at: null
+    reviewer: null
+  - role: embedding
+    provider: qwen
+    alias: qwen3.7-text-embedding-flash
+    real_model_id: null
+    verification_status: unverified
+    adapter_test: pending
+    data_admission_status: pending
+    allowed_data_level: null
+    allow_raw_case: false
+    requires_masking: true
+    dpa_signed: null
+    evidence: []
+    last_verified_at: null
+    reviewer: null
+  - role: rerank
+    provider: qwen
+    alias: qwen3.7-text-rerank
+    real_model_id: null
+    verification_status: unverified
+    adapter_test: pending
+    data_admission_status: pending
+    allowed_data_level: null
+    allow_raw_case: false
+    requires_masking: true
+    dpa_signed: null
+    evidence: []
+    last_verified_at: null
+    reviewer: null

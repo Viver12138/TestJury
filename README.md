@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.6**（补充 15 落实：P0 契约修复、知识库初始化方案、身份与数据准入）· 2026-11-10；可进入 M0
+> **状态**：**design-v1.7**（补充 16 落实：执行/证据台账、四状态模型、可判定规则补齐）· 2026-11-10；可进入实现与验证阶段
 
 ---
 
@@ -18,7 +18,7 @@
 
 | 版本维度 | 当前值 | 用途 |
 |---|---|---|
-| 设计基线版本 | `design-v1.6` | 本仓库设计文档整体迭代版本；各文档文首 `vX.Y` 即此版本 |
+| 设计基线版本 | `design-v1.7` | 本仓库设计文档整体迭代版本；各文档文首 `vX.Y` 即此版本 |
 | 产品版本 | `product-v1.0`（规划） | 实际交付给用户的产品范围；见 `docs/00` §10 |
 | Rubric 版本 | `rubric-0.2.0` | 评审标准；`rubric/rubric.yaml` |
 | 报告格式版本 | `report-1.0` | `schemas/report.schema.json` |
@@ -236,6 +236,18 @@
 | 202 | Canonical 输入 | Source Adapter → Canonical Test Case → Validation → Pipeline；核心不耦合平台字段 |
 | 203 | 验收分层与变更影响 | 七层验收；`design/changes/` 模板与依赖链；变更必须记录影响与回归 |
 | 204 | 待决事项登记 | `Q-01`–`Q-18` 与 decisions.yaml 同源；resolved 必须引用决策，open 必须写阶段 |
+| 205 | 历史缺陷升级 | 7 项条件 + `origin_type`/`derived_from`/`bug_version`/`fixed_version`/`current_validity_confirmed`；不覆盖历史记录 |
+| 206 | A–E 批准规则 | `docs/15` §6.1 唯一来源；硬门槛=召回提升+配对 CI 下界>0、FDR、成本、延迟；阈值签署后冻结 |
+| 207 | 知识库帮助度 | 分母=注入知识且进入复核的任务；四类评价；主观帮助度与 K0/K1 客观增量分开 |
+| 208 | 报告用户验收 | 三层经验用户 + T1–T6 + 人工评审基线；完成率/误解率/一致率/可执行性门槛 |
+| 209 | 成本双层预算 | 技术保护上限 ≤ 业务批准预算；分别审批与变更 |
+| 210 | Rubric 发布流程 | 审核→批准→回归→published+冻结副本→可回滚；历史报告保留原版本 |
+| 211 | 四状态模型 | designed/implemented/verified/accepted；脚本通过只到 verified |
+| 212 | 模型准入看板 | `design/model_admission.yaml`：技术验证 + 数据准入双门槛 |
+| 213 | KB 试点台账 | `design/kb_pilot.yaml`：顺序/owner/来源/规则数/用例数/状态 |
+| 214 | 复核责任台账 | `design/review_roster.yaml`：主责/备份/抽检/仲裁 |
+| 215 | 实验协议台账 | `design/experiment_protocol.yaml`：signed 前必须填全阈值与数据集 |
+| 216 | 演练记录台账 | 灾难恢复与合规删除记录字段与验收出口（`docs/27` §6.2） |
 
 ## 3. 文档索引
 
@@ -271,6 +283,12 @@
 | [docs/27-生产部署与运维设计.md](docs/27-生产部署与运维设计.md) | API/Worker 拓扑、迁移、备份、健康检查、扩容 |
 | [docs/28-契约清理与自动化验收.md](docs/28-契约清理与自动化验收.md) | 幂等清理记录、契约检查、M0 验收用例、Verdict 可执行真值表 |
 | [docs/29-知识库初始化与首批数据建设方案.md](docs/29-知识库初始化与首批数据建设方案.md) | 首批模块选择、来源、准入、粒度、冲突、验收与建设路径 |
+| [docs/30-实施推进与验收证据台账.md](docs/30-实施推进与验收证据台账.md) | 四状态模型、open 决策台账、V-01–V-12 验证项、证据模板与执行顺序 |
+| [design/execution_plan.yaml](design/execution_plan.yaml) | 执行台账：Q/V 项、owner、阶段、证据（机器可读） |
+| [design/model_admission.yaml](design/model_admission.yaml) | 模型技术验证 + 数据准入看板 |
+| [design/experiment_protocol.yaml](design/experiment_protocol.yaml) | A–E 实验协议台账（阈值签署前为空） |
+| [design/kb_pilot.yaml](design/kb_pilot.yaml) | 知识库首批模块试点台账 |
+| [design/review_roster.yaml](design/review_roster.yaml) | 人工复核责任表（主责/备份/抽检/仲裁） |
 | [design/changes/TEMPLATE.md](design/changes/TEMPLATE.md) | 设计变更影响分析模板 |
 | [scripts/README.md](scripts/README.md) | 契约检查脚本：入口、检查项、输出格式与边界 |
 | [design/m0_acceptance.yaml](design/m0_acceptance.yaml) | M0 十项 + P0 四项 + BIZ 业务边界验收用例（40 条，可回填结果） |
@@ -366,3 +384,7 @@
 | R68 | **complete 被误读为业务可用** | `complete=true` 只表示流程完整；参与度看 `full_participation`，业务价值看分层验收（docs/08 §5.3） |
 | R69 | **兼容模式长期化** | `TEST_TYPE_DEFAULT_POLICY=compat` 只允许过渡期使用，必须有退出时间/版本边界；默认 strict |
 | R70 | **供应商可调用≠可外发** | `verification_status=verified` 但 `data_admission_status!=approved` 的模型不得进入生产拓扑 |
+| R71 | **四状态混用** | "脚本通过"只到 verified；accepted 必须有验收证据，不得用设计完成或 CI 通过冒充 |
+| R72 | **实验后选口径** | A–E 阈值必须在 `experiment_protocol.yaml` 签署前填死，未签署不得启动正式实验 |
+| R73 | **台账代替执行** | `execution_plan.yaml` 通过只代表结构自洽；Q/V 项仍需真实决策、实验与验收 |
+| R74 | **责任人空位长期化** | `kb_pilot.yaml`/`review_roster.yaml` 的 owner 为空即阻断对应阶段，不能以"待指定"进入试点 |
