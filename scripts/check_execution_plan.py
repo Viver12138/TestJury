@@ -110,6 +110,29 @@ def _check_plan(plan: dict[str, Any], decisions: dict[str, Any], reporter: Repor
         if not item.get("evidence"):
             reporter.error(CHECK, rel(PLAN), f"{qid}.evidence", "必须声明所需证据")
 
+    mapping = plan.get("stage_mapping", {})
+    stage_of: dict[str, str] = {}
+    for stage, spec in mapping.items():
+        for item_id in spec.get("requires", []):
+            stage_of[str(item_id)] = stage
+    all_items = {str(item.get("id")): item for group in ("open_items", "verification_items") for item in plan.get(group, [])}
+    for item_id, stage in stage_of.items():
+        item = all_items.get(item_id, {})
+        if stage in ("S1", "S2", "S3") and item.get("phase") == "production":
+            reporter.error(CHECK, rel(PLAN), f"{item_id}.phase", f"{stage} 前置阶段不能要求 production 阶段的项")
+        if stage == "S4" and item.get("phase") != "production" and item_id.startswith("V-"):
+            reporter.error(CHECK, rel(PLAN), f"{item_id}.phase", "S4 只能要求 production 阶段的验证项")
+
+    decision_ids = {str(item.get("id")): item for item in decisions.get("decisions", [])}
+    for item in plan.get("open_items", []):
+        ref = item.get("decision_ref")
+        if ref:
+            decision = decision_ids.get(str(ref))
+            if decision is None:
+                reporter.error(CHECK, rel(PLAN), f"{item.get('id')}.decision_ref", f"决策 {ref} 不存在")
+            elif decision.get("status") != "decided":
+                reporter.error(CHECK, rel(PLAN), f"{item.get('id')}.decision_ref", f"决策 {ref} 未 decided")
+
     expected_v = ["V-01", "V-02", "V-03A", "V-03B", "V-04", "V-05", "V-06", "V-07", "V-08", "V-09", "V-10", "V-11", "V-12"]
     actual_v = [item.get("id") for item in plan.get("verification_items", [])]
     if actual_v != expected_v:

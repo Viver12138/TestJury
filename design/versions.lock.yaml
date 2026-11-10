@@ -1,0 +1,14 @@
+# 版本锁（证据版本一致性校验用，P0-3）
+# 门禁把 manifest.versions 与本文件比较：本文件非 null 的键必须匹配；
+# manifest 必须显式写 code_commit（可为 "n/a"），不能省略字段表达模糊状态。
+version: "0.1"
+baseline: design-v1.10
+
+design: design-v1.10
+code_commit: null          # 正式门禁应等于当前 git HEAD；由脚本回填/校验
+rubric: "0.2.0"
+report_schema: report-1.0
+model_config: null          # models.yaml 版本（M1 确定）
+dataset: null               # 冻结评测集版本（M2 确定）
+kb: null                    # 知识库版本（M2 确定）
+adapter: adapter-v1

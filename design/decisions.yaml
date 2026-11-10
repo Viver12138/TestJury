@@ -7,7 +7,7 @@
 # status 只表示是否已决策；验证/实施/发布状态分开，不能把 decided 当成已验证。
 # phase 表示该决策最早在哪个阶段被验证/落地：M0/M1/M4/M5/M6/production。
 #   未到 phase 的决策不得被实现人员自行假设；M0 决策必须在 M0 用例通过后把 validation_status 改为 passed。
-version: "1.9"
+version: "1.10"
 last_updated: "2026-11-10"
 
 decisions:
@@ -917,6 +917,62 @@ decisions:
     phase: M0
     choice: formal_gate_main_only_sha_bound_json_artifact
     source: [.github/workflows/execution-gate.yml, scripts]
+
+  # ── v1.10（补充 19：阶段语义与证据可信度） ──
+  - id: D209
+    title: 阶段与 phase 语义一致
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: pre_production_items_not_phase_production_v08_m6
+    source: [design/execution_plan.yaml, scripts]
+  - id: D210
+    title: 证据哈希强校验
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: sha256_required_format_recomputed_no_bypass
+    source: [scripts, evidence/README.md]
+  - id: D211
+    title: 证据版本一致性
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: versions_lock_compare_and_explicit_na
+    source: [design/versions.lock.yaml, scripts]
+  - id: D212
+    title: 状态迁移与历史防篡改
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: allowed_conditional_checks_prev_hash_chain
+    source: [docs/30, scripts]
+  - id: D213
+    title: Q-14 协议与实验分离
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M2
+    choice: q14_protocol_signoff_m2_experiment_under_v06
+    source: [design/execution_plan.yaml, docs/30]
+  - id: D214
+    title: 多证据与验收引用
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: artifacts_list_acceptance_refs_must_resolve
+    source: [scripts, evidence/README.md]
 
 open_questions:
   - id: Q-01

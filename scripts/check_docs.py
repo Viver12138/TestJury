@@ -106,7 +106,7 @@ def check_doc_versions(reporter: Reporter) -> None:
         version = tuple(int(part) for part in match.group(1)[1:].split("."))
         if version > repo_version:
             reporter.error(CHECK, rel(doc), "版本", f"{match.group(1)} 高于 README 状态 v{match.group(1)[1:]}")
-        allowed = {"v1.0", "v1.1"} if doc.name.startswith("00-") else {"v1.3", "v1.4", "v1.5", "v1.6", "v1.7", "v1.8", "v1.9"}
+        allowed = {"v1.0", "v1.1"} if doc.name.startswith("00-") else {"v1.3", "v1.4", "v1.5", "v1.6", "v1.7", "v1.8", "v1.9", "v1.10"}
         if match.group(1) not in allowed:
             reporter.error(CHECK, rel(doc), "版本", f"未知版本 {match.group(1)}（允许 {sorted(allowed)}）")
 
@@ -297,11 +297,12 @@ def check_decisions(reporter: Reporter) -> None:
         "D181", "D182", "D183", "D184", "D185", "D186", "D187", "D188", "D189", "D190", "D191", "D192",
         "D193", "D194", "D195", "D196", "D197", "D198", "D199", "D200", "D201", "D202",
         "D203", "D204", "D205", "D206", "D207", "D208",
+        "D209", "D210", "D211", "D212", "D213", "D214",
     ):
         if expected not in known:
-            reporter.error(CHECK, rel(DOCS08), expected, "docs/08 缺少 v1.4–v1.9 决策登记")
+            reporter.error(CHECK, rel(DOCS08), expected, "docs/08 缺少 v1.4–v1.10 决策登记")
         if expected not in seen:
-            reporter.error(CHECK, rel(DECISIONS), expected, "决策索引缺少 v1.4–v1.9 决策")
+            reporter.error(CHECK, rel(DECISIONS), expected, "决策索引缺少 v1.4–v1.10 决策")
 
     # 业务基线：docs/00 §14、docs/08 §2.0.2、decisions.yaml 三处必须同集合
     biz_text = lib.read_text(BIZ_DOC)

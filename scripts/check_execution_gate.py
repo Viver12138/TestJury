@@ -29,7 +29,8 @@ CHECK = "execution-gate"
 PLAN = lib.DESIGN_DIR / "execution_plan.yaml"
 PROTOCOL = lib.DESIGN_DIR / "experiment_protocol.yaml"
 ADMISSION = lib.DESIGN_DIR / "model_admission.yaml"
-EVIDENCE_DIR = lib.ROOT / "evidence"
+VERSIONS_LOCK = lib.DESIGN_DIR / "versions.lock.yaml"
+SHA_RE = __import__("re").compile(r"^[0-9a-f]{64}$")
 
 RANK = {"designed": 0, "implemented": 1, "verified": 2, "accepted": 3}
 
@@ -50,38 +51,64 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _check_manifest(item: dict[str, Any], reporter: Reporter) -> None:
+def _check_manifest(item: dict[str, Any], reporter: Reporter, lock: dict[str, Any]) -> dict[str, Any] | None:
     item_id = str(item.get("id"))
     manifest_path = EVIDENCE_DIR / item_id / "manifest.yaml"
     if not manifest_path.exists():
         reporter.error(CHECK, rel(PLAN), f"{item_id}.manifest", f"缺少证据 manifest: evidence/{item_id}/manifest.yaml")
-        return
+        return None
     manifest = lib.load_yaml(manifest_path, reporter, CHECK)
     if not isinstance(manifest, dict):
         reporter.error(CHECK, rel(manifest_path), "manifest", "manifest 必须是对象")
-        return
-    for field in ("evidence_id", "item_id", "evidence_type", "created_at", "created_by", "versions", "artifact", "validity"):
+        return None
+    for field in ("evidence_id", "item_id", "evidence_type", "created_at", "created_by", "versions", "artifacts", "validity"):
         if field not in manifest:
             reporter.error(CHECK, rel(manifest_path), field, "manifest 缺少字段")
     if manifest.get("item_id") != item_id:
         reporter.error(CHECK, rel(manifest_path), "item_id", "manifest 的 item_id 与验证项不一致")
-    if not manifest.get("versions"):
-        reporter.error(CHECK, rel(manifest_path), "versions", "必须绑定版本（代码/模型/数据集等）")
-    artifact = manifest.get("artifact", {}) if isinstance(manifest.get("artifact"), dict) else {}
-    artifact_path = artifact.get("path")
-    if not artifact_path:
-        reporter.error(CHECK, rel(manifest_path), "artifact.path", "缺少 artifact 路径")
-    else:
+
+    versions = manifest.get("versions", {}) if isinstance(manifest.get("versions"), dict) else {}
+    if "code_commit" not in versions:
+        reporter.error(CHECK, rel(manifest_path), "versions.code_commit", "manifest 必须显式绑定代码 commit（不适用写 n/a）")
+    for key, expected in lock.items():
+        if expected is None or key in ("version", "baseline"):
+            continue
+        actual = versions.get(key)
+        if actual is None:
+            reporter.error(CHECK, rel(manifest_path), f"versions.{key}", f"缺少版本绑定（期望 {expected}）")
+        elif str(actual) != str(expected):
+            reporter.error(CHECK, rel(manifest_path), f"versions.{key}", f"版本不一致：{actual} vs 当前 {expected}")
+
+    artifacts = manifest.get("artifacts")
+    if not isinstance(artifacts, list) or not artifacts:
+        reporter.error(CHECK, rel(manifest_path), "artifacts", "必须是非空数组（支持一项验收多份证据）")
+        artifacts = []
+    for index, artifact in enumerate(artifacts):
+        label = f"artifacts[{index}]"
+        if not isinstance(artifact, dict):
+            reporter.error(CHECK, rel(manifest_path), label, "artifact 必须是对象")
+            continue
+        sha = artifact.get("sha256")
+        if not sha:
+            reporter.error(CHECK, rel(manifest_path), f"{label}.sha256", "缺失即失败：必须提供 SHA-256")
+        elif not SHA_RE.fullmatch(str(sha)):
+            reporter.error(CHECK, rel(manifest_path), f"{label}.sha256", "SHA-256 必须是 64 位小写十六进制")
+        artifact_path = artifact.get("path")
+        if not artifact_path:
+            reporter.error(CHECK, rel(manifest_path), f"{label}.path", "缺少 artifact 路径")
+            continue
         target = (lib.ROOT / artifact_path).resolve()
         if not target.exists():
-            reporter.error(CHECK, rel(manifest_path), "artifact.path", f"artifact 不存在: {artifact_path}")
-        elif artifact.get("sha256") and _sha256(target) != artifact.get("sha256"):
-            reporter.error(CHECK, rel(manifest_path), "artifact.sha256", "artifact 哈希不一致")
+            reporter.error(CHECK, rel(manifest_path), f"{label}.path", f"artifact 不存在: {artifact_path}")
+        elif sha and SHA_RE.fullmatch(str(sha)) and _sha256(target) != sha:
+            reporter.error(CHECK, rel(manifest_path), f"{label}.sha256", "artifact 哈希不一致")
+
     validity = manifest.get("validity", {}) if isinstance(manifest.get("validity"), dict) else {}
     if validity.get("valid") is not True:
         reporter.error(CHECK, rel(manifest_path), "validity.valid", "证据已失效或未声明有效")
     if validity.get("invalidated_by"):
         reporter.error(CHECK, rel(manifest_path), "validity.invalidated_by", "证据标记为已失效")
+    return manifest
 
 
 def _check_history(item: dict[str, Any], plan: dict[str, Any], reporter: Reporter) -> None:
@@ -91,15 +118,20 @@ def _check_history(item: dict[str, Any], plan: dict[str, Any], reporter: Reporte
     if not history_path.exists():
         reporter.error(CHECK, rel(PLAN), f"{item_id}.history", f"缺少状态历史: evidence/{item_id}/history.jsonl")
         return
-    allowed = {(entry.get("from"), entry.get("to")) for entry in plan.get("state_transitions", [])}
+    allowed = {(entry.get("from"), entry.get("to")): entry for entry in plan.get("state_transitions", [])}
     entries: list[dict[str, Any]] = []
-    for line_no, line in enumerate(history_path.read_text(encoding="utf-8").splitlines(), start=1):
-        if not line.strip():
-            continue
+    raw_lines = [line for line in history_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    previous_hash = "genesis"
+    for line_no, line in enumerate(raw_lines, start=1):
         try:
-            entries.append(json.loads(line))
+            entry = json.loads(line)
         except json.JSONDecodeError as exc:
             reporter.error(CHECK, rel(history_path), f"line {line_no}", f"JSONL 解析失败: {exc}")
+            continue
+        entries.append(entry)
+        if entry.get("prev_hash") != previous_hash:
+            reporter.error(CHECK, rel(history_path), f"{item_id}.history[{len(entries)-1}].prev_hash", "哈希链断裂（禁止篡改/删除历史）")
+        previous_hash = hashlib.sha256(line.encode("utf-8")).hexdigest()
     if not entries:
         reporter.error(CHECK, rel(history_path), "history", "状态历史为空")
         return
@@ -112,14 +144,19 @@ def _check_history(item: dict[str, Any], plan: dict[str, Any], reporter: Reporte
             reporter.error(CHECK, rel(history_path), f"{item_id}.history[{index}].item_id", "与验证项不一致")
         if entry.get("from") != previous:
             reporter.error(CHECK, rel(history_path), f"{item_id}.history[{index}].from", f"应为 {previous}")
-        if (entry.get("from"), entry.get("to")) not in allowed:
-            reporter.error(CHECK, rel(history_path), f"{item_id}.history[{index}]", "非法状态转换")
+        transition = allowed.get((entry.get("from"), entry.get("to")))
+        if transition is None or transition.get("allowed") is not True:
+            reporter.error(CHECK, rel(history_path), f"{item_id}.history[{index}]", "非法或未允许的状态转换")
+        elif transition.get("conditional") and not entry.get("condition_met"):
+            reporter.error(CHECK, rel(history_path), f"{item_id}.history[{index}].condition_met", "条件迁移必须记录条件已满足")
+        elif transition.get("conditional") and not entry.get("approved_by"):
+            reporter.error(CHECK, rel(history_path), f"{item_id}.history[{index}].approved_by", "条件迁移必须记录批准人")
         previous = str(entry.get("to"))
     if previous != status:
         reporter.error(CHECK, rel(history_path), f"{item_id}.history", f"历史最后状态 {previous} 与当前 {status} 不一致")
 
 
-def _check_item(item: dict[str, Any], required: str, plan: dict[str, Any], reporter: Reporter) -> None:
+def _check_item(item: dict[str, Any], required: str, plan: dict[str, Any], reporter: Reporter, lock: dict[str, Any]) -> None:
     item_id = str(item.get("id"))
     if not item.get("owner"):
         reporter.error(CHECK, rel(PLAN), f"{item_id}.owner", "阶段门禁要求 owner 非空")
@@ -136,13 +173,22 @@ def _check_item(item: dict[str, Any], required: str, plan: dict[str, Any], repor
         return
     if RANK[status] < RANK[required]:
         reporter.error(CHECK, rel(PLAN), f"{item_id}.status", f"阶段要求至少 {required}，当前 {status}")
+    manifest = None
     if status != "designed":
-        _check_manifest(item, reporter)
+        manifest = _check_manifest(item, reporter, lock)
         _check_history(item, plan, reporter)
     if status == "accepted":
         for field in ("acceptance_evidence", "acceptance_by", "acceptance_at"):
             if not item.get(field):
                 reporter.error(CHECK, rel(PLAN), f"{item_id}.{field}", "accepted 必须有验收证据/验收人/时间")
+        if manifest:
+            known_ids = {manifest.get("evidence_id")}
+            for artifact in manifest.get("artifacts", []):
+                if isinstance(artifact, dict) and artifact.get("id"):
+                    known_ids.add(artifact["id"])
+            for ref in item.get("acceptance_evidence", []) or []:
+                if ref not in known_ids:
+                    reporter.error(CHECK, rel(PLAN), f"{item_id}.acceptance_evidence", f"验收证据 {ref!r} 未在 manifest/artifacts 中找到")
 
 
 def run(stage: str, reporter: Reporter) -> None:
@@ -155,12 +201,13 @@ def run(stage: str, reporter: Reporter) -> None:
     if set(mapping.get("requires", [])) != set(gates):
         reporter.error(CHECK, rel(PLAN), f"{stage}.stage_gates", "stage_gates 与 requires 项目集合不一致")
     items = _items(plan)
+    lock = lib.load_yaml(VERSIONS_LOCK, reporter, CHECK) if VERSIONS_LOCK.exists() else {}
     for item_id, required in gates.items():
         item = items.get(item_id)
         if item is None:
             reporter.error(CHECK, rel(PLAN), str(item_id), "阶段要求项不存在")
             continue
-        _check_item(item, required, plan, reporter)
+        _check_item(item, required, plan, reporter, lock)
 
     if mapping.get("protocol"):
         protocol = lib.load_yaml(PROTOCOL, reporter, CHECK)
