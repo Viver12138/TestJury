@@ -23,6 +23,12 @@
    - Prompt 引用的 checkpoint / category / severity 均存在；
    - `docs/04`、`docs/12`、`docs/17` 的关键枚举与 Rubric 一致；
    - 已 `deprecated` 的规则不被生产 Prompt 引用。
+6. JSON Schema 只校验结构；以下业务约束由独立 Python 校验器 + 测试覆盖：
+   - `min_valid_votes_per_candidate` 与结论规则一致；
+   - blocker 必须有 E1/E2 core 证据；
+   - `partially_grounded` blocker 必须进人工复核；
+   - `severity_gap_for_human` 与真值表一致。
+7. 发布前由 `kb_reviewer` 审核并置 `status=published`；发布后冻结版本，回滚用旧版本副本。
 5. 规则变更必须触发评审回归（`docs/07` §5）；未通过不得发布。
 6. `rubric.yaml` 只描述规则与阈值，不承载模型 Prompt 文本；Prompt 只能引用规则 ID。
 
