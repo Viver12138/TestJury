@@ -24,6 +24,9 @@
    - `docs/04`、`docs/12`、`docs/17` 的关键枚举与 Rubric 一致；
    - 已 `deprecated` 的规则不被生产 Prompt 引用。
 6. JSON Schema 只校验结构；以下业务约束由独立 Python 校验器 + 测试覆盖：
+   - checkpoint ID 全局唯一；category 的 dimension 必须已定义；
+   - `cosine_suspect < cosine_high`，阈值在 [0,1]；
+   - 至少一个 `core` claim 角色；严重级值均合法；
    - `min_valid_votes_per_candidate` 与结论规则一致；
    - blocker 必须有 E1/E2 core 证据；
    - `partially_grounded` blocker 必须进人工复核；
@@ -37,6 +40,8 @@
 | 版本 | 日期 | 说明 |
 |---|---|---|
 | 0.1.0 | 2026-11-10 | 初始草案：三维度检查点、严重级、证据等级、投票与结论规则 |
+
+> 当前 `0.1.0` 为 `draft`，仅用于实现与评测；**正式评审上线前必须由 `kb_reviewer` 审核并置为 `published`**，否则服务端拒绝启动生产模式。Rubric 变更必须递增版本并保留 `versions/` 副本。
 
 ## 加载与校验
 

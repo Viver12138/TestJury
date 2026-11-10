@@ -1,6 +1,6 @@
 # 03 · API 契约
 
-> 版本：v0.11 · 2026-11-10（最后一轮冻结候选）
+> 版本：v1.1 · 2026-11-10（冻结修订）
 
 - Base：`/v1`
 - 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
@@ -48,7 +48,7 @@
     ],
     "test_data": { "map": "洛阳", "item_pool": "普通藏宝池" },
     "attachments": [
-      { "file_name": "step3.png", "mime_type": "image/png", "size_bytes": 18234, "sha256": "9f2c...", "url": "https://..." }
+      { "attachment_id": "a-6c2d...", "file_name": "step3.png", "sha256": "9f2c..." }
     ],
     "raw_text": null,
     "kb_hint": null
@@ -91,8 +91,8 @@
 | `case.raw_text` | 条件必填 | 纯文本用例；服务端预处理结构化，失败则降级 |
 | `case.priority` | 否 | P0/P1/P2/P3 |
 | `case.source` | 否 | `manual` / `auto`，默认 `manual` |
-| `case.attachments[]` | 否 | 附件引用：`file_name`、`mime_type`、`size_bytes`、`sha256`、`url`；v1 不解析图片/OCR，只存引用与指纹 |
-| `case.attachments[].sha256` | 条件必填 | 服务端校验实际内容；附件变化必须改变 `input_hash` |
+| `case.attachments[]` | 否 | 附件引用：`attachment_id`、`file_name`、`sha256`；v1 只存引用与指纹，不解析内容 |
+| `case.attachments[].sha256` | 条件必填 | 服务端校验与上传时一致；附件变化必须改变 `input_hash` |
 | `test_scope.feature_point` | 否 | 当前评审所属功能点；v1 仅用于判断"当前用例未覆盖已列场景"，不输出功能点覆盖结论 |
 | `test_scope.required_scenarios` | 否 | 该功能点要求覆盖的场景清单（字符串数组），作为"未覆盖提示"的对照 |
 | `test_scope.related_case_ids` | 否 | 同一功能点下的关联用例 ID；v1 仅记录，不据此计算覆盖率 |
@@ -164,6 +164,33 @@
 | 安全 | 仅 https；URL 允许列表；解析后拒绝私网/回环/链路本地地址（防 SSRF） |
 | 内容 | 只含 `review_id`、`ai_verdict`、`human_status`、摘要计数，不含用例正文与原始 Prompt |
 
+### 1.3 附件上传
+
+`POST /v1/attachments`（`multipart/form-data`）
+
+| 字段 | 说明 |
+|---|---|
+| `file` | 文件本体，大小/类型受配置限制 |
+| `sha256` | 客户端计算的指纹；服务端重新计算并比对 |
+
+响应：
+
+```json
+{ "attachment_id": "a-6c2d...", "file_name": "step3.png", "sha256": "9f2c...", "size_bytes": 18234 }
+```
+
+- v1 存储在本机持久化卷（`ATTACHMENT_DIR`），不存数据库二进制。
+- 只接受白名单 MIME（png/jpg/pdf/txt）；超限返回 422。
+- 上传后可被同一 `caller_id` 的评审引用；引用时再次校验 SHA-256。
+- **v1 不把附件内容发送给模型**，报告不得声称已分析附件；后续多模态能力单独设计。
+- 删除评审时按 `review_id` 级联删除附件对象与记录。
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| POST | `/v1/attachments` | 上传，返回 `attachment_id` |
+| GET | `/v1/attachments/{attachment_id}` | 下载（按评审授权） |
+| DELETE | `/v1/attachments/{attachment_id}` | 删除对象与记录（需授权） |
+
 ---
 
 ## 2. 查询评审结果
@@ -186,6 +213,7 @@
   "degraded": false,
   "degraded_reasons": [],
   "participants": ["chief:qwen-max", "jury_a:deepseek-flash", "jury_b:kimi-k3"],
+  "topology": "multi",
   "review_completeness": {
     "blind": "3/3",
     "vote": "3/3",
@@ -465,6 +493,34 @@
 - 与 `ai_verdict` 分离：审批不修改 AI 结论，也不消除降级标记（见 `docs/09`）。
 
 `GET /v1/reviews/{review_id}/decisions` 返回审批历史（按 `decision_no` 正序，不返回 `superseded_by`）。同一用例的历史链可用 `GET /v1/reviews?case_id=...` 按 `generation` 查看。
+
+### 5.3 人工复核任务（工作项）
+
+`human_review_items` 是报告中的只读事项；`human_review_tasks` 是实际工作项。
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/v1/review-tasks?status=&assignee=&priority=&due_before=` | 待处理队列 |
+| POST | `/v1/review-tasks` | 创建任务（通常由系统自动建） |
+| PATCH | `/v1/review-tasks/{task_id}` | 分配/转派/更新状态/重新打开 |
+| GET | `/v1/review-tasks/{task_id}/history` | 处理历史 |
+
+```json
+{
+  "task_id": "t-8f1c...",
+  "review_id": "8f1c...",
+  "issue_id": "i-3a2b...",
+  "review_level": "issue",
+  "priority": "evidence_conflict",
+  "assignee": "zhangsan",
+  "status": "pending",
+  "due_at": "2026-11-12T18:00:00+08:00"
+}
+```
+
+- 状态：`pending` / `in_progress` / `done` / `cancelled`。
+- 允许转派与重新打开；每次变更写历史。
+- 报告生成时自动创建任务；不是所有 `human_review_items` 都必须成为任务（可按规则过滤）。
 
 ---
 
