@@ -12,6 +12,7 @@
     "case_id": { "type": "string" },
     "case_version": { "type": "integer", "minimum": 1 },
     "test_type": { "enum": ["functional", "performance", "security", "compatibility", "reliability", "usability", "other"] },
+    "test_type_source": { "enum": ["request", "compat_default"] },
     "generation": { "type": "integer", "minimum": 1 },
     "parent_review_id": { "type": ["string", "null"] },
     "status": { "enum": ["queued", "processing", "retrying", "done", "completed_with_warnings", "failed", "cancelled"] },
@@ -44,8 +45,11 @@
         "arbitration": { "type": "string" },
         "arbitration_required": { "type": "boolean" },
         "complete": { "type": "boolean" },
+        "full_participation": { "type": "boolean" },
         "stages_completed": { "type": "array", "items": { "type": "string" } },
-        "stages_skipped": { "type": "array", "items": { "type": "string" } }
+        "stages_skipped": { "type": "array", "items": { "type": "string" } },
+        "stages_failed": { "type": "array", "items": { "type": "string" } },
+        "stages_pending": { "type": "array", "items": { "type": "string" } }
       }
     },
     "input_quality": {
@@ -84,6 +88,20 @@
       }
     },
     "issues": { "type": "array", "items": { "$ref": "#/$defs/issue" } },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["attachment_id", "analyzed_by_ai"],
+        "properties": {
+          "attachment_id": { "type": "string" },
+          "file_name": { "type": "string" },
+          "sha256": { "type": "string" },
+          "analyzed_by_ai": { "const": false },
+          "status": { "enum": ["ready", "deleted"] }
+        }
+      }
+    },
     "human_review_items": {
       "type": "array",
       "items": {

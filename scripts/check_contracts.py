@@ -25,6 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import check_docs
+import check_execution_plan
 import check_m0_acceptance
 import check_rubric
 import check_verdict_cases
@@ -36,6 +37,7 @@ CHECKS = [
     ("rubric", "Rubric Schema/业务约束/冻结副本/Prompt 引用", check_rubric.run),
     ("verdict-cases", "Verdict 真值表用例、规则覆盖与属性不变量", check_verdict_cases.run),
     ("m0-acceptance", "M0 退出条件与契约清理用例的覆盖和追踪字段", check_m0_acceptance.run),
+    ("execution-plan", "执行证据台账、模型准入、实验协议、KB 试点与复核责任表", check_execution_plan.run),
 ]
 
 

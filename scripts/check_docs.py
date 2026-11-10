@@ -33,7 +33,7 @@ STATUS_VALUES = {"decided", "pending_confirmation", "pending_validation", "imple
 VALIDATION_VALUES = {"pending", "passed", "failed"}
 IMPLEMENTATION_VALUES = {"not_started", "in_progress", "implemented"}
 RELEASE_VALUES = {"draft", "approved", "released"}
-PHASE_VALUES = {"M0", "M1", "M4", "M5", "M6", "production"}
+PHASE_VALUES = {"M0", "M1", "M2", "M3", "M4", "M5", "M6", "production"}
 
 REQUIRED_ENUM_CHECKS = [
     ("ai_verdict", ("properties", "ai_verdict", "enum")),
@@ -80,6 +80,11 @@ def check_doc_index(reporter: Reporter) -> None:
         lib.DESIGN_DIR / "decisions.yaml",
         lib.DESIGN_DIR / "verdict_cases.yaml",
         lib.DESIGN_DIR / "m0_acceptance.yaml",
+        lib.DESIGN_DIR / "execution_plan.yaml",
+        lib.DESIGN_DIR / "model_admission.yaml",
+        lib.DESIGN_DIR / "experiment_protocol.yaml",
+        lib.DESIGN_DIR / "kb_pilot.yaml",
+        lib.DESIGN_DIR / "review_roster.yaml",
         SCRIPTS / "README.md",
     ):
         if rel(path) not in readme_text:
@@ -88,7 +93,7 @@ def check_doc_index(reporter: Reporter) -> None:
 
 def check_doc_versions(reporter: Reporter) -> None:
     reporter.checks_run += 1
-    state_match = re.search(r"\*\*状态\*\*：\*\*v(\d+\.\d+)", lib.read_text(README))
+    state_match = re.search(r"\*\*状态\*\*：\*\*(?:design-)?v(\d+\.\d+)", lib.read_text(README))
     if not state_match:
         reporter.error(CHECK, rel(README), "状态", "README 状态行缺少 vX.Y 版本号")
         return
@@ -101,7 +106,7 @@ def check_doc_versions(reporter: Reporter) -> None:
         version = tuple(int(part) for part in match.group(1)[1:].split("."))
         if version > repo_version:
             reporter.error(CHECK, rel(doc), "版本", f"{match.group(1)} 高于 README 状态 v{match.group(1)[1:]}")
-        allowed = {"v1.0"} if doc.name.startswith("00-") else {"v1.3", "v1.4", "v1.5"}
+        allowed = {"v1.0", "v1.1"} if doc.name.startswith("00-") else {"v1.3", "v1.4", "v1.5", "v1.6", "v1.7"}
         if match.group(1) not in allowed:
             reporter.error(CHECK, rel(doc), "版本", f"未知版本 {match.group(1)}（允许 {sorted(allowed)}）")
 
@@ -165,15 +170,35 @@ def check_business_boundary(reporter: Reporter) -> None:
     for token, text, path in (
         ("case.test_type", api, API_DOC),
         ("UNSUPPORTED_TEST_TYPE", api, API_DOC),
+        ("TEST_TYPE_REQUIRED", api, API_DOC),
         ("test_type", data, DATA_DOC),
         ("UNSUPPORTED_TEST_TYPE", error_doc, ERROR_DOC),
+        ("TEST_TYPE_REQUIRED", error_doc, ERROR_DOC),
     ):
         if token not in text:
-            reporter.error(CHECK, rel(path), "业务边界", f"缺少 {token}（docs/00 BIZ-005 / D165）")
+            reporter.error(CHECK, rel(path), "业务边界", f"缺少 {token}（docs/00 BIZ-005 / D172）")
+
+    for path in (BIZ_DOC, API_DOC, DICT_DOC, DATA_DOC):
+        for line_no, line in enumerate(lib.read_lines(path), start=1):
+            if "默认 `functional`" in line and not any(word in line for word in ("废弃", "不再", "禁止")):
+                reporter.error(
+                    CHECK, rel(path), "test_type 默认值", "不得再把 functional 当作隐式默认；缺失必须 422 TEST_TYPE_REQUIRED", line_no
+                )
 
     schema = lib.load_json(SCHEMA, reporter, CHECK)
     if "test_type" not in schema.get("properties", {}):
         reporter.error(CHECK, rel(SCHEMA), "test_type", "报告 Schema 缺少 test_type 字段")
+    if "test_type_source" not in schema.get("properties", {}):
+        reporter.error(CHECK, rel(SCHEMA), "test_type_source", "报告 Schema 缺少 test_type_source 字段")
+    attachments = schema.get("properties", {}).get("attachments", {}).get("items", {})
+    analyzed = attachments.get("properties", {}).get("analyzed_by_ai", {})
+    if analyzed.get("const") is not False:
+        reporter.error(CHECK, rel(SCHEMA), "attachments.analyzed_by_ai", "附件必须标注 analyzed_by_ai=false（v1 不做多模态）")
+
+    completeness = schema.get("properties", {}).get("review_completeness", {}).get("properties", {})
+    for field in ("full_participation", "stages_failed", "stages_pending"):
+        if field not in completeness:
+            reporter.error(CHECK, rel(SCHEMA), f"review_completeness.{field}", "缺少完整性语义字段（D171）")
 
 
 def check_idempotency(reporter: Reporter) -> None:
@@ -268,11 +293,13 @@ def check_decisions(reporter: Reporter) -> None:
     for expected in (
         "D154", "D155", "D156", "D157", "D158", "D159", "D160", "D161", "D162", "D163", "D164",
         "D165", "D166", "D167", "D168",
+        "D169", "D170", "D171", "D172", "D173", "D174", "D175", "D176", "D177", "D178", "D179", "D180",
+        "D181", "D182", "D183", "D184", "D185", "D186", "D187", "D188", "D189", "D190", "D191", "D192",
     ):
         if expected not in known:
-            reporter.error(CHECK, rel(DOCS08), expected, "docs/08 缺少 v1.4/v1.5 决策登记")
+            reporter.error(CHECK, rel(DOCS08), expected, "docs/08 缺少 v1.4–v1.7 决策登记")
         if expected not in seen:
-            reporter.error(CHECK, rel(DECISIONS), expected, "决策索引缺少 v1.4/v1.5 决策")
+            reporter.error(CHECK, rel(DECISIONS), expected, "决策索引缺少 v1.4–v1.7 决策")
 
     # 业务基线：docs/00 §14、docs/08 §2.0.2、decisions.yaml 三处必须同集合
     biz_text = lib.read_text(BIZ_DOC)
@@ -329,6 +356,39 @@ def check_decisions(reporter: Reporter) -> None:
         referenced |= set(re.findall(r"(?<![A-Za-z0-9])D\d{1,3}(?![0-9])", lib.read_text(path)))
     for missing in sorted(referenced - known):
         reporter.error(CHECK, rel(DOCS08), missing, "文档引用了未登记的决策编号")
+
+    # 待决事项与 docs/08 §2.16 同源（D180）
+    open_questions = data.get("open_questions", [])
+    q_ids: list[str] = []
+    known_decision_ids = {str(item.get("id")) for item in decisions}
+    for question in open_questions:
+        qid = question.get("id")
+        if not qid or not re.fullmatch(r"Q-\d{2}", qid):
+            reporter.error(CHECK, rel(DECISIONS), str(qid), "待决事项 ID 必须形如 Q-01")
+            continue
+        q_ids.append(qid)
+        if question.get("status") not in ("open", "resolved"):
+            reporter.error(CHECK, rel(DECISIONS), f"{qid}.status", f"非法状态 {question.get('status')!r}")
+        if question.get("phase") not in PHASE_VALUES:
+            reporter.error(CHECK, rel(DECISIONS), f"{qid}.phase", f"非法阶段 {question.get('phase')!r}")
+        if question.get("status") == "resolved" and question.get("resolution") not in known_decision_ids:
+            reporter.error(CHECK, rel(DECISIONS), f"{qid}.resolution", "resolved 必须引用已登记决策 ID")
+        for source in question.get("source", []):
+            if not _resolve_source(source):
+                reporter.error(CHECK, rel(DECISIONS), f"{qid}.source", f"引用目标不存在: {source}")
+    if len(q_ids) != 18 or len(set(q_ids)) != 18:
+        reporter.error(CHECK, rel(DECISIONS), "open_questions", f"应有 18 条且唯一，实际 {len(q_ids)} 条（唯一 {len(set(q_ids))}）")
+
+    q_start = doc08_text.find("### 2.16 待决事项登记")
+    q_end = doc08_text.find("### 2.17", q_start)
+    doc_q = set(re.findall(r"\|\s*(Q-\d{2})\s*\|", doc08_text[q_start : q_end if q_end > 0 else len(doc08_text)]))
+    if set(q_ids) != doc_q:
+        reporter.error(
+            CHECK,
+            rel(DOCS08),
+            "§2.16",
+            f"与 decisions.yaml 不一致：缺少 {sorted(set(q_ids) - doc_q)}，多出 {sorted(doc_q - set(q_ids))}",
+        )
 
     distribution: dict[str, list[str]] = {}
     for decision in decisions:
