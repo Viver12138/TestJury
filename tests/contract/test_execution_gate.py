@@ -6,7 +6,6 @@ S2 在 owner 未指定时必须失败；且不得因 Rubric 生产发布（V-03�
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -32,9 +31,8 @@ def _run_gate(root: Path, stage: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_s2_blocked_by_missing_owner_but_not_v03(tmp_path: Path) -> None:
-    root = tmp_path / "repo"
-    shutil.copytree(REPO_ROOT, root, ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"))
+def test_s2_blocked_by_missing_owner_but_not_v03(workdir: Path, repo_copy) -> None:
+    root = repo_copy(workdir / "repo")
     result = _run_gate(root, "S2")
     output = result.stdout + result.stderr
     assert result.returncode == 1, output
@@ -42,9 +40,8 @@ def test_s2_blocked_by_missing_owner_but_not_v03(tmp_path: Path) -> None:
     assert "V-03" not in output, output
 
 
-def test_s2_owner_assigned_but_not_verified_fails(tmp_path: Path) -> None:
-    root = tmp_path / "status"
-    shutil.copytree(REPO_ROOT, root, ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"))
+def test_s2_owner_assigned_but_not_verified_fails(workdir: Path, repo_copy) -> None:
+    root = repo_copy(workdir / "status")
     path = root / "design" / "execution_plan.yaml"
     plan = yaml.safe_load(path.read_text(encoding="utf-8"))
     for item in plan["verification_items"]:
@@ -58,9 +55,8 @@ def test_s2_owner_assigned_but_not_verified_fails(tmp_path: Path) -> None:
     assert "至少 verified" in output, output
 
 
-def test_s1_owner_without_decision_record_fails(tmp_path: Path) -> None:
-    root = tmp_path / "decision"
-    shutil.copytree(REPO_ROOT, root, ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"))
+def test_s1_owner_without_decision_record_fails(workdir: Path, repo_copy) -> None:
+    root = repo_copy(workdir / "decision")
     path = root / "design" / "execution_plan.yaml"
     plan = yaml.safe_load(path.read_text(encoding="utf-8"))
     for item in plan["open_items"]:
@@ -74,3 +70,4 @@ def test_s1_owner_without_decision_record_fails(tmp_path: Path) -> None:
     output = result.stdout + result.stderr
     assert result.returncode == 1, output
     assert "decision_ref" in output, output
+

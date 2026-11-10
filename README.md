@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.12**（补充 21 落实：KB 双版本贯通、复核/审批单一事实源、Q-14 文本收口）· 2026-11-10；设计收口，进入 S1/M0
+> **状态**：**design-v1.12 + M0 实现**（FastAPI/DB/Mock 全链路；M0 十项退出条件与 40 条验收用例通过；真实模型、知识库与生产部署未开始）· 2026-11-10
 
 ---
 
@@ -421,3 +421,48 @@
 | R76 | **阶段依赖倒置** | S2 不得依赖 Rubric 生产发布；生产级证据只能出现在 S4 |
 | R77 | **状态覆盖历史** | 状态转换只能追加历史，不得覆盖旧证据；版本变化必须重验 |
 | R78 | **统计口径事后调整** | A–E 的样本量/α/异常样本/停止规则必须在协议 signed 前冻结 |
+
+## 6. M0 实现状态与运行方式（2026-11-10）
+
+### 6.1 已实现范围
+
+| 模块 | 实现 |
+|---|---|
+| 工程骨架 | FastAPI 应用工厂、pydantic-settings 配置（缺 `DATABASE_URL` 快速失败）、structlog JSON 日志、统一错误 envelope、`/livez` `/readyz` `/healthz` `/metrics` |
+| 数据层 | PostgreSQL + pgvector Alembic 迁移（`0001_m0_initial`）、幂等部分唯一索引、状态/枚举 CHECK、报告锁定触发器、队列索引 |
+| 契约层 | `app.core.enums` 与 docs/17 同源校验；报告 Schema 加载/校验/冻结副本；Rubric 加载、Schema+业务校验、版本绑定、生产拒绝 draft |
+| 结论 | `app/pipeline/verdict.py` 唯一入口，36 条真值表用例与参考判定器一致；属性测试、禁止组合、决策字段信任边界 |
+| 权限 | API Key 授权表（sha256 摘要）、服务端角色、`X-Role` 仅记录、系统身份不得审批、审批人与提交人分离 |
+| 状态机 | 任务/阶段/复核任务迁移校验；租约与 `fencing_token` 条件写入（真实 PG 双 Worker 测试） |
+| 流水线 | 输入硬校验/软校验、三路 Mock 盲评、规则分桶融合、独立投票、条件仲裁、服务端结论、报告 JSON + Markdown、人工复核任务 |
+| 提交契约 | S1–S7 幂等/代次矩阵（200 重放、202 新建、409 运行中、422 同键不同体）、批量只做聚合、附件内容寻址去重 |
+
+### 6.2 本地运行
+
+```bash
+# 1. 依赖（Python >= 3.11）
+uv venv .venv
+uv pip install --python .venv/Scripts/python.exe -e ".[dev]"
+
+# 2. PostgreSQL 16 + pgvector（端口 55432）
+docker compose -f deploy/docker-compose.yml up -d postgres
+export DATABASE_URL=postgresql+asyncpg://testjury:testjury@127.0.0.1:55432/testjury
+
+# 3. 迁移与启动（Mock 模型）
+.venv/Scripts/python.exe -m alembic -c alembic.ini upgrade head
+.venv/Scripts/python.exe -m app.bootstrap     # 默认需要配置 BOOTSTRAP_API_KEYS
+
+# 4. 测试（无真实模型调用；PG 用例在无数据库时自动跳过）
+.venv/Scripts/python.exe -m pytest -q
+python scripts/check_contracts.py
+python scripts/check_m0_acceptance.py
+```
+
+### 6.3 验收边界
+
+- 已回填 `design/m0_acceptance.yaml`：40 条用例 `result=passed`；本地执行环境与时间见文件头。
+- **M0 通过只代表工程正确**：不代表评审质量、业务有效性或生产可用（`docs/08` §5.3）。
+- 未实现：真实模型 Adapter、知识库加载/检索/Rerank、A–E 实验、性能压测、生产部署、恢复演练。
+- `STORAGE_BACKEND=memory` 仅用于单测与本地演示；生产默认 `postgres` 且禁止 memory。
+- Rubric 仍为 `0.2.0 draft`：生产模式加载会被拒绝，待 V-03B 审核发布。
+

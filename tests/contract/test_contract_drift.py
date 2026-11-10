@@ -8,25 +8,14 @@
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
-
-import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CHECKER = REPO_ROOT / "scripts" / "check_contracts.py"
 DICT_DOC = Path("docs") / "17-全局数据字典.md"
 
-
-def _copy_repo(destination: Path) -> Path:
-    shutil.copytree(
-        REPO_ROOT,
-        destination,
-        ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache", "*.pyc"),
-    )
-    return destination
 
 
 def _run_checker(root: Path) -> subprocess.CompletedProcess[str]:
@@ -44,14 +33,35 @@ def _run_checker(root: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_clean_copy_passes(tmp_path: Path) -> None:
-    root = _copy_repo(tmp_path / "clean")
+def test_clean_copy_passes(workdir: Path, repo_copy) -> None:
+    root = repo_copy(workdir / "clean")
     result = _run_checker(root)
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_enum_drift_is_detected(tmp_path: Path) -> None:
-    root = _copy_repo(tmp_path / "drifted")
+def test_full_contract_check_passes(workdir: Path, repo_copy) -> None:
+    root = repo_copy(workdir / "full")
+    result = _run_full_checker(root)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def _run_full_checker(root: Path) -> subprocess.CompletedProcess[str]:
+    env = dict(os.environ)
+    env["TJ_REPO_ROOT"] = str(root)
+    env["PYTHONIOENCODING"] = "utf-8"
+    return subprocess.run(
+        [sys.executable, str(CHECKER)],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        cwd=str(root),
+        timeout=180,
+    )
+
+
+def test_enum_drift_is_detected(workdir: Path, repo_copy) -> None:
+    root = repo_copy(workdir / "drifted")
     dictionary = root / DICT_DOC
     original = dictionary.read_text(encoding="utf-8")
     mutated = original.replace("`blocked` / `conditional` / `need_human` / `null`", "`blocked` / `conditional` / `null`", 1)
@@ -63,3 +73,6 @@ def test_enum_drift_is_detected(tmp_path: Path) -> None:
     assert result.returncode == 1, output
     assert "ai_verdict" in output, output
     assert "17-全局数据字典.md" in output, output
+
+
+

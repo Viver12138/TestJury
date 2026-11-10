@@ -1,0 +1,70 @@
+# 模型注册表（M0 使用 Mock；真实 Model ID 待 V-01 实测后标 verified）
+version: models-2026-11-10
+providers:
+  mock:
+    base_url: mock://local
+    api_key_env: MOCK_API_KEY
+roles:
+  chief_blind:
+    provider: mock
+    model_id: mock-chief
+    timeout: 120
+    max_output_tokens: 4096
+    concurrency: 4
+    verification_status: testing
+    data_admission_status: pending
+  jury_a:
+    provider: mock
+    model_id: mock-jury-a
+    timeout: 120
+    max_output_tokens: 4096
+    concurrency: 4
+    verification_status: testing
+    data_admission_status: pending
+  jury_b:
+    provider: mock
+    model_id: mock-jury-b
+    timeout: 120
+    max_output_tokens: 4096
+    concurrency: 4
+    verification_status: testing
+    data_admission_status: pending
+  vote:
+    provider: mock
+    model_id: mock-vote
+    timeout: 120
+    max_output_tokens: 2048
+    concurrency: 4
+    verification_status: testing
+    data_admission_status: pending
+  arbitration:
+    provider: mock
+    model_id: mock-chief
+    timeout: 120
+    max_output_tokens: 4096
+    concurrency: 4
+    verification_status: testing
+    data_admission_status: pending
+  preprocess:
+    provider: mock
+    model_id: mock-preprocess
+    timeout: 60
+    max_output_tokens: 2048
+    concurrency: 4
+    verification_status: testing
+    data_admission_status: pending
+embedding:
+  provider: mock
+  model_id: mock-embedding
+  dimension: 1024
+  timeout: 30
+rerank:
+  provider: mock
+  model_id: mock-rerank
+  timeout: 20
+pricing:
+  version: price-2026-11
+  currency: CNY
+  mock-chief: { input_per_1k: 0.0, output_per_1k: 0.0 }
+  mock-jury-a: { input_per_1k: 0.0, output_per_1k: 0.0 }
+  mock-jury-b: { input_per_1k: 0.0, output_per_1k: 0.0 }

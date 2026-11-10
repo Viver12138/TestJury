@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -33,16 +32,14 @@ def _run_checker(root: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_clean_cases_pass(tmp_path: Path) -> None:
-    root = tmp_path / "clean"
-    shutil.copytree(REPO_ROOT, root, ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"))
+def test_clean_cases_pass(workdir: Path, repo_copy) -> None:
+    root = repo_copy(workdir / "clean")
     result = _run_checker(root)
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_wrong_expectation_is_detected(tmp_path: Path) -> None:
-    root = tmp_path / "mutated"
-    shutil.copytree(REPO_ROOT, root, ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"))
+def test_wrong_expectation_is_detected(workdir: Path, repo_copy) -> None:
+    root = repo_copy(workdir / "mutated")
     path = root / CASES
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     target = next(case for case in data["cases"] if case["id"] == "VC-001")
@@ -55,3 +52,4 @@ def test_wrong_expectation_is_detected(tmp_path: Path) -> None:
     assert result.returncode == 1, output
     assert "VC-001" in output, output
     assert "ai_verdict" in output, output
+

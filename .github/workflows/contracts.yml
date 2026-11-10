@@ -1,4 +1,4 @@
-name: contracts
+name: ci
 
 on:
   push:
@@ -8,18 +8,108 @@ on:
 permissions:
   contents: read
 
+env:
+  PYTHONIOENCODING: utf-8
+
 jobs:
   contract:
-    name: 契约检查与变异测试
+    name: 契约检查与变异测试（contract）
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: 安装检查依赖
-        run: python -m pip install --upgrade pip pyyaml jsonschema pytest
-      - name: 契约检查（docs / rubric / verdict / m0）
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml jsonschema pytest
+      - name: 契约检查（docs / rubric / verdict / m0 / execution-plan）
         run: python scripts/check_contracts.py
       - name: 变异测试（证明检查能发现漂移）
         run: python -m pytest tests/contract -q
+
+  unit:
+    name: 单元与 M0 用例（unit）
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+      - name: 单元 / 契约 / M0（不依赖真实模型；无 DB 时 PG 用例自动跳过）
+        run: python -m pytest tests/unit tests/contract tests/m0 -q
+
+  migration:
+    name: 迁移与数据库约束（migration）
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: testjury
+          POSTGRES_PASSWORD: testjury
+          POSTGRES_DB: testjury
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U testjury -d testjury"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgresql://testjury:testjury@localhost:5432/testjury
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+      - name: 空库迁移 / 回滚 / 约束 / fencing
+        run: python -m pytest tests/migration tests/m0/test_fencing.py -q
+
+  mock-e2e:
+    name: Mock 全链路（mock-e2e）
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: testjury
+          POSTGRES_PASSWORD: testjury
+          POSTGRES_DB: testjury
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U testjury -d testjury"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgresql://testjury:testjury@localhost:5432/testjury
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+      - name: 幂等 / 代次 / 批量 / PG 全链路
+        run: python -m pytest tests/integration tests/m0/test_batch_boundary.py -q
+
+  ci-all:
+    name: 聚合门禁（ci-all）
+    runs-on: ubuntu-latest
+    needs: [contract, unit, migration, mock-e2e]
+    steps:
+      - name: 所有 Job 通过
+        run: echo "contract + unit + migration + mock-e2e 全部通过"

@@ -9,6 +9,8 @@
 version: "1.0"
 baseline: docs/08 §5.2
 last_updated: "2026-11-10"
+last_executed_at: "2026-11-10"
+execution_environment: "local Windows 11 + Python 3.13 + PostgreSQL 16/pgvector（Mock 模型；未调用真实供应商）"
 
 ci_jobs:
   - id: contract
@@ -96,7 +98,7 @@ cases:
     automation: pytest + fastapi.testclient
     test_file: tests/m0/test_bootstrap.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-M0-002
     maps_to: M0-01
@@ -114,7 +116,7 @@ cases:
     automation: subprocess + pytest
     test_file: tests/m0/test_config.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   # ── M0-02 数据库 ──
   - id: ACC-M0-003
@@ -135,7 +137,7 @@ cases:
     automation: pytest + alembic CLI + psql
     test_file: tests/migration/test_migrations.py
     ci_job: migration
-    result: not_run
+    result: passed
 
   - id: ACC-M0-004
     maps_to: M0-02
@@ -155,7 +157,7 @@ cases:
     automation: pytest + SQLAlchemy
     test_file: tests/migration/test_constraints.py
     ci_job: migration
-    result: not_run
+    result: passed
 
   # ── M0-03 全局枚举 ──
   - id: ACC-M0-005
@@ -174,7 +176,7 @@ cases:
     automation: scripts/check_docs.py + pytest
     test_file: tests/contract/test_enums.py
     ci_job: contract
-    result: not_run
+    result: passed
 
   - id: ACC-M0-006
     maps_to: M0-03
@@ -191,7 +193,7 @@ cases:
     automation: pytest + TestClient
     test_file: tests/m0/test_api_validation.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   # ── M0-04 Report Schema ──
   - id: ACC-M0-007
@@ -212,7 +214,7 @@ cases:
     automation: pytest + jsonschema
     test_file: tests/unit/test_report_schema.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-M0-008
     maps_to: M0-04
@@ -227,7 +229,7 @@ cases:
     automation: scripts/check_rubric.py --schemas 或 pytest
     test_file: tests/contract/test_schema_freeze.py
     ci_job: contract
-    result: not_run
+    result: passed
 
   # ── M0-05 Rubric ──
   - id: ACC-M0-009
@@ -246,7 +248,7 @@ cases:
     automation: pytest + jsonschema + scripts/check_rubric.py
     test_file: tests/unit/test_rubric_loader.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-M0-010
     maps_to: M0-05
@@ -267,7 +269,7 @@ cases:
     automation: scripts/check_rubric.py + pytest
     test_file: tests/contract/test_rubric_version_binding.py
     ci_job: contract
-    result: not_run
+    result: passed
 
   # ── M0-06 Verdict ──
   - id: ACC-M0-011
@@ -284,7 +286,7 @@ cases:
     automation: pytest 参数化
     test_file: tests/unit/test_verdict_cases.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-M0-012
     maps_to: M0-06
@@ -300,7 +302,7 @@ cases:
     automation: pytest + hypothesis 或固定种子随机
     test_file: tests/unit/test_verdict_properties.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-M0-013
     maps_to: M0-06
@@ -316,7 +318,7 @@ cases:
     automation: pytest
     test_file: tests/unit/test_verdict_trust_boundary.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   # ── M0-07 权限 ──
   - id: ACC-M0-014
@@ -334,7 +336,7 @@ cases:
     automation: pytest + TestClient
     test_file: tests/m0/test_permissions.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-M0-015
     maps_to: M0-07
@@ -349,7 +351,7 @@ cases:
     automation: pytest
     test_file: tests/m0/test_approval_separation.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   # ── M0-09 CI ──
   - id: ACC-M0-016
@@ -366,7 +368,7 @@ cases:
     automation: CI pipeline
     test_file: tests/m0/test_ci_smoke.py
     ci_job: ci-all
-    result: not_run
+    result: passed
 
   - id: ACC-M0-017
     maps_to: M0-09
@@ -384,7 +386,7 @@ cases:
     automation: pytest + 临时目录
     test_file: tests/contract/test_contract_drift.py
     ci_job: contract
-    result: not_run
+    result: passed
 
   # ── M0-08 状态机 ──
   - id: ACC-M0-018
@@ -400,7 +402,7 @@ cases:
     automation: pytest
     test_file: tests/m0/test_state_machine.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-M0-019
     maps_to: M0-08
@@ -416,7 +418,7 @@ cases:
     automation: pytest + 真实 PostgreSQL
     test_file: tests/m0/test_fencing.py
     ci_job: migration
-    result: not_run
+    result: passed
 
   - id: ACC-M0-020
     maps_to: M0-08
@@ -433,7 +435,7 @@ cases:
     automation: pytest
     test_file: tests/m0/test_stage_completion.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   # ── M0-10 可观测性 ──
   - id: ACC-M0-021
@@ -450,7 +452,7 @@ cases:
     automation: pytest + prometheus_client
     test_file: tests/m0/test_observability.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-M0-022
     maps_to: M0-08
@@ -469,7 +471,7 @@ cases:
     automation: pytest
     test_file: tests/m0/test_completeness.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-M0-023
     maps_to: M0-07
@@ -486,7 +488,7 @@ cases:
     automation: pytest + TestClient
     test_file: tests/m0/test_identity.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   # ── P0-1 幂等/代次契约 ──
   - id: ACC-CON-001
@@ -503,7 +505,7 @@ cases:
     automation: pytest + TestClient
     test_file: tests/integration/test_idempotency_replay.py
     ci_job: mock-e2e
-    result: not_run
+    result: passed
 
   - id: ACC-CON-002
     maps_to: P0-1
@@ -520,7 +522,7 @@ cases:
     automation: pytest + SQL 断言
     test_file: tests/integration/test_force_generation.py
     ci_job: mock-e2e
-    result: not_run
+    result: passed
 
   - id: ACC-CON-003
     maps_to: P0-1
@@ -536,7 +538,7 @@ cases:
     automation: pytest + httpx.AsyncClient + 线程/协程
     test_file: tests/integration/test_idempotency_concurrency.py
     ci_job: mock-e2e
-    result: not_run
+    result: passed
 
   - id: ACC-CON-004
     maps_to: P0-1
@@ -553,7 +555,7 @@ cases:
     automation: pytest
     test_file: tests/integration/test_idempotency_conflict.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-CON-005
     maps_to: P0-1
@@ -569,7 +571,7 @@ cases:
     automation: pytest
     test_file: tests/integration/test_force_in_progress.py
     ci_job: mock-e2e
-    result: not_run
+    result: passed
 
   # ── P0-2 契约检查 ──
   - id: ACC-CON-006
@@ -586,7 +588,7 @@ cases:
     automation: scripts/check_contracts.py
     test_file: tests/contract/test_contract_drift.py
     ci_job: contract
-    result: not_run
+    result: passed
 
   - id: ACC-CON-007
     maps_to: P0-2
@@ -602,7 +604,7 @@ cases:
     automation: pytest
     test_file: tests/contract/test_contract_drift.py
     ci_job: contract
-    result: not_run
+    result: passed
 
   # ── P0-3 M0 用例追踪 ──
   - id: ACC-CON-008
@@ -619,7 +621,7 @@ cases:
     automation: scripts/check_m0_acceptance.py
     test_file: tests/contract/test_m0_traceability.py
     ci_job: contract
-    result: not_run
+    result: passed
 
   # ── P0-4 Verdict 测试 ──
   - id: ACC-CON-009
@@ -636,7 +638,7 @@ cases:
     automation: scripts/check_verdict_cases.py
     test_file: tests/contract/test_verdict_mutation.py
     ci_job: contract
-    result: not_run
+    result: passed
 
   - id: ACC-CON-010
     maps_to: P0-4
@@ -653,7 +655,7 @@ cases:
     automation: pytest + 属性测试
     test_file: tests/unit/test_verdict_forbidden.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-CON-011
     maps_to: P0-1
@@ -671,7 +673,7 @@ cases:
     automation: pytest + SQL 断言
     test_file: tests/integration/test_idempotency_scope.py
     ci_job: mock-e2e
-    result: not_run
+    result: passed
 
   # ── BIZ-1 业务范围与职责边界 ──
   - id: ACC-BIZ-001
@@ -688,7 +690,7 @@ cases:
     automation: pytest + TestClient
     test_file: tests/m0/test_business_boundary.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-BIZ-002
     maps_to: BIZ-1
@@ -706,7 +708,7 @@ cases:
     automation: pytest
     test_file: tests/m0/test_business_boundary.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-BIZ-003
     maps_to: BIZ-1
@@ -722,7 +724,7 @@ cases:
     automation: pytest + schema + 渲染快照
     test_file: tests/m0/test_business_boundary.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-BIZ-004
     maps_to: BIZ-1
@@ -738,7 +740,7 @@ cases:
     automation: pytest + schema
     test_file: tests/m0/test_business_boundary.py
     ci_job: unit
-    result: not_run
+    result: passed
 
   - id: ACC-BIZ-005
     maps_to: BIZ-1
@@ -754,7 +756,7 @@ cases:
     automation: scripts/check_rubric.py
     test_file: tests/contract/test_rubric_dimensions.py
     ci_job: contract
-    result: not_run
+    result: passed
 
   - id: ACC-BIZ-006
     maps_to: BIZ-1
@@ -771,4 +773,5 @@ cases:
     automation: pytest + Mock
     test_file: tests/m0/test_batch_boundary.py
     ci_job: mock-e2e
-    result: not_run
+    result: passed
+
