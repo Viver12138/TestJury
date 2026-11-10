@@ -466,3 +466,17 @@ python scripts/check_m0_acceptance.py
 - `STORAGE_BACKEND=memory` 仅用于单测与本地演示；生产默认 `postgres` 且禁止 memory。
 - Rubric 仍为 `0.2.0 draft`：生产模式加载会被拒绝，待 V-03B 审核发布。
 
+### 6.4 实现与设计的已知差异（待设计同步）
+
+M0 实现过程中发现设计缺口，以下差异已进入实现但**尚未回写设计文档**，需在下一次设计变更中收口（不得据此宣称设计已更新）：
+
+| 差异 | 现状 | 后续动作 |
+|---|---|---|
+| `api_keys` 授权表 | docs/02 未定义；M0 新增 `api_keys`（sha256 摘要、actor_type、roles、caller_id、撤销/过期），作为 `docs/17` §5 授权表的实现 | 补入 docs/02 DDL 与数据字典，并登记设计变更 |
+| `attachments` 表 | docs/02 的 `case_attachments` 以 `review_id` 绑定；M0 先实现内容寻址的全局附件表（同 sha256 去重），暂未绑定评审 | M1 前补评审引用与删除级联，回写 docs/02 |
+| `issues` 投影 | 报告 `report_json` 已落库并锁定；`issues` 表建立了结构，但 Worker 尚未写投影 | M1 前实现同事务投影 + `rebuild_projection.py`，并补一致性测试 |
+| 真实模型 Adapter | 只有确定性 Mock；`config/models.yaml` 全部标 `testing`/`pending` | V-01 实测后接入三类 Adapter |
+| 知识库检索 | 阶段固定 `skipped`，报告记 `kb_module_missing` | M2/M3 接入 KB、向量、RRF、Rerank |
+| CI 远端执行 | `.github/workflows/contracts.yml` 已定义 contract/unit/migration/mock-e2e/ci-all；本地等价命令全部通过，未在 GitHub 远端实际运行 | 首次 push 后确认各 Job 通过 |
+
+

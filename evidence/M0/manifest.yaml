@@ -20,3 +20,4 @@ limitations:
 - 不代表评审质量或业务有效性（docs/08 §5.3）
 - 真实模型 Adapter、知识库检索、性能与生产部署未验证
 - Rubric 仍为 draft，生产模式会拒绝加载
+- GitHub Actions 工作流已定义但未在远端执行；本地等价命令（contract/unit/migration/mock-e2e）通过
