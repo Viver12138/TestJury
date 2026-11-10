@@ -7,8 +7,12 @@ import os
 from logging.config import fileConfig
 
 from alembic import context
+from dotenv import load_dotenv
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
+
+# 本地开发直接从仓库根目录 .env 读取 DATABASE_URL；CI 通过环境变量注入
+load_dotenv()
 
 config = context.config
 

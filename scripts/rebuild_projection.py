@@ -16,8 +16,11 @@ import os
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+load_dotenv(ROOT / ".env")
 
 from app.pipeline.projection import compare_projection, records_from_report  # noqa: E402
 from app.storage.postgres import PostgresStorage  # noqa: E402
