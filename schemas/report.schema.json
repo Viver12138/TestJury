@@ -13,13 +13,28 @@
     "case_version": { "type": "integer", "minimum": 1 },
     "generation": { "type": "integer", "minimum": 1 },
     "parent_review_id": { "type": ["string", "null"] },
-    "status": { "enum": ["queued", "processing", "retrying", "done", "completed_with_warnings", "failed"] },
+    "status": { "enum": ["queued", "processing", "retrying", "done", "completed_with_warnings", "failed", "cancelled"] },
     "stage": { "enum": ["input_check", "preprocess", "kb_retrieve", "blind_review", "fusion", "vote", "arbitration", "verdict", "render"] },
     "ai_verdict": { "enum": ["blocked", "conditional", "need_human", null] },
     "human_status": { "enum": ["pending", "approved", "rejected", "changes_requested"] },
     "degraded": { "type": "boolean" },
     "degraded_reasons": { "type": "array", "items": { "type": "string" } },
     "participants": { "type": "array", "items": { "type": "string" } },
+    "topology": { "enum": ["single", "dual", "multi"] },
+    "review_participants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["participant_id", "role_id", "status"],
+        "properties": {
+          "participant_id": { "type": "string" },
+          "role_id": { "type": "string" },
+          "status": { "enum": ["active", "failed", "absent"] },
+          "model": { "type": ["string", "null"] },
+          "actual_model": { "type": ["string", "null"] }
+        }
+      }
+    },
     "review_completeness": {
       "type": "object",
       "properties": {
@@ -126,6 +141,13 @@
         "evidence_quote": { "type": ["string", "null"] },
         "rationale": { "type": "string" },
         "suggestion": { "type": ["string", "null"] },
+        "evidence_refs": { "type": "array", "items": { "type": "object" } },
+        "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "confidence_source": { "enum": ["uncalibrated", "calibrated"] },
+        "model_confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "validation_status": { "enum": ["passed", "rejected", "needs_review", null] },
+        "evidence_support_status": { "enum": ["supported", "unsupported", "conflicted", "insufficient", null] },
+        "decision_status": { "enum": ["accepted", "rejected", "needs_review", null] },
         "kb_grounded": { "type": "boolean" },
         "kb_refs": { "type": "array", "items": { "type": "string" } },
         "evidence_type": { "type": ["string", "null"] },

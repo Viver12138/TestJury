@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；主审仲裁按条件触发，不是固定第三次调用
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**v1.1 设计冻结修订**（补齐复核任务、附件闭环、动态拓扑与契约校验）· 2026-11-10；下一步进入工程实现
+> **状态**：**v1.2 设计冻结修订**（契约一致性与复核生命周期收口）· 2026-11-10；可进入 M0 实现
 
 ---
 
@@ -170,6 +170,19 @@
 | 150 | 反馈评测追溯 | review→issue→feedback→sample→dataset 版本链；调参集与验收集隔离 |
 | 151 | 契约 CI | 枚举/状态机/Schema/API/DB/Prompt/Rubric/文档路径自动检查 |
 | 152 | RPO/RTO 演练 | 目标值须通过季度恢复演练验证，不只在文档声明 |
+| 153 | 数据契约唯一 | `docs/17` 为全局字典；Pydantic/DB/JSON Schema/API/Prompt 必须由 CI 对齐 |
+| 154 | 幂等响应 | 幂等命中统一 200 + `idempotent_replay=true`；删除 409 `DUPLICATE`；同键不同体 422 |
+| 155 | 复核生命周期 | 任务状态 + 结果 + append-only 事件；支持重开/转派/多人复核/多 generation |
+| 156 | 角色/参与者/模型 | `role_id` ≠ `participant_id` ≠ 模型实例；创建时快照，故障切换记 actual_model |
+| 157 | 五层校验 | 格式→引用→证据→适用性→决策；模型置信度不参与可信度 |
+| 158 | 附件删除 | 历史报告保留引用元数据但不可下载；物理文件异步清理，DB 记录标记 |
+| 159 | 统计单位 | Case/Issue/Claim/Run 分开声明，禁止混算 |
+| 160 | 增量价值 | Incremental Valid Issue Gain、Cost per Valid Issue、Human Override Rate |
+| 161 | 缺口处理 | `gap_type` + `gap_resolution` 记录实际动作，关闭不等于补规则 |
+| 162 | 决策索引 | `design/decisions.yaml` 机器可读；docs/08 §2.0 为权威 |
+| 163 | 健康检查 | `/livez`、`/readyz`、`/healthz` 兼容、`/metrics` |
+| 164 | 附件卷 | 所有 API/Worker 共享同一附件卷；多机前必须换对象存储 |
+| 165 | Schema 同步 | 报告 Schema 补 `cancelled`、issue 证据/置信度/校验状态、participants |
 
 ## 3. 文档索引
 
@@ -205,6 +218,7 @@
 | [docs/28-Git协作协议.md](docs/28-Git协作协议.md) | 多人协作的提交规范、推送协议、MR 流程 |
 | [rubric/README.md](rubric/README.md) | 机器可执行 Rubric：YAML、Schema、版本副本与 CI 校验规则 |
 | [schemas/README.md](schemas/README.md) | 报告 JSON Schema 与版本化规则 |
+| [design/decisions.yaml](design/decisions.yaml) | 机器可读决策索引（与 docs/08 对齐） |
 
 ## 4. 明确不做（v1）
 
