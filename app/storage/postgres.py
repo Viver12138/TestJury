@@ -24,6 +24,7 @@ from app.storage.models import (
     BatchRecord,
     CandidateRecord,
     DecisionRecord,
+    IssueRecord,
     ReviewJob,
     ReviewTaskRecord,
     StageAttempt,
@@ -749,6 +750,192 @@ class PostgresStorage(_PooledStorage):
                 severity=row["severity"],
                 reason=row["reason"],
                 model_run_id=str(row["model_run_id"]) if row["model_run_id"] else None,
+                created_at=row["created_at"],
+            )
+            for row in rows
+        ]
+
+    # ── 报告投影与附件绑定 ──
+
+    async def finalize_report(
+        self,
+        review_id: str,
+        *,
+        fencing_token: int,
+        fields: dict[str, Any],
+        issues: list[IssueRecord],
+    ) -> ReviewJob:
+        values: list[Any] = []
+        assignments: list[str] = []
+        for key, value in fields.items():
+            if key not in _JOB_COLUMNS:
+                raise ValueError(f"不可更新字段: {key}")
+            values.append(value)
+            assignments.append(f"{key} = ${len(values)}")
+        values.extend([UUID(review_id), fencing_token])
+        sql = (
+            f"UPDATE review_jobs SET {', '.join(assignments)} "
+            f"WHERE id = ${len(values) - 1}::uuid AND fencing_token = ${len(values)} "
+            f"RETURNING *"
+        )
+        pool = await self._get_pool()
+        async with pool.acquire() as conn:
+            async with conn.transaction():
+                row = await conn.fetchrow(sql, *values)
+                if row is None:
+                    current = await conn.fetchrow(
+                        "SELECT fencing_token FROM review_jobs WHERE id=$1::uuid",
+                        review_id,
+                    )
+                    if current is None:
+                        raise ApiError(ErrorCode.NOT_FOUND, "评审任务不存在")
+                    raise FencingMismatch(fencing_token, current["fencing_token"])
+                await conn.execute(
+                    "DELETE FROM issues WHERE review_id=$1::uuid", UUID(review_id)
+                )
+                for issue in issues:
+                    await self._insert_issue(conn, issue)
+        return _row_to_job(row)
+
+    async def _insert_issue(self, conn: asyncpg.Connection, issue: IssueRecord) -> None:
+        await conn.execute(
+            """
+            INSERT INTO issues
+                (id, review_id, candidate_id, issue_no, step_index, dimension, severity,
+                 category, evidence_quote, rationale, suggestion, kb_grounded, kb_refs,
+                 evidence_refs, evidence_type, evidence_strength, evidence_status,
+                 proposed_by, confidence, confidence_source, model_confidence,
+                 validation_status, evidence_support_status, decision_status, status,
+                 chief_decision, chief_reason, human_verdict)
+            VALUES ($1::uuid,$2::uuid,$3::uuid,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,
+                    $15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28)
+            """,
+            UUID(issue.id),
+            UUID(issue.review_id),
+            UUID(issue.candidate_id) if issue.candidate_id else None,
+            issue.issue_no,
+            issue.step_index,
+            issue.dimension,
+            issue.severity,
+            issue.category,
+            issue.evidence_quote,
+            issue.rationale,
+            issue.suggestion,
+            issue.kb_grounded,
+            issue.kb_refs,
+            issue.evidence_refs,
+            issue.evidence_type,
+            issue.evidence_strength,
+            issue.evidence_status,
+            issue.proposed_by,
+            issue.confidence,
+            issue.confidence_source,
+            issue.model_confidence,
+            issue.validation_status,
+            issue.evidence_support_status,
+            issue.decision_status,
+            issue.status,
+            issue.chief_decision,
+            issue.chief_reason,
+            issue.human_verdict,
+        )
+
+    async def replace_issues(self, review_id: str, issues: list[IssueRecord]) -> None:
+        pool = await self._get_pool()
+        async with pool.acquire() as conn:
+            async with conn.transaction():
+                await conn.execute(
+                    "DELETE FROM issues WHERE review_id=$1::uuid", UUID(review_id)
+                )
+                for issue in issues:
+                    await self._insert_issue(conn, issue)
+
+    async def list_issues(self, review_id: str) -> list[IssueRecord]:
+        pool = await self._get_pool()
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(
+                "SELECT * FROM issues WHERE review_id=$1::uuid ORDER BY issue_no",
+                review_id,
+            )
+        return [
+            IssueRecord(
+                id=str(row["id"]),
+                review_id=str(row["review_id"]),
+                issue_no=row["issue_no"],
+                candidate_id=str(row["candidate_id"]) if row["candidate_id"] else None,
+                step_index=row["step_index"],
+                dimension=row["dimension"],
+                severity=row["severity"],
+                category=row["category"],
+                evidence_quote=row["evidence_quote"],
+                rationale=row["rationale"],
+                suggestion=row["suggestion"],
+                status=row["status"],
+                kb_grounded=row["kb_grounded"],
+                kb_refs=row["kb_refs"] or [],
+                evidence_refs=row["evidence_refs"] or [],
+                evidence_type=row["evidence_type"],
+                evidence_strength=row["evidence_strength"],
+                evidence_status=row["evidence_status"],
+                proposed_by=row["proposed_by"] or [],
+                confidence=float(row["confidence"]) if row["confidence"] is not None else None,
+                confidence_source=row["confidence_source"],
+                model_confidence=float(row["model_confidence"])
+                if row["model_confidence"] is not None
+                else None,
+                validation_status=row["validation_status"],
+                evidence_support_status=row["evidence_support_status"],
+                decision_status=row["decision_status"],
+                chief_decision=row["chief_decision"],
+                chief_reason=row["chief_reason"],
+                human_verdict=row["human_verdict"],
+            )
+            for row in rows
+        ]
+
+    async def bind_review_attachments(
+        self, review_id: str, attachments: list[AttachmentRecord]
+    ) -> None:
+        pool = await self._get_pool()
+        async with pool.acquire() as conn:
+            for attachment in attachments:
+                await conn.execute(
+                    """
+                    INSERT INTO review_attachments
+                        (review_id, attachment_id, file_name, sha256, status)
+                    VALUES ($1::uuid,$2::uuid,$3,$4,$5)
+                    ON CONFLICT (review_id, attachment_id) DO NOTHING
+                    """,
+                    UUID(review_id),
+                    UUID(attachment.id),
+                    attachment.file_name,
+                    attachment.sha256,
+                    attachment.status,
+                )
+
+    async def list_review_attachments(self, review_id: str) -> list[AttachmentRecord]:
+        pool = await self._get_pool()
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT a.* FROM attachments a
+                JOIN review_attachments ra ON ra.attachment_id = a.id
+                WHERE ra.review_id = $1::uuid
+                ORDER BY ra.created_at
+                """,
+                review_id,
+            )
+        return [
+            AttachmentRecord(
+                id=str(row["id"]),
+                file_name=row["file_name"],
+                mime_type=row["mime_type"],
+                size_bytes=row["size_bytes"],
+                sha256=row["sha256"],
+                storage_uri=row["storage_uri"],
+                storage_path=row["storage_path"],
+                uploader_id=row["uploader_id"],
+                status=row["status"],
                 created_at=row["created_at"],
             )
             for row in rows

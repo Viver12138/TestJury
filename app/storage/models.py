@@ -149,6 +149,40 @@ class VoteRecord:
 
 
 @dataclass
+class IssueRecord:
+    """`issues` 投影行：从 `report_json.issues` 派生，不是事实源。"""
+
+    review_id: str
+    issue_no: int
+    dimension: str
+    severity: str
+    category: str
+    rationale: str
+    status: str
+    step_index: int | None = None
+    candidate_id: str | None = None
+    evidence_quote: str | None = None
+    suggestion: str | None = None
+    kb_grounded: bool = False
+    kb_refs: list[Any] = field(default_factory=list)
+    evidence_refs: list[Any] = field(default_factory=list)
+    evidence_type: str | None = None
+    evidence_strength: str | None = None
+    evidence_status: str | None = None
+    proposed_by: list[Any] = field(default_factory=list)
+    confidence: float | None = None
+    confidence_source: str = "uncalibrated"
+    model_confidence: float | None = None
+    validation_status: str | None = None
+    evidence_support_status: str | None = None
+    decision_status: str | None = None
+    chief_decision: str | None = None
+    chief_reason: str | None = None
+    human_verdict: str | None = None
+    id: str = field(default_factory=lambda: str(uuid4()))
+
+
+@dataclass
 class DecisionRecord:
     id: str
     review_id: str

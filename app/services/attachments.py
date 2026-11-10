@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+from uuid import uuid4
 
 from app.config import Settings
 from app.core.errors import ApiError, ErrorCode
@@ -47,10 +48,6 @@ class AttachmentService:
             raise ApiError(ErrorCode.INPUT_INVALID, "附件超过大小上限", field="file")
 
         digest = hashlib.sha256(content).hexdigest()
-        existing = await self.storage.get_attachment(f"a-{digest[:12]}")
-        if existing is not None and existing.status == "ready":
-            return self._public(existing)
-
         root = Path(self.settings.attachment_dir)
         target_dir = root / digest[:2]
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -59,7 +56,7 @@ class AttachmentService:
             target.write_bytes(content)
 
         record = AttachmentRecord(
-            id=f"a-{digest[:12]}",
+            id=str(uuid4()),
             file_name=file_name,
             mime_type=mime_type,
             size_bytes=len(content),

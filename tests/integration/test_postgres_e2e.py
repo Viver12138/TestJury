@@ -31,11 +31,26 @@ async def test_postgres_full_chain(pg_app) -> None:
     async with pg_app.router.lifespan_context(pg_app):
         transport = httpx.ASGITransport(app=pg_app)
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            uploaded = await client.post(
+                "/v1/attachments",
+                files={"file": ("step3.png", b"pg-e2e-attachment", "image/png")},
+                headers=auth_headers(),
+            )
+            assert uploaded.status_code == 200, uploaded.text
+            attachment = uploaded.json()
+
             case = valid_case(
                 steps=[
                     {"index": 1, "action": "点击【开始挖宝】按钮", "expected": "提示已生成藏宝点"},
                     {"index": 2, "action": "点击【发现】按钮"},
-                ]
+                ],
+                attachments=[
+                    {
+                        "attachment_id": attachment["attachment_id"],
+                        "file_name": attachment["file_name"],
+                        "sha256": attachment["sha256"],
+                    }
+                ],
             )
             created = await client.post(
                 "/v1/reviews", json=review_payload(case=case), headers=auth_headers()
@@ -55,6 +70,13 @@ async def test_postgres_full_chain(pg_app) -> None:
             assert detail["status"] == "done"
             assert detail["report"]["issues"]
             assert detail["review_completeness"]["complete"] is True
+            assert detail["report"]["attachments"][0]["analyzed_by_ai"] is False
+
+            projected = await pg_app.state.storage.list_issues(review_id)
+            assert len(projected) == len(detail["report"]["issues"])
+            bindings = await pg_app.state.storage.list_review_attachments(review_id)
+            assert len(bindings) == 1
+            assert bindings[0].sha256 == attachment["sha256"]
 
             stages = await pg_app.state.storage.list_stages(review_id)
             assert {stage.stage for stage in stages} >= {"input_check", "blind_review", "verdict"}

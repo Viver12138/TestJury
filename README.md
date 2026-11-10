@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.12 + M0 实现**（FastAPI/DB/Mock 全链路；M0 十项退出条件与 40 条验收用例通过；真实模型、知识库与生产部署未开始）· 2026-11-10
+> **状态**：**design-v1.12 + M0 实现 + M1 前置**（投影、附件绑定、模型适配器契约；270 条测试通过；真实模型、知识库与生产部署未开始）· 2026-11-10
 
 ---
 
@@ -472,11 +472,25 @@ M0 实现过程中发现设计缺口，以下差异已进入实现但**尚未回
 
 | 差异 | 现状 | 后续动作 |
 |---|---|---|
-| `api_keys` 授权表 | docs/02 未定义；M0 新增 `api_keys`（sha256 摘要、actor_type、roles、caller_id、撤销/过期），作为 `docs/17` §5 授权表的实现 | 补入 docs/02 DDL 与数据字典，并登记设计变更 |
-| `attachments` 表 | docs/02 的 `case_attachments` 以 `review_id` 绑定；M0 先实现内容寻址的全局附件表（同 sha256 去重），暂未绑定评审 | M1 前补评审引用与删除级联，回写 docs/02 |
-| `issues` 投影 | 报告 `report_json` 已落库并锁定；`issues` 表建立了结构，但 Worker 尚未写投影 | M1 前实现同事务投影 + `rebuild_projection.py`，并补一致性测试 |
-| 真实模型 Adapter | 只有确定性 Mock；`config/models.yaml` 全部标 `testing`/`pending` | V-01 实测后接入三类 Adapter |
+| `api_keys` 授权表 | docs/02 未定义；已实现 `api_keys`（sha256 摘要、actor_type、roles、caller_id、撤销/过期） | 补入 docs/02 DDL 与数据字典，并登记设计变更 |
+| `attachments` 表 | 已实现内容寻址附件 + `review_attachments` 评审绑定（Alembic 0002）；提交校验归属与摘要，删除评审级联绑定 | 回写 docs/02，替换/补充 `case_attachments` 语义 |
+| `issues` 投影 | **已补齐**：`finalize_report` 同事务写入；`rebuild_projection.py` 可重建，`check_consistency.py` 可检出漂移 | 设计文档确认（docs/14 §7 已要求，无结构变更） |
+| 真实模型 Adapter | **协议层已补齐**：Chat/Embedding/Rerank 协议、注册表校验、OpenAI 兼容适配器、错误分类与重试；仍只有 Mock 参与流水线 | V-01 实测后接入真实 Key 与 Adapter |
 | 知识库检索 | 阶段固定 `skipped`，报告记 `kb_module_missing` | M2/M3 接入 KB、向量、RRF、Rerank |
 | CI 远端执行 | `.github/workflows/contracts.yml` 已定义 contract/unit/migration/mock-e2e/ci-all；本地等价命令全部通过，未在 GitHub 远端实际运行 | 首次 push 后确认各 Job 通过 |
+
+设计缺口与本次实现补充已记录在 [design/changes/2026-11-10-m1-implementation-gaps.md](design/changes/2026-11-10-m1-implementation-gaps.md)，状态为**待批准**；批准前不得宣称设计已更新。
+
+### 6.5 M1 前置（不依赖供应商）
+
+| 能力 | 入口 | 验证 |
+|---|---|---|
+| 报告投影 | Worker `finalize_report`：报告字段与 `issues` 同事务写入；ID 由 `uuid5(review_id, issue_no)` 生成 | `tests/m0/test_projection.py`、`tests/integration/test_postgres_e2e.py` |
+| 投影重建 | `python scripts/rebuild_projection.py --all [--check]` | `tests/migration/test_projection_rebuild.py` |
+| 一致性检查 | `python scripts/check_consistency.py [--review <id>]` | 同上；漂移退出码 1 |
+| 附件绑定 | 上传 → `case.attachments[]` 引用校验（存在/摘要/归属）→ 报告展示（`analyzed_by_ai=false`）→ 删除评审级联绑定 | `tests/m0/test_attachments.py` |
+| 模型适配器 | `app/llm/base.py` 协议；`registry.py` 注册表校验；`adapters/` OpenAI 兼容 Chat/Embedding + HTTP Rerank；`retry.py` 仅重试可重试错误 | `tests/unit/test_model_registry.py`、`tests/unit/test_llm_adapters.py`（MockTransport，无供应商调用） |
+
+> 电流水线仍使用 `MockChatClient`；真实 Adapter 只完成协议与工厂，接入真实供应商需 V-01 准入与密钥。
 
 

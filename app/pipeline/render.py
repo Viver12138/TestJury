@@ -161,6 +161,17 @@ def render_markdown(report: dict[str, Any]) -> str:
             f"- {run.get('role')}：status={run.get('status')} latency_ms={run.get('latency_ms')}"
         )
     lines.append("")
+    lines.append("### 7.4 附件")
+    attachments = report.get("attachments") or []
+    if not attachments:
+        lines.append("本次评审未引用附件。")
+    else:
+        for attachment in attachments:
+            lines.append(
+                f"- {attachment.get('file_name')}（sha256 {str(attachment.get('sha256'))[:12]}…，"
+                f"status={attachment.get('status')}）：附件仅存档，未发送给模型分析"
+            )
+    lines.append("")
     return "\n".join(lines)
 
 

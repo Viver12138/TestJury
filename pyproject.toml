@@ -43,7 +43,7 @@ markers = [
 [tool.ruff]
 line-length = 125
 target-version = "py311"
-extend-exclude = [".venv", "data", "evidence"]
+extend-exclude = [".venv", "data", "evidence", "scripts"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]

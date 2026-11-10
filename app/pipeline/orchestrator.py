@@ -23,6 +23,7 @@ from app.core.enums import (
     StageStatus,
 )
 from app.core.observability import observe_stage
+from app.llm.base import ReviewModel
 from app.llm.mock import MockChatClient
 from app.pipeline import arbitration as arbitration_mod
 from app.pipeline import fusion, render, vote
@@ -68,7 +69,7 @@ class ReviewPipeline:
         storage: Storage,
         settings: Settings,
         *,
-        mock_client: MockChatClient | None = None,
+        mock_client: ReviewModel | None = None,
     ) -> None:
         self.storage = storage
         self.settings = settings
@@ -554,6 +555,16 @@ def _build_report(
         "issues": issues,
         "human_review_items": human_items,
         "kb_gaps": [],
+        "attachments": [
+            {
+                "attachment_id": attachment.get("attachment_id"),
+                "file_name": attachment.get("file_name"),
+                "sha256": attachment.get("sha256"),
+                "analyzed_by_ai": False,
+                "status": "ready",
+            }
+            for attachment in (case.get("attachments") or [])
+        ],
         "scope": {
             "feature_point": (job.test_scope or {}).get("feature_point"),
             "scope_version": (job.test_scope or {}).get("scope_version"),

@@ -17,7 +17,7 @@ from app.core.idempotency import compute_idempotency_key, compute_input_hash
 from app.core.versioning import Versions
 from app.pipeline.input_check import validate_request
 from app.pipeline.render import render_markdown
-from app.storage.models import AuditRecord, ReviewJob, new_id
+from app.storage.models import AttachmentRecord, AuditRecord, ReviewJob, new_id
 from app.storage.port import Storage
 
 
@@ -60,6 +60,7 @@ class ReviewService:
         """`idempotency_key` 仅供服务层测试注入（生产 API 不接受客户端指定）。"""
 
         normalized = validate_request(payload, self.settings, caller_id=principal.caller_id)
+        attachments = await self._validate_attachments(normalized.case, principal)
         if normalized.options.get("strict_kb"):
             # M0 没有知识库覆盖任何模块，strict 模式必须明确拒绝（docs/03 §8）
             raise ApiError(
@@ -134,6 +135,9 @@ class ReviewService:
         if outcome.kind == "replay":
             return SubmitResult(status_code=200, body=_job_public(outcome.job, replay=True))
 
+        if attachments:
+            await self.storage.bind_review_attachments(outcome.job.id, attachments)
+
         if normalized.options.get("force"):
             await self.storage.append_audit(
                 AuditRecord(
@@ -180,6 +184,34 @@ class ReviewService:
         else:
             body["poll_url"] = f"/v1/reviews/{job.id}"
         return body
+
+    async def _validate_attachments(
+        self, case: dict[str, Any], principal: Principal
+    ) -> list[AttachmentRecord]:
+        records: list[AttachmentRecord] = []
+        for index, reference in enumerate(case.get("attachments") or []):
+            field = f"case.attachments[{index}]"
+            record = await self.storage.get_attachment(str(reference.get("attachment_id")))
+            if record is None or record.status != "ready":
+                raise ApiError(
+                    ErrorCode.INPUT_INVALID,
+                    f"{field} 引用的附件不存在或已删除",
+                    field=field,
+                )
+            if record.sha256 != reference.get("sha256"):
+                raise ApiError(
+                    ErrorCode.INPUT_INVALID,
+                    f"{field}.sha256 与已上传附件不一致",
+                    field=f"{field}.sha256",
+                )
+            if record.uploader_id and record.uploader_id != principal.actor_id:
+                raise ApiError(
+                    ErrorCode.FORBIDDEN,
+                    f"{field} 的附件不属于当前调用方",
+                    field=field,
+                )
+            records.append(record)
+        return records
 
     async def markdown(self, review_id: str) -> str:
         job = await self.storage.get_job(review_id)

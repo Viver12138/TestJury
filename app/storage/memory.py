@@ -20,6 +20,7 @@ from app.storage.models import (
     BatchRecord,
     CandidateRecord,
     DecisionRecord,
+    IssueRecord,
     ReviewJob,
     ReviewTaskRecord,
     StageAttempt,
@@ -39,6 +40,8 @@ class MemoryStorage:
         self._attempts: dict[str, list[StageAttempt]] = {}
         self._candidates: dict[str, list[CandidateRecord]] = {}
         self._votes: dict[str, list[VoteRecord]] = {}
+        self._issues: dict[str, list[IssueRecord]] = {}
+        self._review_attachments: dict[str, dict[str, AttachmentRecord]] = {}
         self._decisions: dict[str, list[DecisionRecord]] = {}
         self._tasks: dict[str, ReviewTaskRecord] = {}
         self._task_events: dict[str, list[dict[str, Any]]] = {}
@@ -123,6 +126,8 @@ class MemoryStorage:
             self._candidates.pop(review_id, None)
             self._votes.pop(review_id, None)
             self._decisions.pop(review_id, None)
+            self._issues.pop(review_id, None)
+            self._review_attachments.pop(review_id, None)
 
     async def list_jobs(
         self,
@@ -253,6 +258,39 @@ class MemoryStorage:
 
     async def list_votes(self, review_id: str) -> list[VoteRecord]:
         return list(self._votes.get(review_id, []))
+
+    async def finalize_report(
+        self,
+        review_id: str,
+        *,
+        fencing_token: int,
+        fields: dict[str, Any],
+        issues: list[IssueRecord],
+    ) -> ReviewJob:
+        async with self._global_lock:
+            job = self._require_job(review_id)
+            if job.fencing_token != fencing_token:
+                raise FencingMismatch(fencing_token, job.fencing_token)
+            updated = job.with_fields(**fields)
+            self._jobs[review_id] = updated
+            self._issues[review_id] = list(issues)
+            return updated
+
+    async def replace_issues(self, review_id: str, issues: list[IssueRecord]) -> None:
+        self._issues[review_id] = list(issues)
+
+    async def list_issues(self, review_id: str) -> list[IssueRecord]:
+        return list(self._issues.get(review_id, []))
+
+    async def bind_review_attachments(
+        self, review_id: str, attachments: list[AttachmentRecord]
+    ) -> None:
+        bucket = self._review_attachments.setdefault(review_id, {})
+        for attachment in attachments:
+            bucket.setdefault(attachment.id, attachment)
+
+    async def list_review_attachments(self, review_id: str) -> list[AttachmentRecord]:
+        return list(self._review_attachments.get(review_id, {}).values())
 
     # ── 人工决定 ──
 

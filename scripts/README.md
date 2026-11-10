@@ -1,6 +1,6 @@
 # scripts · 契约检查与规范工具
 
-> 本目录放**设计契约的自动检查**与规范参考实现。不依赖数据库、网络或真实模型，可在 CI 与本地离线运行。
+> 本目录放**设计契约的自动检查**与规范参考实现。除标注"需要 `DATABASE_URL`"的运维脚本外，不依赖数据库、网络或真实模型，可在 CI 与本地离线运行。
 > 设计说明见 `docs/28`；检查项与 M0 验收的对应关系见 `design/m0_acceptance.yaml`。
 
 ## 依赖
@@ -31,6 +31,8 @@ python scripts/check_contracts.py --json     # 机器可读输出
 | `check_execution_plan.py` | `design/execution_plan.yaml` 与模型准入/实验协议/KB 试点/复核责任表的结构、状态与证据完整性 | 待决项/验证项 ID + 缺失字段 |
 | `check_execution_gate.py` | 阶段执行门禁：owner、证据文件、验收人/时间、协议签署、S1–S4 出口（手动/阶段验收运行） | 项 ID + 缺失证据/出口 |
 | `verdict_reference.py` | `docs/12` 真值表的**规范参考实现**（纯函数，非生产代码）；供用例一致性与属性测试使用 | 抛 `VerdictInputError` 时指示字段 |
+| `rebuild_projection.py` | 运维脚本：从 `report_json` 重建 `issues` 投影并校验；支持 `--review/--all/--check`（需要 `DATABASE_URL`） | 评审 ID + 不一致字段 |
+| `check_consistency.py` | 运维脚本：报告/投影、人工决定、候选映射、附件绑定一致性检查（需要 `DATABASE_URL`） | 评审 ID + 具体不一致项 |
 
 ## 输出格式
 

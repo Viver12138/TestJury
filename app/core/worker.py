@@ -17,6 +17,7 @@ from app.core.observability import REVIEW_JOBS, RUNNING_JOBS
 from app.core.state_machine import FencingMismatch
 from app.core.versioning import Versions
 from app.pipeline.orchestrator import ReviewPipeline, create_review_tasks_after_report
+from app.pipeline.projection import records_from_report
 from app.storage.models import ReviewJob, now
 from app.storage.port import Storage
 
@@ -96,23 +97,26 @@ class Worker:
             "history_count": 0,
         }
         summary = report.get("summary") or {}
+        issue_records = records_from_report(job.id, report)
 
-        await self.storage.update_job(
+        await self.storage.finalize_report(
             job.id,
             fencing_token=job.fencing_token,
-            status=status,
-            stage="render",
-            ai_verdict=report.get("ai_verdict"),
-            report_json=report,
-            report_summary=summary,
-            review_completeness=completeness,
-            degraded=bool(report.get("degraded")),
-            degraded_reasons=list(report.get("degraded_reasons") or []),
-            input_quality=report.get("input_quality"),
-            normalized_case=report.get("appendix", {}).get("normalized_case"),
-            report_locked_at=now(),
-            finished_at=now(),
-            max_attempts=job.max_attempts,
+            fields={
+                "status": status,
+                "stage": "render",
+                "ai_verdict": report.get("ai_verdict"),
+                "report_json": report,
+                "report_summary": summary,
+                "review_completeness": completeness,
+                "degraded": bool(report.get("degraded")),
+                "degraded_reasons": list(report.get("degraded_reasons") or []),
+                "input_quality": report.get("input_quality"),
+                "normalized_case": report.get("appendix", {}).get("normalized_case"),
+                "report_locked_at": now(),
+                "finished_at": now(),
+            },
+            issues=issue_records,
         )
         await create_review_tasks_after_report(self.storage, job.id, report)
         REVIEW_JOBS.labels(status=status).inc()

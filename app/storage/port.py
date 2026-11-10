@@ -12,6 +12,7 @@ from app.storage.models import (
     BatchRecord,
     CandidateRecord,
     DecisionRecord,
+    IssueRecord,
     ReviewJob,
     ReviewTaskRecord,
     StageAttempt,
@@ -81,6 +82,25 @@ class Storage(Protocol):
     async def add_votes(self, review_id: str, votes: list[VoteRecord]) -> None: ...
 
     async def list_votes(self, review_id: str) -> list[VoteRecord]: ...
+
+    async def finalize_report(
+        self,
+        review_id: str,
+        *,
+        fencing_token: int,
+        fields: dict[str, Any],
+        issues: list[IssueRecord],
+    ) -> ReviewJob: ...
+
+    async def replace_issues(self, review_id: str, issues: list[IssueRecord]) -> None: ...
+
+    async def list_issues(self, review_id: str) -> list[IssueRecord]: ...
+
+    async def bind_review_attachments(
+        self, review_id: str, attachments: list[AttachmentRecord]
+    ) -> None: ...
+
+    async def list_review_attachments(self, review_id: str) -> list[AttachmentRecord]: ...
 
     async def add_decision(
         self,

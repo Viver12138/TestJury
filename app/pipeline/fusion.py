@@ -12,7 +12,7 @@ from typing import Any
 from uuid import uuid4
 
 from app.core.enums import SEVERITY_RANK
-from app.llm.mock import MockOpinion
+from app.llm.base import ReviewOpinion
 from app.pipeline.verdict import Claim, aggregate_claim_evidence
 from app.storage.models import CandidateRecord
 
@@ -56,7 +56,7 @@ def _standardize(step_index: int | None, category: str) -> str:
 def fuse(
     review_id: str,
     case: dict[str, Any],
-    opinions: list[MockOpinion],
+    opinions: list[ReviewOpinion],
     *,
     step_tolerance: int = 1,
 ) -> list[CandidateRecord]:

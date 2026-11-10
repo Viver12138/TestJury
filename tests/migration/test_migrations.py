@@ -53,17 +53,30 @@ def test_empty_database_migrates_and_rolls_back(clean_database: str) -> None:
     assert {"vector", "pgcrypto", "pg_trgm"} <= asyncio.run(_extensions())
     tables = asyncio.run(_tables())
     assert CORE_TABLES <= tables
+    assert "review_attachments" in tables
+    assert asyncio.run(_alembic_version()) == "0002_m1_review_attachments"
+
+    # 回滚一个 revision：只撤销附件绑定表，不破坏 M0 核心表
+    downgrade_one = run_alembic("downgrade", "-1")
+    assert downgrade_one.returncode == 0, downgrade_one.stdout + downgrade_one.stderr
+    after_one = asyncio.run(_tables())
+    assert "review_attachments" not in after_one
+    assert CORE_TABLES <= after_one
     assert asyncio.run(_alembic_version()) == "0001_m0_initial"
 
-    downgrade = run_alembic("downgrade", "-1")
-    assert downgrade.returncode == 0, downgrade.stdout + downgrade.stderr
+    # 再回滚到 base：核心表被撤销
+    downgrade_all = run_alembic("downgrade", "-1")
+    assert downgrade_all.returncode == 0, downgrade_all.stdout + downgrade_all.stderr
     remaining = asyncio.run(_tables())
     assert CORE_TABLES.isdisjoint(remaining), remaining
     assert "api_keys" not in remaining
 
     rebuild = run_alembic("upgrade", "head")
     assert rebuild.returncode == 0, rebuild.stdout + rebuild.stderr
-    assert CORE_TABLES <= asyncio.run(_tables())
+    rebuilt = asyncio.run(_tables())
+    assert CORE_TABLES <= rebuilt
+    assert "review_attachments" in rebuilt
+    assert asyncio.run(_alembic_version()) == "0002_m1_review_attachments"
 
 
 def test_repeated_upgrade_is_noop(clean_database: str) -> None:

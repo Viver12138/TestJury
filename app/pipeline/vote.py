@@ -9,7 +9,8 @@ from __future__ import annotations
 from typing import Any
 
 from app.core.enums import VoteValidity
-from app.llm.mock import MockOpinion, mock_vote
+from app.llm.base import ReviewOpinion
+from app.llm.mock import mock_vote
 from app.storage.models import CandidateRecord, VoteRecord
 
 
@@ -26,7 +27,7 @@ def build_vote_material(candidate: CandidateRecord) -> dict[str, Any]:
 def run_vote(
     review_id: str,
     candidates: list[CandidateRecord],
-    opinions: list[MockOpinion],
+    opinions: list[ReviewOpinion],
     roles: list[str],
 ) -> list[VoteRecord]:
     by_role = {opinion.role: opinion for opinion in opinions}

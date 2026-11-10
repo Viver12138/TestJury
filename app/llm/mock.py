@@ -8,8 +8,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import Any
+
+from app.llm.base import ReviewOpinion
+
+MockOpinion = ReviewOpinion
 
 MOCK_ROLE_SEVERITY = {
     "chief_blind": "major",
@@ -21,13 +24,6 @@ MOCK_ROLE_SEVERITY_BLOCKER = {
     "jury_a": "blocker",
     "jury_b": "blocker",
 }
-
-
-@dataclass
-class MockOpinion:
-    role: str
-    summary: str
-    issues: list[dict[str, Any]] = field(default_factory=list)
 
 
 def _issue(
