@@ -20,6 +20,20 @@ thresholds:
   p95_latency_max_ratio: null                # 相对 A 的倍数上限
   maintainability_veto: true                 # 可维护性否决项（一票否决）
 
+statistical_design:
+  alpha: 0.05
+  power: 0.8
+  pairing: same_case
+  ci_method: paired_bootstrap
+  bootstrap_iterations: 10000
+  multiple_comparison: holm
+  min_blocker_events_per_group: null
+  min_samples_per_stratum: null
+  seed: null
+  repeats_per_case: null
+  abnormal_sample_policy: null    # count_as_failure | exclude_with_reason
+  stopping_rule: null             # 仅预注册无效性停止
+
 approval_rule_source: docs/15 §6.1
 hard_gates: [strict_blocker_recall, fdr, cost_per_valid_issue, p95_latency]
 auxiliary_metrics: [blocker_precision, high_risk_recall, severity_accuracy, error_overlap]

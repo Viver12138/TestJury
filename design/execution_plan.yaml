@@ -22,6 +22,44 @@ stages:
     name: 生产准入
     exit: V-09/V-10/V-11/V-12 证据齐全
 
+stage_mapping:
+  S1:
+    milestones: [M0-pre]
+    requires: [Q-07, Q-08, Q-09, Q-12, Q-13]
+    note: 设计收口与责任人落实；不依赖生产级成果
+  S2:
+    milestones: [M1, M2]
+    requires: [V-01, V-02, V-04]
+    protocol: Q-14
+    note: Rubric 只要求可加载/可校验，不要求 production 发布
+  S3:
+    milestones: [M4, M5, M6]
+    requires: [V-05, V-06, V-07, V-08]
+    note: 含 V-03 的效果验证部分
+  S4:
+    milestones: [production]
+    requires: [V-03, V-09, V-10, V-11, V-12]
+    note: 含 V-03 的正式发布部分
+
+rubric_lifecycle:
+  M0: [schema_and_structure_loadable, draft_rejected_in_production]
+  M2_M6: [effectiveness_validation_on_real_data, regression]
+  production: [review_approve_publish_freeze_rollback]
+
+state_transitions:
+  - {from: designed, to: implemented, allowed: true}
+  - {from: implemented, to: verified, allowed: true}
+  - {from: verified, to: accepted, allowed: true}
+  - {from: verified, to: implemented, allowed: true, reason: 验证失败或发现实现缺陷}
+  - {from: accepted, to: implemented, allowed: true, conditional: true, reason: 重大变更或验收失效}
+  - {from: accepted, to: verified, allowed: true, conditional: true, reason: 需重新验证但实现无需重做}
+
+evidence_policy:
+  root: evidence/
+  history_required: true
+  overwrite_original: false
+  invalidate_on_version_change: true
+
 open_items:
   - id: Q-07
     title: 知识库首批试点模块

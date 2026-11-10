@@ -29,6 +29,7 @@ python scripts/check_contracts.py --json     # 机器可读输出
 | `check_verdict_cases.py` | `design/verdict_cases.yaml` 结构、规则覆盖、参考判定器一致、I1–I8 属性抽样 | 用例 ID + 规则 ID + 期望/实际 |
 | `check_m0_acceptance.py` | `design/m0_acceptance.yaml` 结构、M0 十项与 P0/BIZ 项覆盖、追踪字段、CI Job、docs/08 一致性 | 用例 ID + 缺失字段 |
 | `check_execution_plan.py` | `design/execution_plan.yaml` 与模型准入/实验协议/KB 试点/复核责任表的结构、状态与证据完整性 | 待决项/验证项 ID + 缺失字段 |
+| `check_execution_gate.py` | 阶段执行门禁：owner、证据文件、验收人/时间、协议签署、S1–S4 出口（手动/阶段验收运行） | 项 ID + 缺失证据/出口 |
 | `verdict_reference.py` | `docs/12` 真值表的**规范参考实现**（纯函数，非生产代码）；供用例一致性与属性测试使用 | 抛 `VerdictInputError` 时指示字段 |
 
 ## 输出格式
