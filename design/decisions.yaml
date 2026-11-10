@@ -7,7 +7,7 @@
 # status 只表示是否已决策；验证/实施/发布状态分开，不能把 decided 当成已验证。
 # phase 表示该决策最早在哪个阶段被验证/落地：M0/M1/M4/M5/M6/production。
 #   未到 phase 的决策不得被实现人员自行假设；M0 决策必须在 M0 用例通过后把 validation_status 改为 passed。
-version: "1.7"
+version: "1.8"
 last_updated: "2026-11-10"
 
 decisions:
@@ -769,6 +769,98 @@ decisions:
     phase: production
     choice: dr_and_compliance_deletion_records_with_rpo_rto
     source: [docs/27, docs/30]
+
+  # ── v1.8（补充 17：执行管理设计一致性收口） ──
+  - id: D193
+    title: 阶段映射与 Rubric 生命周期
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: stage_mapping_s1_s4_and_rubric_lifecycle_split
+    source: [docs/30, design/execution_plan.yaml]
+  - id: D194
+    title: 状态转换与证据失效
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: state_transition_table_history_and_version_invalidation
+    source: [docs/30, design/execution_plan.yaml]
+  - id: D195
+    title: 结构检查与执行门禁分层
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: ci_structural_checks_stage_gate_execution_checks
+    source: [docs/30, scripts, evidence]
+  - id: D196
+    title: A–E 统计设计
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M6
+    choice: sample_size_alpha_power_pairing_seed_anomaly_multiple_comparison_freeze
+    source: [docs/15, design/experiment_protocol.yaml]
+  - id: D197
+    title: KB 业务准入维度
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M2
+    choice: nine_dimension_admission_matrix
+    source: [docs/29]
+  - id: D198
+    title: 模型复验触发
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M1
+    choice: version_json_context_policy_latency_switch_triggers
+    source: [docs/06]
+  - id: D199
+    title: 复核运营角色互斥
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M5
+    choice: primary_backup_role_separation_conflict_final_arbiter_backlog
+    source: [docs/09]
+  - id: D200
+    title: 报告长期业务指标
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: production
+    choice: adoption_rejection_time_duplicate_help_conversion_dispute
+    source: [docs/07]
+  - id: D201
+    title: 错误来源分类
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M5
+    choice: input_knowledge_retrieval_model_fusion_server_human_taxonomy
+    source: [docs/30]
+  - id: D202
+    title: 最小质量监控
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: production
+    choice: logs_version_snapshot_replay_human_records_before_platform
+    source: [docs/10]
 
 open_questions:
   - id: Q-01

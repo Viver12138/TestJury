@@ -39,6 +39,30 @@ def _require_fields(item: dict[str, Any], fields: tuple[str, ...], label: str, r
         reporter.error(CHECK, rel(path), label, f"缺少字段: {missing}")
 
 
+def _check_stage_mapping(plan: dict[str, Any], reporter: Reporter) -> None:
+    mapping = plan.get("stage_mapping", {})
+    for stage in ("S1", "S2", "S3", "S4"):
+        spec = mapping.get(stage)
+        if not isinstance(spec, dict):
+            reporter.error(CHECK, rel(PLAN), f"stage_mapping.{stage}", "缺少阶段定义")
+            continue
+        if not spec.get("milestones") or not spec.get("requires"):
+            reporter.error(CHECK, rel(PLAN), f"stage_mapping.{stage}", "必须有里程碑与必需项")
+    s2 = mapping.get("S2", {}).get("requires", [])
+    if "V-03" in s2:
+        reporter.error(CHECK, rel(PLAN), "stage_mapping.S2", "S2 不得要求 Rubric production 发布（V-03）")
+    lifecycle = plan.get("rubric_lifecycle", {})
+    for key in ("M0", "M2_M6", "production"):
+        if not lifecycle.get(key):
+            reporter.error(CHECK, rel(PLAN), f"rubric_lifecycle.{key}", "缺少 Rubric 生命周期要求")
+    transitions = plan.get("state_transitions", [])
+    pairs = {(item.get("from"), item.get("to")) for item in transitions}
+    for required in (("designed", "implemented"), ("implemented", "verified"), ("verified", "accepted"),
+                     ("verified", "implemented"), ("accepted", "implemented"), ("accepted", "verified")):
+        if required not in pairs:
+            reporter.error(CHECK, rel(PLAN), "state_transitions", f"缺少转换 {required[0]} → {required[1]}")
+
+
 def _check_plan(plan: dict[str, Any], decisions: dict[str, Any], reporter: Reporter) -> None:
     if plan.get("status_model") != list(STATUS_MODEL):
         reporter.error(CHECK, rel(PLAN), "status_model", f"必须为 {list(STATUS_MODEL)}")
@@ -122,6 +146,23 @@ def _check_protocol(data: dict[str, Any], reporter: Reporter) -> None:
     for field in ("strict_blocker_recall_min_abs_gain", "fdr_max_abs_increase", "cost_per_valid_issue_max_ratio", "p95_latency_max_ratio"):
         if thresholds.get(field) is None:
             reporter.error(CHECK, rel(PROTOCOL), f"thresholds.{field}", f"{status} 前必须填具体阈值（不能实验后选口径）")
+    stats = data.get("statistical_design", {})
+    for field in (
+        "alpha",
+        "power",
+        "pairing",
+        "ci_method",
+        "bootstrap_iterations",
+        "multiple_comparison",
+        "min_blocker_events_per_group",
+        "min_samples_per_stratum",
+        "seed",
+        "repeats_per_case",
+        "abnormal_sample_policy",
+        "stopping_rule",
+    ):
+        if stats.get(field) is None:
+            reporter.error(CHECK, rel(PROTOCOL), f"statistical_design.{field}", f"{status} 前必须冻结统计设计")
 
 
 def _check_kb_pilot(data: dict[str, Any], reporter: Reporter) -> None:
@@ -177,6 +218,7 @@ def run(reporter: Reporter) -> None:
         return
 
     _check_plan(plan, decisions, reporter)
+    _check_stage_mapping(plan, reporter)
 
     reporter.checks_run += 1
     admission = lib.load_yaml(ADMISSION, reporter, CHECK)
