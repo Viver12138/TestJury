@@ -149,6 +149,17 @@ def _check_version_and_copy(data: dict[str, Any], reporter: Reporter) -> None:
     if not any(version in line and line.strip().startswith("|") for line in lines):
         reporter.error(CHECK, rel(README), "版本表", f"README 版本表缺少 {version} 行")
 
+    # 验收/设计文件不得硬编码 Rubric 版本（补充 15 P0-1）
+    for path in sorted(lib.DESIGN_DIR.glob("*.yaml")):
+        text = lib.read_text(path)
+        for match in re.finditer(r"versions/v(\d+\.\d+\.\d+)\.yaml", text):
+            reporter.error(
+                CHECK,
+                rel(path),
+                "Rubric 版本绑定",
+                f"不得硬编码 v{match.group(1)}；应从 rubric.version 读取并定位副本（当前 {version}）",
+            )
+
 
 def _check_business(data: dict[str, Any], reporter: Reporter) -> None:
     dimensions = data.get("dimensions", {})

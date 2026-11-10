@@ -1,6 +1,6 @@
 # 03 · API 契约
 
-> 版本：v1.5 · 2026-11-10（业务基线 v1.0 落地：test_type 支持范围）
+> 版本：v1.6 · 2026-11-10（补充 15 落实：完整性语义、test_type 必填、幂等范围、身份边界）
 
 - Base：`/v1`
 - 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
@@ -24,6 +24,7 @@
 - `INVALID_CASE`（400）：请求不是合法用例对象（JSON/Schema/类型）。
 - `INPUT_INVALID`（422）：用例对象合法但内容不可评审（空内容、`steps` 与 `raw_text` 同时为空、超长、模块缺失等业务校验）。
 - `UNSUPPORTED_TEST_TYPE`（422）：`case.test_type` 不是 v1 支持的 `functional`；不创建任务、不调用模型、不输出质量结论（业务边界见 `docs/00` §6）。
+- `TEST_TYPE_REQUIRED`（422）：新调用方未显式提供 `case.test_type`；不得静默推断为 `functional`（兼容模式仅限显式配置与白名单，见 §1 字段规则）。
 - 两者不合并：前者是"格式不对"，后者是"内容不能评审"。
 
 ## 1. 提交单份评审
@@ -84,7 +85,7 @@
 | `case.case_id` | 是 | 全局唯一用例标识（v1 单团队，全局唯一）；多团队时引入 `project_id` 组合 |
 | `case.case_version` | 否 | 调用方业务版本号，默认 1；**不承担内容指纹职责**。内容是否变化由服务端 `input_hash` 判断 |
 | `case.module` | 是 | 用于知识库检索；未命中则降级评审 |
-| `case.test_type` | 否 | 测试类型，默认 `functional`；**v1 只接受 `functional`**，其它值返回 422 `UNSUPPORTED_TEST_TYPE`（见 `docs/00` §6.1） |
+| `case.test_type` | 是 | 测试类型；**v1 只接受 `functional`**。缺失返回 422 `TEST_TYPE_REQUIRED`，其它值返回 422 `UNSUPPORTED_TEST_TYPE`（`docs/00` §6.1）。**默认 strict，不得静默推断**；兼容模式仅当服务端 `TEST_TYPE_DEFAULT_POLICY=compat` 且调用方在 `TEST_TYPE_COMPAT_CALLERS` 白名单时才按 `functional` 处理，并写入 `test_type_source=compat_default` 与告警 |
 | `case.title` | 是 | 用例标题 |
 | `case.preconditions` | 否 | 数组，缺失时由评审提示 |
 | `case.steps` | 条件必填 | 数组；若为 `null`/空，必须提供 `raw_text` |
@@ -139,7 +140,7 @@
 
 - `status` 与任务状态机一致：`queued` / `processing` / `retrying` / `done` / `completed_with_warnings` / `failed`。
 - `report_available=true` 时才返回 `report_json`；否则返回 `poll_url` 等待。
-- **硬校验在创建任务前完成**：字段/Schema/空内容/超长/`test_type` 不支持等不合法直接返回 400/422，不创建任务、不返回 202；Worker 只做软校验（记 `input_quality`），不再返回 422。
+- **硬校验在创建任务前完成**：字段/Schema/空内容/超长/`test_type` 缺失或不支持等不合法直接返回 400/422，不创建任务、不返回 202；Worker 只做软校验（记 `input_quality`），不再返回 422。
 - `force=true` 时：已有终态记录 → **202** + 新 `review_id` 与递增的 `generation`；active 仍在运行 → **409 `REVIEW_IN_PROGRESS`**（见 §1.1 S7）；用例内容变更另产生新 `case_version`。
 
 ### 1.1 版本与幂等语义
@@ -190,6 +191,23 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
 6. **报告不因新代次失效**：旧报告保持其 `report_schema_version`、`human_status` 快照与证据引用；更正只能新建代次（见 `docs/14` §7）。
 7. **`409 DUPLICATE` 已废弃**：全仓库不得再出现该错误码；409 仅用于状态冲突（S7、`DECISION_CONFLICT`、`INVALID_DECISION_STATE`、`KB_MODULE_MISSING`）。
 
+#### 幂等作用范围
+
+不是所有接口都按 `idempotency_key` 幂等，必须逐接口明确：
+
+| 接口 | 是否幂等 | 机制 | 重复请求行为 |
+|---|---|---|---|
+| `POST /v1/reviews` | 是 | `idempotency_key` | 按 S1–S7；未 force 200 命中，force 202 新代次 |
+| `POST /v1/review-batches` | 是 | 批次级 `idempotency_key` | 未 force 返回原批次；`force` 只重跑失败子任务 |
+| `POST /v1/attachments` | 内容寻址 | `sha256` | 同 `sha256` 返回同一 `attachment_id`，不重复存储 |
+| `POST /v1/reviews/{id}/decisions` | 否（业务动作） | `expected_updated_at` 乐观锁 | 重复/并发提交 409 `DECISION_CONFLICT` |
+| `POST /v1/reviews/{id}/feedback` | 否（追加事件） | 每次追加 | 允许重复反馈，按事件记录，不覆盖历史 |
+| `GET` / `HEAD` | 天然幂等 | — | 无副作用 |
+
+- **保留策略**：幂等记录与对应 review 记录同寿命；代次链（`superseded_by`）不被提前清理。review 被合规删除后，同一 key 的新请求视为**新任务**（无法复用旧结果），不做"删除后静默返回旧报告"。
+- 幂等只作用于"提交/创建"类接口；查询、审批、反馈不因重复请求改变既有事实。
+- 文档声明必须与实现一致；验收见 ACC-CON-001..005、ACC-CON-011。
+
 ### 1.2 Webhook 语义
 
 | 项 | 规则 |
@@ -219,7 +237,8 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
 - v1 存储在本机持久化卷（`ATTACHMENT_DIR`），不存数据库二进制。
 - 只接受白名单 MIME（png/jpg/pdf/txt）；超限返回 422。
 - 上传后可被同一 `caller_id` 的评审引用；引用时再次校验 SHA-256。
-- **v1 不把附件内容发送给模型**，报告不得声称已分析附件；后续多模态能力单独设计。
+- **v1 不把附件内容发送给模型**，报告不得声称已分析附件；`report.attachments[].analyzed_by_ai` 必须为 `false`，附件不作为 `issues` 的证据。
+- 附件仅用于存档、人工复核与审计；访问按评审授权，保留与删除见 `docs/10` §4.4。
 - 删除评审时先将附件标记 `deleted` 并禁止下载，再异步清理物理文件；数据库保留最小引用元数据，历史报告显示"附件已删除"。
 
 | 方法 | 路径 | 说明 |
@@ -234,7 +253,28 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
 
 `GET /v1/reviews/{review_id}`
 
-- `review_completeness.stages_completed` 只列 `succeeded` 阶段；条件跳过的阶段单列在 `stages_skipped`，不得混入完成列表。
+- `review_completeness` 的字段语义见 §2.1；`stages_completed` 只列 `succeeded`，跳过、失败、待执行分别列出。
+
+### 2.1 `review_completeness.complete` 语义
+
+`complete` **只表示流程完整性**：本次评审"适用且必需"的阶段是否全部成功完成；它不代表模型参与完整度，也不代表业务有效性。
+
+| 字段 | 含义 |
+|---|---|
+| `complete` | 所有适用且必需的阶段均为 `succeeded` 时为 true |
+| `stages_completed` | 仅 `succeeded` 阶段 |
+| `stages_skipped` | 合法跳过（条件未触发/不适用），不计入完成 |
+| `stages_failed` | `failed` 的阶段 |
+| `stages_pending` | 未执行/待执行/仍在处理 |
+| `full_participation` | `blind="3/3"` 且 `vote="3/3"` 时为 true；2/3 与 1/3 为 false |
+
+阶段是否"必需"由本次评审计划决定：
+
+- 始终必需：`input_check`、`blind_review`、`fusion`、`vote`、`verdict`、`render`。
+- 条件必需：`preprocess`（输入为 `raw_text` 时）、`kb_retrieve`（模块有知识库覆盖时）、`arbitration`（`arbitration_required=true` 时）。
+- 条件未触发 → 该阶段可 `skipped`，不影响 `complete`；**必需阶段** `skipped`/`failed`/`pending` → `complete=false`，不得用"条件跳过"掩盖。
+- 2/3 参与：`vote` 阶段成功时 `complete` 仍可为 true，但 `full_participation=false`，报告必须标注"仅 2/3 模型参与"（`docs/12` §6）。
+- `complete=true` 不等于业务可用、也不等于高评审质量；报告不得据此声称"完整三方评审"。
 
 ```json
 {
@@ -242,6 +282,7 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
   "case_id": "TC-DIG-0012",
   "module": "挖宝",
   "test_type": "functional",
+  "test_type_source": "request",
   "status": "done",
   "stage": "render",
   "generation": 1,
@@ -260,13 +301,16 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
     { "participant_id": "p-03", "role_id": "jury_b", "status": "absent", "model": "kimi-k3", "actual_model": null }
   ],
   "review_completeness": {
-    "blind": "3/3",
-    "vote": "3/3",
+    "blind": "2/3",
+    "vote": "2/3",
     "arbitration": "skipped",
     "arbitration_required": false,
     "stages_completed": ["input_check", "preprocess", "kb_retrieve", "blind_review", "fusion", "vote", "verdict", "render"],
     "stages_skipped": ["arbitration"],
-    "complete": true
+    "stages_failed": [],
+    "stages_pending": [],
+    "complete": true,
+    "full_participation": false
   },
   "input_quality": {
     "hard_errors": [],
@@ -464,7 +508,7 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
 - 子任务仍按单条幂等规则处理：已成功的子任务保留原结果。
 - `force=true` 默认**只重跑失败/未完成子任务**；`force_all=true` 才整批重跑（需显式字段，避免误操作）。
 - 用例内容变化（`input_hash` 变）只影响对应子任务，其他子任务不重跑。
-- **测试类型边界**：批次内每条 `case.test_type` 独立校验；任一条不是 `functional` → 整批 422 `UNSUPPORTED_TEST_TYPE`，不创建批次，不允许"静默跳过不支持的子任务"（`docs/00` §6）。
+- **测试类型边界**：批次内每条 `case.test_type` 独立校验；任一条缺失 → 整批 422 `TEST_TYPE_REQUIRED`，任一条不是 `functional` → 整批 422 `UNSUPPORTED_TEST_TYPE`；不创建批次，不允许"静默跳过不支持的子任务"（`docs/00` §6）。
 
 响应 202：
 
@@ -610,6 +654,7 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
 | 409 | `REVIEW_IN_PROGRESS` | `force=true` 但旧代次仍在执行 |
 | 422 | `INPUT_INVALID` | API 同步硬校验失败（内容为空、无 steps/raw_text、超长、字段非法），不创建任务 |
 | 422 | `UNSUPPORTED_TEST_TYPE` | `test_type` 不是 v1 支持的 `functional`；不创建任务、不出质量结论 |
+| 422 | `TEST_TYPE_REQUIRED` | 未提供 `test_type` 且未启用兼容模式；不创建任务 |
 | 422 | `TOO_MANY_CASES` | 批量超过 50 份 |
 | 422 | `INVALID_DECISION` | `decision` 非法，或 `reject`/`request_changes` 缺少理由 |
 | 429 | `QUEUE_FULL` | 队列已满，返回 `Retry-After` |

@@ -250,16 +250,22 @@ cases:
 
   - id: ACC-M0-010
     maps_to: M0-05
-    title: Rubric 与冻结版本副本一致
-    preconditions: [rubric/versions/v0.1.0.yaml 存在]
-    input: 比较 rubric.yaml 与对应版本副本
+    title: Rubric 版本绑定与冻结副本一致
+    preconditions: [rubric/rubric.yaml 可加载, rubric/versions/ 目录存在]
+    input: 当前 rubric.version；对应冻结副本；一份历史报告 fixture
     steps:
-      - 读取 rubric.version，定位 versions/vX.Y.Z.yaml
-      - 断言内容一致；缺失副本即失败
-    expected: 当前版本必须有对应冻结副本
-    failure_criteria: [改规则未增版本, 副本缺失, 副本被改]
-    automation: scripts/check_rubric.py
-    test_file: tests/contract/test_rubric_freeze.py
+      - 从 rubric.yaml 读取 version（不在用例中硬编码具体版本号）
+      - 定位 versions/v<version>.yaml；断言文件存在且可解析
+      - 断言冻结副本与主配置内容一致、必填字段完整
+      - 断言报告/任务使用的 rubric_version 与当前活动版本一致
+      - 模拟"版本已升级但副本缺失"：删除临时副本后断言检查失败
+      - 用历史报告 fixture 断言能按当时 rubric_version 还原规则，不受新版本影响
+    expected:
+      - 主版本变更后验收自动定位正确副本；缺失副本明确失败
+      - 活动版本与报告记录一致；历史报告可追溯
+    failure_criteria: [验收硬编码历史版本号, 缺失副本仍通过, 历史报告被新版本覆盖]
+    automation: scripts/check_rubric.py + pytest
+    test_file: tests/contract/test_rubric_version_binding.py
     ci_job: contract
     result: not_run
 
@@ -446,6 +452,42 @@ cases:
     ci_job: unit
     result: not_run
 
+  - id: ACC-M0-022
+    maps_to: M0-08
+    title: review_completeness 的 complete 语义
+    preconditions: [阶段执行与 Mock 评审可用]
+    input: 五种阶段组合（见步骤）
+    steps:
+      - 全部必需阶段成功 + 仲裁条件未触发跳过 → complete=true，stages_skipped 含 arbitration
+      - 必需阶段被跳过 → complete=false
+      - 必需阶段 failed → complete=false，stages_failed 非空
+      - 必需阶段 pending/running → complete=false，stages_pending 非空
+      - 3/3 全参与 + 可选阶段全完成 → complete=true；2/3 参与但阶段全成功 → complete=true 且 full_participation=false
+      - 断言 stages_completed/skipped/failed/pending 互斥且覆盖所有阶段
+    expected: complete 只表示流程完整性；参与度由 full_participation 表达；两者不得混用
+    failure_criteria: [必需阶段跳过仍 complete=true, 2/3 被写成 complete=false 且无 full_participation, 阶段列表重叠]
+    automation: pytest
+    test_file: tests/m0/test_completeness.py
+    ci_job: unit
+    result: not_run
+
+  - id: ACC-M0-023
+    maps_to: M0-07
+    title: 系统身份与人工审批身份分离
+    preconditions: [服务身份与个人身份认证可模拟]
+    input: 系统 Key、个人 OIDC token、已撤销 Key
+    steps:
+      - 系统 Key 调用审批接口 → 403（actor_type=service 不得审批）
+      - 个人 OIDC token 审批 → 允许，审计记录稳定 actor_id 与 actor_type=human
+      - 已撤销 Key/token 调用 → 401
+      - 断言审批人 ≠ 提交人按真实个人身份校验
+    expected: 系统调用与个人审批可区分、可追溯、可撤销
+    failure_criteria: [系统 Key 可审批, 共享 Key 冒充个人, 撤销后仍可调用, 审计缺 actor_id]
+    automation: pytest + TestClient
+    test_file: tests/m0/test_identity.py
+    ci_job: unit
+    result: not_run
+
   # ── P0-1 幂等/代次契约 ──
   - id: ACC-CON-001
     maps_to: P0-1
@@ -613,6 +655,24 @@ cases:
     ci_job: unit
     result: not_run
 
+  - id: ACC-CON-011
+    maps_to: P0-1
+    title: 幂等作用范围与保留策略
+    preconditions: [API、附件、审批与批量接口可用]
+    input: 对同一资源重复调用各接口
+    steps:
+      - POST /v1/reviews 同键重复 → 200 幂等命中（S2）
+      - POST /v1/review-batches 同键重复 → 返回原批次；force 只重跑失败子任务
+      - POST /v1/attachments 同 sha256 重复上传 → 返回同一 attachment_id，不重复存储
+      - POST /v1/reviews/{id}/decisions 重复提交 → 409 DECISION_CONFLICT（业务动作不幂等）
+      - 删除 review 后同键再提交 → 视为新任务（幂等记录随记录删除），响应明确
+    expected: 每个接口的幂等语义与 docs/03 §1.1 作用范围表一致；文档声明与实现一致
+    failure_criteria: [附件重复存储, 审批重复写入, 删除后复用旧记录, 文档与实现不一致]
+    automation: pytest + SQL 断言
+    test_file: tests/integration/test_idempotency_scope.py
+    ci_job: mock-e2e
+    result: not_run
+
   # ── BIZ-1 业务范围与职责边界 ──
   - id: ACC-BIZ-001
     maps_to: BIZ-1
@@ -632,15 +692,17 @@ cases:
 
   - id: ACC-BIZ-002
     maps_to: BIZ-1
-    title: test_type 缺省与非法值处理
-    preconditions: [API 可启动]
-    input: 缺省 test_type；test_type=unknown
+    title: test_type 必填与兼容模式
+    preconditions: [API 可启动, 可切换 TEST_TYPE_DEFAULT_POLICY 与白名单]
+    input: 缺省 test_type；test_type=unknown；兼容模式下白名单/非白名单调用方
     steps:
-      - 不传 test_type，断言按 functional 处理并返回 202
+      - strict 模式不传 test_type，断言 422 TEST_TYPE_REQUIRED，不建任务
       - 传 unknown，断言 422（INVALID_CASE 或 INPUT_INVALID），不建任务
-      - 查询响应/报告能看到 test_type=functional
-    expected: 缺省值为 functional；非法值不猜测、不静默改写
-    failure_criteria: [缺省被当作其它类型, 非法值被忽略, 报告缺 test_type]
+      - 设 TEST_TYPE_DEFAULT_POLICY=compat 且调用方在白名单，不传 test_type → 202，记录 test_type_source=compat_default 与告警
+      - 非白名单调用方在 compat 模式下仍返回 422 TEST_TYPE_REQUIRED
+      - 查询响应/报告能看到 test_type=functional 与 test_type_source
+    expected: 默认 strict；兼容模式显式、可追踪、可退出；非法值不猜测
+    failure_criteria: [缺省被静默当成 functional, 非法值被忽略, 报告缺 test_type_source, 兼容模式无记录]
     automation: pytest
     test_file: tests/m0/test_business_boundary.py
     ci_job: unit
@@ -692,4 +754,21 @@ cases:
     automation: scripts/check_rubric.py
     test_file: tests/contract/test_rubric_dimensions.py
     ci_job: contract
+    result: not_run
+
+  - id: ACC-BIZ-006
+    maps_to: BIZ-1
+    title: 批量入口只是多个独立单条评审
+    preconditions: [批量接口可用, Mock 全链路可跑]
+    input: 3 条用例的批次，其中 1 条执行失败
+    steps:
+      - 断言每条用例有独立 review_id、generation、报告与复核记录
+      - 断言批次状态为 partially_completed，且不掩盖单条状态
+      - 断言任一条 test_type 不合法时整批 422（硬校验）
+      - 断言报告不输出跨用例覆盖率、重复性分析或批次级质量结论
+    expected: 批量只做聚合，不做跨用例分析；单条失败不影响其他条
+    failure_criteria: [批次级结论替代单条结论, 输出未定义覆盖率, 一条失败拖垮全部]
+    automation: pytest + Mock
+    test_file: tests/m0/test_batch_boundary.py
+    ci_job: mock-e2e
     result: not_run

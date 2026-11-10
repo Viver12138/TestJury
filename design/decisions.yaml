@@ -7,7 +7,7 @@
 # status 只表示是否已决策；验证/实施/发布状态分开，不能把 decided 当成已验证。
 # phase 表示该决策最早在哪个阶段被验证/落地：M0/M1/M4/M5/M6/production。
 #   未到 phase 的决策不得被实现人员自行假设；M0 决策必须在 M0 用例通过后把 validation_status 改为 passed。
-version: "1.5"
+version: "1.6"
 last_updated: "2026-11-10"
 
 decisions:
@@ -549,3 +549,214 @@ decisions:
     phase: M0
     choice: docs00_authoritative_biz_001_015_registered_ci_checked
     source: [docs/00, docs/08, design/decisions.yaml]
+
+  # ── v1.6（补充 15 落实） ──
+  - id: D169
+    title: 版本体系分离
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: design_product_rubric_report_kb_versions_separated
+    source: [README, docs/00, docs/08]
+  - id: D170
+    title: Rubric 版本绑定
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: read_version_then_locate_frozen_copy_no_hardcode
+    source: [docs/04, design/m0_acceptance.yaml, rubric]
+  - id: D171
+    title: 完整性语义
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: complete_required_stages_full_participation_separate
+    source: [docs/03, docs/12, docs/13, schemas]
+  - id: D172
+    title: test_type 策略
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: test_type_required_strict_compat_allowlist_traced
+    source: [docs/00, docs/03, docs/19, docs/02]
+  - id: D173
+    title: 身份分层
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: actor_type_service_human_oidc_revocable_no_proxy
+    source: [docs/09, docs/10, docs/17]
+  - id: D174
+    title: 幂等作用范围
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: per_endpoint_idempotency_scope_and_retention
+    source: [docs/03, docs/19]
+  - id: D175
+    title: 知识库初始化
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M2
+    choice: docs29_first_batch_modules_sources_admission_acceptance
+    source: [docs/29, docs/11, docs/16]
+  - id: D176
+    title: 供应商数据准入
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M1
+    choice: data_admission_status_gating_separate_from_verification
+    source: [docs/10, docs/06]
+  - id: D177
+    title: 批量边界
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M5
+    choice: batch_is_independent_single_reviews_no_cross_case_analysis
+    source: [docs/03, docs/00]
+  - id: D178
+    title: Canonical 输入
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: source_adapter_to_canonical_case_before_pipeline
+    source: [docs/01, docs/06, docs/03]
+  - id: D179
+    title: 验收分层与变更影响
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: seven_layer_acceptance_and_change_impact_record
+    source: [docs/08, design/changes, docs/21]
+  - id: D180
+    title: 待决事项登记
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: open_questions_q01_q18_registered_with_phase
+    source: [docs/08, design/decisions.yaml]
+
+open_questions:
+  - id: Q-01
+    title: Rubric 验收版本如何选择
+    status: resolved
+    resolution: D170
+    phase: M0
+    source: [docs/08]
+  - id: Q-02
+    title: complete 的定义
+    status: resolved
+    resolution: D171
+    phase: M0
+    source: [docs/08]
+  - id: Q-03
+    title: test_type 是否允许缺省
+    status: resolved
+    resolution: D172
+    phase: M0
+    source: [docs/08]
+  - id: Q-04
+    title: 设计版本与产品版本如何区分
+    status: resolved
+    resolution: D169
+    phase: M0
+    source: [docs/08]
+  - id: Q-05
+    title: API 幂等范围
+    status: resolved
+    resolution: D174
+    phase: M0
+    source: [docs/08]
+  - id: Q-06
+    title: 人工审批身份来源
+    status: resolved
+    resolution: D173
+    phase: M0
+    source: [docs/08]
+  - id: Q-07
+    title: 知识库首批试点范围
+    status: open
+    phase: M2
+    source: [docs/29]
+  - id: Q-08
+    title: 历史缺陷能否作为业务规则
+    status: open
+    phase: M2
+    source: [docs/29, docs/16]
+  - id: Q-09
+    title: 外部模型数据准入
+    status: open
+    phase: M1
+    source: [docs/10]
+  - id: Q-10
+    title: v1 批量评审含义
+    status: resolved
+    resolution: D177
+    phase: M5
+    source: [docs/03]
+  - id: Q-11
+    title: 外部平台适配策略
+    status: resolved
+    resolution: D178
+    phase: M0
+    source: [docs/01]
+  - id: Q-12
+    title: 附件功能的 v1 价值
+    status: open
+    phase: M2
+    source: [docs/00, docs/03]
+  - id: Q-13
+    title: 人工复核任务分配
+    status: open
+    phase: M5
+    source: [docs/09]
+  - id: Q-14
+    title: 多模型组合是否值得增加模型
+    status: open
+    phase: M6
+    source: [docs/15]
+  - id: Q-15
+    title: 知识库是否真正改善评审
+    status: open
+    phase: M6
+    source: [docs/29]
+  - id: Q-16
+    title: 报告是否满足真实用户需求
+    status: open
+    phase: production
+    source: [docs/07]
+  - id: Q-17
+    title: 成本预算口径
+    status: resolved
+    resolution: D161
+    phase: production
+    source: [docs/20]
+  - id: Q-18
+    title: 数据删除与恢复策略
+    status: open
+    phase: production
+    source: [docs/10, docs/27]
