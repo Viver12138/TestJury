@@ -1,6 +1,6 @@
 # 05 · Prompt 草案
 
-> 版本：v0.8 · 2026-11-10（v0.8：跨文档冲突清理与 P0 决策冻结）
+> 版本：v0.10 · 2026-11-10（工程协议与契约冻结）
 > 所有模板存放于 `app/prompts/*.jinja2`，变量用 `{{ }}` 注入；每次修改后哈希写入报告。
 
 ---
@@ -441,7 +441,6 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
 请输出：
 {
   "role": "arbitration",
-  "ai_verdict": "blocked|conditional|need_human",
   "summary": "不超过 150 字的终审结论，说明主要风险",
   "issues": [
     {
@@ -481,7 +480,7 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
 ### 输出处理
 
 - 仲裁输出必须覆盖融合清单中的**每一条**；缺失的条目由服务端补为 `status=need_human` 并记 `parse_warnings`。
-- `ai_verdict` 由服务端**重新计算校验**；与模型输出不一致时以服务端规则为准，并在 `report_summary` 中记录差异（这本身是模型不稳定的信号）。
+- 仲裁输出**不包含** `ai_verdict`：模型只给 `summary`、问题处理与理由；最终结论由服务端 `verdict.py` 按 `docs/12` 计算。模型输出中的 `verdict`/`ai_verdict` 字段一律丢弃。
 - `human_review_items` 至少包含：主审驳回的 blocker、主审补充的 blocker、所有 disputed 项。
 
 ---

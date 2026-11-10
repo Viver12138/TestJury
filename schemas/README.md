@@ -1,0 +1,25 @@
+# TestJury Schemas
+
+> 机器可执行契约：报告 JSON Schema。Rubric 见 `rubric/`；枚举语义见 `docs/17`。
+
+| 文件 | 用途 |
+|---|---|
+| `report.schema.json` | 报告 JSON 结构（`report_json`）的唯一 Schema |
+| `README.md` | 本说明 |
+
+## 规则
+
+1. 报告生成后必须通过 Schema 校验；失败不得落库。
+2. Schema 变更必须递增 `report_schema_version`，并保留旧版本文件（如 `report-1.1.schema.json`）。
+3. 历史报告按生成时的 Schema 读取，不按最新 Schema 强转。
+4. CI 必须校验：
+   - Schema 自身合法；
+   - `docs/03` 响应示例与 Schema 一致；
+   - `verdict.py` / `issues` 投影字段均在 Schema 内；
+   - 旧版本报告在新代码下仍可读取。
+
+## 版本
+
+| `report_schema_version` | 文件 |
+|---|---|
+| `report-1.0` | `report.schema.json` |

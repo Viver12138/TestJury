@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://testjury.local/schemas/report.schema.json",
+  "title": "TestJury Report",
+  "type": "object",
+  "required": [
+    "review_id", "case_id", "status", "stage", "ai_verdict", "human_status",
+    "report_schema_version", "issues", "versions"
+  ],
+  "properties": {
+    "review_id": { "type": "string" },
+    "case_id": { "type": "string" },
+    "case_version": { "type": "integer", "minimum": 1 },
+    "generation": { "type": "integer", "minimum": 1 },
+    "parent_review_id": { "type": ["string", "null"] },
+    "status": { "enum": ["queued", "processing", "retrying", "done", "completed_with_warnings", "failed"] },
+    "stage": { "enum": ["input_check", "preprocess", "kb_retrieve", "blind_review", "fusion", "vote", "arbitration", "verdict", "render"] },
+    "ai_verdict": { "enum": ["blocked", "conditional", "need_human", null] },
+    "human_status": { "enum": ["pending", "approved", "rejected", "changes_requested"] },
+    "degraded": { "type": "boolean" },
+    "degraded_reasons": { "type": "array", "items": { "type": "string" } },
+    "participants": { "type": "array", "items": { "type": "string" } },
+    "review_completeness": {
+      "type": "object",
+      "properties": {
+        "blind": { "type": "string" },
+        "vote": { "type": "string" },
+        "arbitration": { "type": "string" },
+        "arbitration_required": { "type": "boolean" },
+        "complete": { "type": "boolean" },
+        "stages_completed": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "input_quality": {
+      "type": "object",
+      "properties": {
+        "hard_errors": { "type": "array", "items": { "type": "string" } },
+        "soft_issues": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "versions": {
+      "type": "object",
+      "required": ["kb", "rubric", "prompts", "model_config"],
+      "properties": {
+        "kb": { "type": "string" },
+        "rubric": { "type": "string" },
+        "prompts": { "type": "object" },
+        "retrieval_config": { "type": "string" },
+        "embedding_profile": { "type": "string" },
+        "model_config": { "type": "string" },
+        "models": { "type": "object" }
+      }
+    },
+    "summary": { "type": "object" },
+    "issues": { "type": "array", "items": { "$ref": "#/$defs/issue" } },
+    "human_review_list": { "type": "array", "items": { "type": "object" } },
+    "kb_gaps": { "type": "array", "items": { "type": "object" } },
+    "scope": { "type": "object" },
+    "decision_summary": { "type": "object" },
+    "appendix": { "type": "object" },
+    "report_schema_version": { "type": "string" },
+    "created_at": { "type": "string" },
+    "finished_at": { "type": ["string", "null"] }
+  },
+  "$defs": {
+    "issue": {
+      "type": "object",
+      "required": ["issue_no", "dimension", "severity", "category", "rationale", "status"],
+      "properties": {
+        "issue_no": { "type": "integer", "minimum": 1 },
+        "candidate_id": { "type": ["string", "null"] },
+        "step_index": { "type": ["integer", "null"] },
+        "dimension": { "enum": ["business", "test_design", "automation"] },
+        "severity": { "enum": ["blocker", "major", "suggestion"] },
+        "category": { "type": "string" },
+        "evidence_quote": { "type": ["string", "null"] },
+        "rationale": { "type": "string" },
+        "suggestion": { "type": ["string", "null"] },
+        "kb_grounded": { "type": "boolean" },
+        "kb_refs": { "type": "array", "items": { "type": "string" } },
+        "evidence_type": { "type": ["string", "null"] },
+        "evidence_strength": { "type": ["string", "null"] },
+        "evidence_status": { "enum": ["grounded", "partially_grounded", "ungrounded", "conflicted", "insufficient", null] },
+        "proposed_by": { "type": "array", "items": { "type": "string" } },
+        "votes": { "type": "object" },
+        "vote_summary": { "type": "object" },
+        "status": { "enum": ["adopted", "rejected", "disputed", "need_human", "chief_supplement"] },
+        "chief_decision": { "type": ["string", "null"] },
+        "chief_reason": { "type": ["string", "null"] },
+        "human_verdict": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

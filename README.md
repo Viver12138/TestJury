@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；主审仲裁按条件触发，不是固定第三次调用
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：设计主体完成 v0.8；进入设计冲突清理与 P0 决策冻结阶段，仍未开始工程实现 · 2026-11-10
+> **状态**：设计主体完成 v0.10；规则与 Schema 已落地，进入工程实现前最后冻结 · 2026-11-10
 
 ---
 
@@ -109,8 +109,33 @@
 | 89 | 部分证据 blocker | `partially_grounded` 的 blocker 仍可 `blocked`，但必须进人工复核清单，并在报告中标注"证据部分支持" |
 | 90 | 三模型架构 | 角色可先冻结；是否保留完整三模型由 A–E 对照实验决定，实验前不宣称其必要性 |
 | 91 | 审批身份 | 提交可用系统级 API Key；审批必须个人可信身份，禁止多人共用 Key 审批 |
-| 92 | 指标口径 | 统一 Recall/Precision/FPR/FNR 定义；07 与 21 的门槛必须一致，禁止同名不同义 |
+| 92 | 指标口径 | 统一 Recall/Precision/FDR/FNR 定义；07 与 21 的门槛必须一致，禁止同名不同义 |
 | 93 | Decision Trace | v1 报告增加问题判断链（发现 → 融合 → 投票 → 证据 → 仲裁 → verdict） |
+| 94 | 知识库权限 | 发布/回滚仅 `kb_publisher`；`admin` 不自动拥有；10/11/16/17 统一 |
+| 95 | 预算降级 | Reranker 可跳过；投票不可静默跳过；盲审不足最低数不出正式结论 |
+| 96 | API 错误结构 | 以 `docs/19` 为唯一规范；`INVALID_CASE`（400）与 `INPUT_INVALID`（422）分层 |
+| 97 | 幂等语义 | `case_version` 业务版本、`input_hash` 内容指纹、`generation` 重跑代次、`idempotency_key` 复用标识；内容变则 hash 变 |
+| 98 | 指标命名 | 用 FDR（FP/(TP+FP)）替代误用 FPR；High-risk Recall 分母为人工 blocker+major |
+| 99 | Rubric 落地 | 仓库新增 `rubric/rubric.yaml`、`schema.json`、`README.md`、`versions/`；CI 校验 |
+| 100 | 生产拓扑 | 实现支持 single/dual/multi；默认拓扑由 A–E 实验决定，不写死三模型 |
+| 101 | 模型准入 | 注册表记录上下文/JSON/并发/RPM/TPM/延迟/成本/数据政策；状态 `unverified/testing/verified/deprecated` |
+| 102 | 超时矩阵 | 补 KB/融合/verdict/DB 阶段预算；完整阶段 805s，任务总超时 20 分钟 |
+| 103 | 知识库准入 | 单模块试点 + 最低规则数 + RULE-ID/来源/范围/审核/检索回归/冲突裁决 |
+| 104 | 复核队列 | v1 先实现队列、优先级、处理人、状态、耗时与结论；复杂 SLA 后置 |
+| 105 | case_id 作用域 | v1 全局唯一；多团队时引入 `project_id/tenant_id` 组合，不提前做 |
+| 106 | 历史重评 | Rubric/KB 更新不自动重评；需新建 generation 并记录触发原因 |
+| 107 | 2/3 结论 | 2/3 可出正式结论但标不完整；候选需 2 票一致；blocker 必进人工；1/3 无结论；以 `docs/12` 为准 |
+| 108 | 租约栅栏 | 增加 `fencing_token`；阶段/终稿写入必须带令牌校验，旧 Worker 写入被拒 |
+| 109 | 批量幂等 | 批次级 + 子任务级幂等；`force` 默认只重跑失败子任务，`force_all` 整批重跑 |
+| 110 | 报告删除 | 区分修正（新 generation）、归档（限访问）、合规删除（删除/匿名化 + 审计） |
+| 111 | 知识解析门禁 | 元数据/切片/正文/回溯/Embedding/检索任一失败即阻断发布 |
+| 112 | 增量构建 | 内容哈希增量；删除规则在新版本显式体现；旧版本按任务引用保留 |
+| 113 | 知识问题分型 | `knowledge_missing` / `retrieval_missed` / `knowledge_conflict` / `knowledge_outdated` |
+| 114 | 三模型实验 | 增加等预算/等成本对照、错误重合、Incremental Valid Issue Rate |
+| 115 | 融合硬约束 | Claim/Evidence/RootCause 三者一致才允许自动合并 |
+| 116 | Claim 冻结 | 投票后 claim 结构冻结；仲裁只能补证据/解释，不能改 core 或改投票对象 |
+| 117 | 字段信任边界 | 模型不得输出 `ai_verdict`/状态/权限；服务端计算；出现即丢弃 |
+| 118 | 契约与测试 | `schemas/report.schema.json` 落地；Mock 测试环境与迁移/部署协议见 24–27 |
 
 ## 3. 文档索引
 
@@ -139,6 +164,12 @@
 | [docs/21-端到端验收标准.md](docs/21-端到端验收标准.md) | 质量、可靠性、性能、成本、安全门槛与发布门禁 |
 | [docs/22-阶段执行历史与恢复协议.md](docs/22-阶段执行历史与恢复协议.md) | Attempt 历史、输入摘要、版本冻结、恢复协议 |
 | [docs/23-人工反馈与评测集治理.md](docs/23-人工反馈与评测集治理.md) | 反馈 → 待审核池 → 复核 → 冻结评测集 |
+| [docs/24-并发控制与一致性协议.md](docs/24-并发控制与一致性协议.md) | 租约 fencing、重复执行、投票重试、批量幂等、终稿写入 |
+| [docs/25-知识解析与增量构建.md](docs/25-知识解析与增量构建.md) | 解析门禁、内容哈希、增量索引、版本隔离、缺口分型 |
+| [docs/26-测试环境与端到端测试.md](docs/26-测试环境与端到端测试.md) | Mock 供应商、故障注入、迁移与契约测试 |
+| [docs/27-生产部署与运维设计.md](docs/27-生产部署与运维设计.md) | API/Worker 拓扑、迁移、备份、健康检查、扩容 |
+| [rubric/README.md](rubric/README.md) | 机器可执行 Rubric：YAML、Schema、版本副本与 CI 校验规则 |
+| [schemas/README.md](schemas/README.md) | 报告 JSON Schema 与版本化规则 |
 
 ## 4. 明确不做（v1）
 
@@ -198,3 +229,13 @@
 | R41 | **审批身份未落地** | 共用 API Key 无法证明审批人；上线前必须接入个人身份 |
 | R42 | **指标同名不同义** | 07 与 21 的门槛必须同源；改一处需同步另一处 |
 | R43 | **Decision Trace 未实现** | 报告可读性与人工复核效率依赖判断链，需列入 v1 |
+| R44 | **Rubric 与文档漂移** | `rubric.yaml` 已落地；CI 必须校验规则 ID、枚举与 Prompt 引用，否则仍会分叉 |
+| R45 | **指标改名后的历史数据** | FDR 替代 FPR 后，旧报告指标需重算，不能直接比较 |
+| R46 | **生产拓扑未定** | 默认三模型只是候选；A–E 实验前不得写入容量与成本承诺 |
+| R47 | **模型未验证** | `unverified` 模型不得进入生产拓扑；接入前逐项实测 |
+| R48 | **历史重评缺失** | Rubric/KB 更新后旧报告是否重评需显式触发，不能自动覆盖 |
+| R49 | **旧 Worker 写入** | 仅靠 locked_by 不足；fencing_token 未实现前，恢复场景不得上线 |
+| R50 | **批量幂等未验证** | force/force_all/部分失败的行为需在 Mock 环境先验证 |
+| R51 | **报告 Schema 漂移** | `schemas/report.schema.json` 已落地；旧报告兼容与 Schema 变更需 CI 校验 |
+| R52 | **部署/迁移未演练** | 27 号的迁移、备份、回滚流程需在空库与旧库各跑一次 |
+| R53 | **真实模型测试成本** | 26 号要求核心测试不依赖真实 API；真实模型只用于验收流水线 |
