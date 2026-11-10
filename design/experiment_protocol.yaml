@@ -2,7 +2,7 @@
 # 阈值必须在签署前填全；未签署不得启动正式实验。批准口径唯一来源：docs/15 §6.1。
 # status: draft → signed → running → completed；signed 前置：dataset_version + 全部阈值 + 签署人/时间。
 version: "0.2"
-baseline: design-v1.11
+baseline: design-v1.13
 status: draft
 dataset_version: null
 rubric_version: "0.2.0"
@@ -46,3 +46,4 @@ auxiliary_metrics: [blocker_precision, high_risk_recall, severity_accuracy, erro
 signed_by: null
 signed_at: null
 notes: []
+

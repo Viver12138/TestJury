@@ -1,9 +1,9 @@
 # 03 · API 契约
 
-> 版本：v1.8 · 2026-11-10（补充 17 落实：报告风险语义、阶段门禁引用）
+> 版本：v1.13 · 2026-11-10（v1.13：附件内容寻址 + 评审绑定；鉴权统一 Bearer API Key）
 
 - Base：`/v1`
-- 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
+- 鉴权：请求头 `Authorization: Bearer <api-key>`；角色与 `caller_id` 由服务端按 `api_keys` 授权表解析，客户端 `X-Role` / `X-Caller-Id` 不作为授权依据。
 - 角色：服务端按 API Key 查授权角色（`reviewer` / `approver` / `admin`）；客户端传入的 `X-Role` **不作为授权依据**，仅用于日志对照
 - 内容类型：`application/json; charset=utf-8`
 - 时间：ISO 8601（`2026-11-09T10:00:00+08:00`）
@@ -163,7 +163,7 @@
 
 ```
 input_hash      = sha256(规范化 case + test_scope + automation_context + 影响结论的 options)
-idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_version_hash
+idempotency_key = sha256(input_hash + kb_build_version + rubric_version + prompt_version_hash
                          + embedding_profile_id + retrieval_config_version + model_config_version)
 ```
 
@@ -236,10 +236,12 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
 
 - v1 存储在本机持久化卷（`ATTACHMENT_DIR`），不存数据库二进制。
 - 只接受白名单 MIME（png/jpg/pdf/txt）；超限返回 422。
-- 上传后可被同一 `caller_id` 的评审引用；引用时再次校验 SHA-256。
+- **内容寻址**：同一 `sha256` 重复上传返回同一 `attachment_id`，不重复存储；`attachment_id` 由服务端生成（UUID）。
+- 提交评审时通过 `case.attachments[]` 绑定：服务端校验附件存在且 `status=ready`、`sha256` 与上传一致、`uploader_id/caller_id` 属于当前调用方；不合法返回 422 `INPUT_INVALID` 或 403 `FORBIDDEN`，不创建任务。
 - **v1 不把附件内容发送给模型**，报告不得声称已分析附件；`report.attachments[].analyzed_by_ai` 必须为 `false`，附件不作为 `issues` 的证据。
 - 附件仅用于存档、人工复核与审计；访问按评审授权，保留与删除见 `docs/10` §4.4。
-- 删除评审时先将附件标记 `deleted` 并禁止下载，再异步清理物理文件；数据库保留最小引用元数据，历史报告显示"附件已删除"。
+- 删除评审只删除 `review_attachments` 绑定（级联），物理文件按内容寻址保留给其他引用；历史报告仍显示引用元数据与"附件已删除"状态。
+- 数据模型见 `docs/02`：`attachments`（内容寻址）+ `review_attachments`（评审绑定）。
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
@@ -323,7 +325,7 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
     "degraded_reasons": []
   },
   "versions": {
-    "kb": "kb-2026-11-09-a3f9",
+    "kb_content_version": "sha256:9f2e...",\n    "kb_build_version": "kb-2026-11-09-a3f9",\n    "kb": "kb-2026-11-09-a3f9",
     "rubric": "rubric-7c21",
     "prompts": { "chief_blind": "p-1a2b", "arbitration": "p-3c4d", "jury_a": "p-5e6f", "jury_b": "p-7g8h", "vote": "p-8i9j" },
     "retrieval_config": "rc-9f2e",
@@ -610,7 +612,7 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
 | PATCH | `/v1/review-tasks/{task_id}` | 分配/转派/更新状态/重新打开 |
 | GET | `/v1/review-tasks/{task_id}/history` | 处理历史 |
 
-任务结果：Issue 级 `confirmed` / `rejected` / `modified` / `insufficient_information` / `escalated`；Report 级 `approve` / `reject` / `request_changes`。每次操作写事件历史。
+任务结果：**仅 Issue 级** `confirmed` / `rejected` / `modified` / `insufficient_information` / `escalated`，必须带 `reason`；Report 级审批只走 `POST /v1/reviews/{review_id}/decisions` 的 `decision`（`approve` / `reject` / `request_changes`），不得写入 `human_review_tasks.result`。Report 级任务若保留，仅承载分配/状态/处理记录，`result` 必须为空。每次操作写事件历史。
 
 ```json
 {

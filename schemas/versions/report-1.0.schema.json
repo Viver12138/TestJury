@@ -64,6 +64,8 @@
       "required": ["kb", "rubric", "prompts", "model_config"],
       "properties": {
         "kb": { "type": "string" },
+        "kb_content_version": { "type": "string" },
+        "kb_build_version": { "type": "string" },
         "rubric": { "type": "string" },
         "prompts": { "type": "object" },
         "retrieval_config": { "type": "string" },

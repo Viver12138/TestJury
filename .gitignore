@@ -2,6 +2,11 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
+# Python 虚拟环境与测试临时目录
+.venv/
+.tmp/
+.testwork/
+
 # 本地密钥与环境变量
 .env
 
@@ -17,7 +22,7 @@ data/attachments/
 config/secrets*
 !*.example
 
-# ---- 补充：Python 运行环境 ----
+# ---- 补充：Python 构建产物 ----
 *$py.class
 *.egg-info/
 .eggs/
@@ -28,8 +33,6 @@ wheels/
 .ruff_cache/
 .coverage
 htmlcov/
-venv/
-.venv/
 env/
 virtualenv/
 

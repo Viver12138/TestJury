@@ -106,7 +106,7 @@ def check_doc_versions(reporter: Reporter) -> None:
         version = tuple(int(part) for part in match.group(1)[1:].split("."))
         if version > repo_version:
             reporter.error(CHECK, rel(doc), "版本", f"{match.group(1)} 高于 README 状态 v{match.group(1)[1:]}")
-        allowed = {"v1.0", "v1.1"} if doc.name.startswith("00-") else {"v1.3", "v1.4", "v1.5", "v1.6", "v1.7", "v1.8", "v1.9", "v1.10", "v1.11"}
+        allowed = {"v1.0", "v1.1"} if doc.name.startswith("00-") else {"v1.3", "v1.4", "v1.5", "v1.6", "v1.7", "v1.8", "v1.9", "v1.10", "v1.11", "v1.12", "v1.13"}
         if match.group(1) not in allowed:
             reporter.error(CHECK, rel(doc), "版本", f"未知版本 {match.group(1)}（允许 {sorted(allowed)}）")
 
@@ -199,6 +199,41 @@ def check_business_boundary(reporter: Reporter) -> None:
     for field in ("full_participation", "stages_failed", "stages_pending"):
         if field not in completeness:
             reporter.error(CHECK, rel(SCHEMA), f"review_completeness.{field}", "缺少完整性语义字段（D171）")
+
+
+def check_v112_contracts(reporter: Reporter) -> None:
+    """补充 21：KB 双版本、复核字段边界、Q-14 文本一致。"""
+    reporter.checks_run += 1
+    doc02 = lib.read_text(DATA_DOC)
+    doc03 = lib.read_text(API_DOC)
+    doc08 = lib.read_text(DOCS08)
+    doc30 = lib.read_text(lib.DOCS_DIR / "30-实施推进与验收证据台账.md")
+    doc00 = lib.read_text(BIZ_DOC)
+    for token, text, path in (
+        ("kb_content_version", doc02, DATA_DOC),
+        ("kb_build_version", doc02, DATA_DOC),
+        ("kb_build_version", doc03, API_DOC),
+        ("kb_content_version", doc03, API_DOC),
+    ):
+        if token not in text:
+            reporter.error(CHECK, rel(path), "KB 双版本", f"缺少 {token}（补充 21 P1-01）")
+    if "review_level = 'report' AND result IS NULL" not in doc02:
+        reporter.error(CHECK, rel(DATA_DOC), "review 字段边界", "report 级任务的 result 必须为 NULL（补充 21 P1-02）")
+    if "vendor_admission.yaml" in doc30:
+        reporter.error(CHECK, rel(lib.DOCS_DIR / "30-实施推进与验收证据台账.md"), "Q-09", "不得引用 vendor_admission.yaml，应为 design/model_admission.yaml")
+    if "| 设计基线 | `design-v1.6` |" in doc00:
+        reporter.error(CHECK, rel(BIZ_DOC), "基线", "业务文档仍引用旧 design-v1.6")
+    # docs/08 §2.16 Q-14 与 §7 冻结记录
+    q14_line = next((line for line in doc08.splitlines() if line.startswith("| Q-14 |")), "")
+    if "协议" not in q14_line or "M2" not in q14_line:
+        reporter.error(CHECK, rel(DOCS08), "§2.16 Q-14", "Q-14 必须是 M2 协议签署")
+    if "模型默认拓扑（Q-14）" in doc08:
+        reporter.error(CHECK, rel(DOCS08), "§7", "拓扑决策应归 V-06，不得写 Q-14")
+    schema = lib.load_json(SCHEMA, reporter, CHECK)
+    versions = schema.get("properties", {}).get("versions", {}).get("properties", {})
+    for field in ("kb_content_version", "kb_build_version"):
+        if field not in versions:
+            reporter.error(CHECK, rel(SCHEMA), f"versions.{field}", "报告 Schema 缺少 KB 双版本字段（补充 21）")
 
 
 def check_idempotency(reporter: Reporter) -> None:
@@ -298,12 +333,13 @@ def check_decisions(reporter: Reporter) -> None:
         "D193", "D194", "D195", "D196", "D197", "D198", "D199", "D200", "D201", "D202",
         "D203", "D204", "D205", "D206", "D207", "D208",
         "D209", "D210", "D211", "D212", "D213", "D214",
-        "D215", "D216", "D217", "D218",
+        "D215", "D216", "D217", "D218", "D219", "D220", "D221",
+        "D222", "D223", "D224",
     ):
         if expected not in known:
-            reporter.error(CHECK, rel(DOCS08), expected, "docs/08 缺少 v1.4–v1.11 决策登记")
+            reporter.error(CHECK, rel(DOCS08), expected, "docs/08 缺少 v1.4–v1.13 决策登记")
         if expected not in seen:
-            reporter.error(CHECK, rel(DECISIONS), expected, "决策索引缺少 v1.4–v1.11 决策")
+            reporter.error(CHECK, rel(DECISIONS), expected, "决策索引缺少 v1.4–v1.13 决策")
 
     # 业务基线：docs/00 §14、docs/08 §2.0.2、decisions.yaml 三处必须同集合
     biz_text = lib.read_text(BIZ_DOC)
@@ -556,6 +592,7 @@ def run(reporter: Reporter) -> None:
     check_doc_versions(reporter)
     check_enums(reporter)
     check_business_boundary(reporter)
+    check_v112_contracts(reporter)
     check_idempotency(reporter)
     check_stale_semantics(reporter)
     check_decisions(reporter)

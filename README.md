@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.11**（补充 20 落实：Q-14 定位、按项版本依赖、复核字段与 KB 版本边界）· 2026-11-10；设计收口，进入 S1/M0
+> **状态**：**design-v1.13 + M0 实现 + M1 前置**（投影、附件绑定、模型适配器契约；270 条测试通过；真实模型、知识库与生产部署未开始）· 2026-11-10
 
 ---
 
@@ -18,7 +18,7 @@
 
 | 版本维度 | 当前值 | 用途 |
 |---|---|---|
-| 设计基线版本 | `design-v1.11` | 本仓库设计文档整体迭代版本；各文档文首 `vX.Y` 即此版本 |
+| 设计基线版本 | `design-v1.13` | 本仓库设计文档整体迭代版本；各文档文首 `vX.Y` 即此版本 |
 | 产品版本 | `product-v1.0`（规划） | 实际交付给用户的产品范围；见 `docs/00` §10 |
 | Rubric 版本 | `rubric-0.2.0` | 评审标准；`rubric/rubric.yaml` |
 | 报告格式版本 | `report-1.0` | `schemas/report.schema.json` |
@@ -198,6 +198,8 @@
 | 164 | 附件卷 | 所有 API/Worker 共享同一附件卷；多机前必须换对象存储 |
 | 165 | Schema 同步 | 报告 Schema 补 `cancelled`、issue 证据/置信度/校验状态、participants |
 | 166 | 复核状态 | 统一 `pending/in_progress/completed/cancelled`；不再用 `done` |
+
+> **v1.13 设计变更（2026-11-10，已批准）**：D222 授权表与附件"内容寻址 + 评审绑定"、D223 `issues` 投影同事务且可重建、D224 模型 Adapter 协议与注册表。变更记录见 [design/changes/2026-11-10-m1-implementation-gaps.md](design/changes/2026-11-10-m1-implementation-gaps.md)。
 | 167 | 复核结果 | Issue 5 种、Report 3 种（含 `reject`）；DB CHECK + API 层级校验 |
 | 168 | 幂等历史 | README #49 / D28 的旧幂等字段名全部改为 `idempotent_replay` |
 | 169 | 健康检查 | `/livez` 存活；`/readyz` 就绪；`/healthz` 等同 readyz；依赖失败 503 |
@@ -274,6 +276,9 @@
 | 240 | 按项版本依赖 | 每项声明版本依赖；`code_commit` 与当前 HEAD 严格比较，不用 n/a 绕过 |
 | 241 | 复核字段边界 | issue 级 `result`+`reason`；report 级 `review_decisions.decision` |
 | 242 | KB 内容/构建版本 | `kb_content_version` + `kb_build_version` 成对记录；重建不覆盖旧构建 |
+| 243 | KB 双版本贯通 | DDL/API/幂等键/报告 Schema 全部使用 `kb_build_version`，内容版本单独快照 |
+| 244 | 复核/审批单一事实源 | report 级 task 的 `result` 必须为空；审批只写 `review_decisions.decision`；`reason` 统一 |
+| 245 | Q-14 文本收口 | docs/08 统一为 M2 协议签署；拓扑决策归 V-06；文本级 CI 检查 |
 
 ## 3. 文档索引
 
@@ -419,3 +424,74 @@
 | R76 | **阶段依赖倒置** | S2 不得依赖 Rubric 生产发布；生产级证据只能出现在 S4 |
 | R77 | **状态覆盖历史** | 状态转换只能追加历史，不得覆盖旧证据；版本变化必须重验 |
 | R78 | **统计口径事后调整** | A–E 的样本量/α/异常样本/停止规则必须在协议 signed 前冻结 |
+
+## 6. M0 实现状态与运行方式（2026-11-10）
+
+### 6.1 已实现范围
+
+| 模块 | 实现 |
+|---|---|
+| 工程骨架 | FastAPI 应用工厂、pydantic-settings 配置（缺 `DATABASE_URL` 快速失败）、structlog JSON 日志、统一错误 envelope、`/livez` `/readyz` `/healthz` `/metrics` |
+| 数据层 | PostgreSQL + pgvector Alembic 迁移（`0001_m0_initial`）、幂等部分唯一索引、状态/枚举 CHECK、报告锁定触发器、队列索引 |
+| 契约层 | `app.core.enums` 与 docs/17 同源校验；报告 Schema 加载/校验/冻结副本；Rubric 加载、Schema+业务校验、版本绑定、生产拒绝 draft |
+| 结论 | `app/pipeline/verdict.py` 唯一入口，36 条真值表用例与参考判定器一致；属性测试、禁止组合、决策字段信任边界 |
+| 权限 | API Key 授权表（sha256 摘要）、服务端角色、`X-Role` 仅记录、系统身份不得审批、审批人与提交人分离 |
+| 状态机 | 任务/阶段/复核任务迁移校验；租约与 `fencing_token` 条件写入（真实 PG 双 Worker 测试） |
+| 流水线 | 输入硬校验/软校验、三路 Mock 盲评、规则分桶融合、独立投票、条件仲裁、服务端结论、报告 JSON + Markdown、人工复核任务 |
+| 提交契约 | S1–S7 幂等/代次矩阵（200 重放、202 新建、409 运行中、422 同键不同体）、批量只做聚合、附件内容寻址去重 |
+
+### 6.2 本地运行
+
+```bash
+# 1. 依赖（Python >= 3.11）
+uv venv .venv
+uv pip install --python .venv/Scripts/python.exe -e ".[dev]"
+
+# 2. PostgreSQL 16 + pgvector（端口 55432）
+docker compose -f deploy/docker-compose.yml up -d postgres
+export DATABASE_URL=postgresql+asyncpg://testjury:testjury@127.0.0.1:55432/testjury
+
+# 3. 迁移与启动（Mock 模型）
+.venv/Scripts/python.exe -m alembic -c alembic.ini upgrade head
+.venv/Scripts/python.exe -m app.bootstrap     # 默认需要配置 BOOTSTRAP_API_KEYS
+
+# 4. 测试（无真实模型调用；PG 用例在无数据库时自动跳过）
+.venv/Scripts/python.exe -m pytest -q
+python scripts/check_contracts.py
+python scripts/check_m0_acceptance.py
+```
+
+### 6.3 验收边界
+
+- 已回填 `design/m0_acceptance.yaml`：40 条用例 `result=passed`；本地执行环境与时间见文件头。
+- **M0 通过只代表工程正确**：不代表评审质量、业务有效性或生产可用（`docs/08` §5.3）。
+- 未实现：真实模型 Adapter、知识库加载/检索/Rerank、A–E 实验、性能压测、生产部署、恢复演练。
+- `STORAGE_BACKEND=memory` 仅用于单测与本地演示；生产默认 `postgres` 且禁止 memory。
+- Rubric 仍为 `0.2.0 draft`：生产模式加载会被拒绝，待 V-03B 审核发布。
+
+### 6.4 设计与实现差异（v1.13 已收口三处）
+
+v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 评审绑定”、`issues` 投影同事务且可重建（D222–D224，见 [变更记录](design/changes/2026-11-10-m1-implementation-gaps.md)）。
+
+仍存在、且**尚未**回写设计的差异：
+
+| 差异 | 现状 | 后续动作 |
+|---|---|---|
+| 存储适配器实现 | docs/06 列 SQLAlchemy 2.0 ORM；当前实现使用 asyncpg 直连 + Alembic 管理 DDL，语义与约束已由测试覆盖 | M1 前确认：补 ORM 层，或回写 docs/06 的适配器实现口径 |
+| 真实模型 Adapter | **协议层已补齐**：Chat/Embedding/Rerank 协议、注册表校验、OpenAI 兼容适配器、错误分类与重试；仍只有 Mock 参与流水线 | V-01 实测后接入真实 Key 与 Adapter |
+| 知识库检索 | 阶段固定 `skipped`，报告记 `kb_module_missing` | M2/M3 接入 KB、向量、RRF、Rerank |
+| CI 远端执行 | `.github/workflows/contracts.yml` 已定义 contract/unit/migration/mock-e2e/ci-all；本地等价命令全部通过，未在 GitHub 远端实际运行 | 首次 push 后确认各 Job 通过 |
+
+### 6.5 M1 前置（不依赖供应商）
+
+| 能力 | 入口 | 验证 |
+|---|---|---|
+| 报告投影 | Worker `finalize_report`：报告字段与 `issues` 同事务写入；ID 由 `uuid5(review_id, issue_no)` 生成 | `tests/m0/test_projection.py`、`tests/integration/test_postgres_e2e.py` |
+| 投影重建 | `python scripts/rebuild_projection.py --all [--check]` | `tests/migration/test_projection_rebuild.py` |
+| 一致性检查 | `python scripts/check_consistency.py [--review <id>]` | 同上；漂移退出码 1 |
+| 附件绑定 | 上传 → `case.attachments[]` 引用校验（存在/摘要/归属）→ 报告展示（`analyzed_by_ai=false`）→ 删除评审级联绑定 | `tests/m0/test_attachments.py` |
+| 模型适配器 | `app/llm/base.py` 协议；`registry.py` 注册表校验；`adapters/` OpenAI 兼容 Chat/Embedding + HTTP Rerank；`retry.py` 仅重试可重试错误 | `tests/unit/test_model_registry.py`、`tests/unit/test_llm_adapters.py`（MockTransport，无供应商调用） |
+
+> 电流水线仍使用 `MockChatClient`；真实 Adapter 只完成协议与工厂，接入真实供应商需 V-01 准入与密钥。
+
+

@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -16,14 +15,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 CHECKER = REPO_ROOT / "scripts" / "check_rubric.py"
 STANDARD_DOC = Path("docs") / "04-评审标准.md"
 
-
-def _copy_repo(destination: Path) -> Path:
-    shutil.copytree(
-        REPO_ROOT,
-        destination,
-        ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache", "*.pyc"),
-    )
-    return destination
 
 
 def _run_checker(root: Path) -> subprocess.CompletedProcess[str]:
@@ -41,14 +32,14 @@ def _run_checker(root: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_dimension_mapping_complete(tmp_path: Path) -> None:
-    root = _copy_repo(tmp_path / "clean")
+def test_dimension_mapping_complete(workdir: Path, repo_copy) -> None:
+    root = repo_copy(workdir / "clean")
     result = _run_checker(root)
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_missing_dimension_is_detected(tmp_path: Path) -> None:
-    root = _copy_repo(tmp_path / "mutated")
+def test_missing_dimension_is_detected(workdir: Path, repo_copy) -> None:
+    root = repo_copy(workdir / "mutated")
     path = root / STANDARD_DOC
     text = path.read_text(encoding="utf-8")
     target = "| 10 | 重复与冗余 | T8 | `重复冗余` | 无意义的重复用例或重复步骤 |\n"
@@ -60,3 +51,6 @@ def test_missing_dimension_is_detected(tmp_path: Path) -> None:
     assert result.returncode == 1, output
     assert "业务维度" in output or "§2.1" in output, output
     assert "重复与冗余" in output or "缺少" in output, output
+
+
+

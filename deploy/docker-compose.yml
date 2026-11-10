@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: testjury-postgres
+    environment:
+      POSTGRES_USER: testjury
+      POSTGRES_PASSWORD: testjury
+      POSTGRES_DB: testjury
+    ports:
+      - "55432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testjury -d testjury"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:

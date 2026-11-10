@@ -2,7 +2,7 @@
 # 先 1 个先行试点，通过后再纳入其余；不为凑数量选择资料质量不足的模块。
 # 校验：scripts/check_execution_plan.py；selected/piloting 必须有 owner、来源清单与验收数据集。
 version: "0.1"
-baseline: design-v1.11
+baseline: design-v1.13
 status: proposed   # proposed|selected|piloting|accepted
 last_updated: "2026-11-10"
 
@@ -65,3 +65,4 @@ modules:
     case_count: null
     acceptance_dataset: null
     status: proposed
+

@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -17,15 +16,6 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CHECKER = REPO_ROOT / "scripts" / "check_execution_plan.py"
-
-
-def _copy_repo(destination: Path) -> Path:
-    shutil.copytree(
-        REPO_ROOT,
-        destination,
-        ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache", "*.pyc"),
-    )
-    return destination
 
 
 def _run_checker(root: Path) -> subprocess.CompletedProcess[str]:
@@ -43,14 +33,14 @@ def _run_checker(root: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_execution_plan_clean(tmp_path: Path) -> None:
-    root = _copy_repo(tmp_path / "clean")
+def test_execution_plan_clean(workdir: Path, repo_copy) -> None:
+    root = repo_copy(workdir / "clean")
     result = _run_checker(root)
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_signed_protocol_without_thresholds_fails(tmp_path: Path) -> None:
-    root = _copy_repo(tmp_path / "protocol")
+def test_signed_protocol_without_thresholds_fails(workdir: Path, repo_copy) -> None:
+    root = repo_copy(workdir / "protocol")
     path = root / "design" / "experiment_protocol.yaml"
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     data["status"] = "signed"
@@ -62,8 +52,8 @@ def test_signed_protocol_without_thresholds_fails(tmp_path: Path) -> None:
     assert "thresholds" in output or "dataset_version" in output, output
 
 
-def test_accepted_without_evidence_fails(tmp_path: Path) -> None:
-    root = _copy_repo(tmp_path / "accepted")
+def test_accepted_without_evidence_fails(workdir: Path, repo_copy) -> None:
+    root = repo_copy(workdir / "accepted")
     path = root / "design" / "execution_plan.yaml"
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     target = next(item for item in data["verification_items"] if item["id"] == "V-01")
@@ -74,3 +64,5 @@ def test_accepted_without_evidence_fails(tmp_path: Path) -> None:
     output = result.stdout + result.stderr
     assert result.returncode == 1, output
     assert "acceptance_evidence" in output, output
+
+

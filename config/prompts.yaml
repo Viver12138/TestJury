@@ -1,0 +1,45 @@
+# Prompt 注册表（M0 用确定性 Mock 输出，版本号参与幂等键）
+version: prompts-2026-11-10
+prompts:
+  preprocess:
+    stage: preprocess
+    version: p-m0-pre-01
+    input_schema: case_raw/v1
+    output_schema: steps/v1
+    model_role: preprocess
+    allow_retry: true
+  chief_blind:
+    stage: blind_review
+    version: p-m0-chief-01
+    input_schema: blind_input/v1
+    output_schema: blind_output/v1
+    model_role: chief_blind
+    allow_retry: true
+  jury_a:
+    stage: blind_review
+    version: p-m0-jury-a-01
+    input_schema: blind_input/v1
+    output_schema: blind_output/v1
+    model_role: jury_a
+    allow_retry: true
+  jury_b:
+    stage: blind_review
+    version: p-m0-jury-b-01
+    input_schema: blind_input/v1
+    output_schema: blind_output/v1
+    model_role: jury_b
+    allow_retry: true
+  vote:
+    stage: vote
+    version: p-m0-vote-01
+    input_schema: vote_input/v2
+    output_schema: vote_output/v2
+    model_role: vote
+    allow_retry: true
+  arbitration:
+    stage: arbitration
+    version: p-m0-arb-01
+    input_schema: arbitration_input/v2
+    output_schema: arbitration_output/v2
+    model_role: arbitration
+    allow_retry: true

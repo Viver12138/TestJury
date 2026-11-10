@@ -7,7 +7,7 @@
 # status 只表示是否已决策；验证/实施/发布状态分开，不能把 decided 当成已验证。
 # phase 表示该决策最早在哪个阶段被验证/落地：M0/M1/M4/M5/M6/production。
 #   未到 phase 的决策不得被实现人员自行假设；M0 决策必须在 M0 用例通过后把 validation_status 改为 passed。
-version: "1.11"
+version: "1.12"
 last_updated: "2026-11-10"
 
 decisions:
@@ -1011,6 +1011,64 @@ decisions:
     phase: M2
     choice: kb_content_version_and_kb_build_version_pair
     source: [docs/11, docs/25, docs/29]
+
+  # ── v1.12（补充 21：新决定贯通数据/API/报告） ──
+  - id: D219
+    title: KB 双版本贯通
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: kb_content_build_in_ddl_api_idempotency_report_schema
+    source: [docs/02, docs/03, docs/01, schemas]
+  - id: D220
+    title: 复核/审批单一事实源
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: review_task_result_issue_only_report_decision_only
+    source: [docs/02, docs/03, docs/09, docs/17]
+  - id: D221
+    title: Q-14 文本与元数据收口
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: q14_m2_protocol_text_check_topology_v06
+    source: [docs/08, docs/30, scripts]
+
+  # ── v1.13（设计变更 2026-11-10-m1-implementation-gaps：实现补充回写） ──
+  - id: D222
+    title: 授权表与附件内容寻址+评审绑定
+    status: decided
+    validation_status: passed
+    implementation_status: implemented
+    release_status: draft
+    phase: M1
+    choice: api_keys_sha256_plus_attachments_review_binding
+    source: [docs/02, docs/03, docs/17, docs/10]
+  - id: D223
+    title: issues 投影同事务与可重建
+    status: decided
+    validation_status: passed
+    implementation_status: implemented
+    release_status: draft
+    phase: M1
+    choice: finalize_report_transaction_and_uuid5_projection_rebuild
+    source: [docs/02, docs/06, docs/14]
+  - id: D224
+    title: 模型 Adapter 协议与注册表
+    status: decided
+    validation_status: passed
+    implementation_status: implemented
+    release_status: draft
+    phase: M1
+    choice: chat_embedding_rerank_protocol_registry_retry_classification
+    source: [docs/06, docs/10, docs/17]
 
 open_questions:
   - id: Q-01
