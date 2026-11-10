@@ -1,6 +1,6 @@
 # 03 · API 契约
 
-> 版本：v0.10 · 2026-11-10（工程协议与契约冻结）
+> 版本：v0.11 · 2026-11-10（最后一轮冻结候选）
 
 - Base：`/v1`
 - 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
@@ -47,6 +47,9 @@
       { "index": 3, "action": "点击【发现】按钮", "expected": "获得随机物品并进入背包" }
     ],
     "test_data": { "map": "洛阳", "item_pool": "普通藏宝池" },
+    "attachments": [
+      { "file_name": "step3.png", "mime_type": "image/png", "size_bytes": 18234, "sha256": "9f2c...", "url": "https://..." }
+    ],
     "raw_text": null,
     "kb_hint": null
   },
@@ -88,6 +91,8 @@
 | `case.raw_text` | 条件必填 | 纯文本用例；服务端预处理结构化，失败则降级 |
 | `case.priority` | 否 | P0/P1/P2/P3 |
 | `case.source` | 否 | `manual` / `auto`，默认 `manual` |
+| `case.attachments[]` | 否 | 附件引用：`file_name`、`mime_type`、`size_bytes`、`sha256`、`url`；v1 不解析图片/OCR，只存引用与指纹 |
+| `case.attachments[].sha256` | 条件必填 | 服务端校验实际内容；附件变化必须改变 `input_hash` |
 | `test_scope.feature_point` | 否 | 当前评审所属功能点；v1 仅用于判断"当前用例未覆盖已列场景"，不输出功能点覆盖结论 |
 | `test_scope.required_scenarios` | 否 | 该功能点要求覆盖的场景清单（字符串数组），作为"未覆盖提示"的对照 |
 | `test_scope.related_case_ids` | 否 | 同一功能点下的关联用例 ID；v1 仅记录，不据此计算覆盖率 |
@@ -217,7 +222,7 @@
     "human_review_required": 2
   },
   "issues": [ /* 见 §2.1 */ ],
-  "human_review_list": [ { "issue_no": 2, "reason": "主审驳回陪审提出的阻断问题" } ],
+  "human_review_items": [ { "issue_no": 2, "reason": "主审驳回陪审提出的阻断问题" } ],
   "kb_gaps": [ /* 见 §2.2 */ ],
   "scope": {
     "feature_point": "藏宝点发现",

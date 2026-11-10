@@ -53,7 +53,7 @@
     },
     "summary": { "type": "object" },
     "issues": { "type": "array", "items": { "$ref": "#/$defs/issue" } },
-    "human_review_list": { "type": "array", "items": { "type": "object" } },
+    "human_review_items": { "type": "array", "items": { "type": "object" } },
     "kb_gaps": { "type": "array", "items": { "type": "object" } },
     "scope": { "type": "object" },
     "decision_summary": { "type": "object" },
