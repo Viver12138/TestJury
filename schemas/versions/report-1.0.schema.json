@@ -51,12 +51,62 @@
         "models": { "type": "object" }
       }
     },
-    "summary": { "type": "object" },
+    "summary": {
+      "type": "object",
+      "required": ["total_issues", "blocker", "major", "suggestion"],
+      "additionalProperties": false,
+      "properties": {
+        "total_issues": { "type": "integer", "minimum": 0 },
+        "blocker": { "type": "integer", "minimum": 0 },
+        "major": { "type": "integer", "minimum": 0 },
+        "suggestion": { "type": "integer", "minimum": 0 },
+        "kb_grounded": { "type": "integer", "minimum": 0 },
+        "inferred": { "type": "integer", "minimum": 0 },
+        "disputed": { "type": "integer", "minimum": 0 },
+        "human_review_required": { "type": "integer", "minimum": 0 }
+      }
+    },
     "issues": { "type": "array", "items": { "$ref": "#/$defs/issue" } },
-    "human_review_items": { "type": "array", "items": { "type": "object" } },
-    "kb_gaps": { "type": "array", "items": { "type": "object" } },
+    "human_review_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["issue_no", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "issue_no": { "type": "integer", "minimum": 1 },
+          "reason": { "type": "string", "minLength": 1 },
+          "priority": { "enum": ["blocker", "severity_disputed", "evidence_conflict", "normal"] }
+        }
+      }
+    },
+    "kb_gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["module", "function_point", "suspected_rule", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "module": { "type": "string" },
+          "function_point": { "type": "string" },
+          "suspected_rule": { "type": "string" },
+          "gap_type": { "enum": ["knowledge_missing", "retrieval_missed", "knowledge_conflict", "knowledge_outdated"] },
+          "occurrences": { "type": "integer", "minimum": 1 },
+          "status": { "enum": ["open", "accepted", "dismissed", "merged"] }
+        }
+      }
+    },
     "scope": { "type": "object" },
-    "decision_summary": { "type": "object" },
+    "decision_summary": {
+      "type": "object",
+      "required": ["human_status", "history_count"],
+      "additionalProperties": false,
+      "properties": {
+        "human_status": { "enum": ["pending", "approved", "rejected", "changes_requested"] },
+        "latest_decision": { "type": ["string", "null"] },
+        "history_count": { "type": "integer", "minimum": 0 }
+      }
+    },
     "appendix": { "type": "object" },
     "report_schema_version": { "type": "string" },
     "created_at": { "type": "string" },
@@ -82,8 +132,33 @@
         "evidence_strength": { "type": ["string", "null"] },
         "evidence_status": { "enum": ["grounded", "partially_grounded", "ungrounded", "conflicted", "insufficient", null] },
         "proposed_by": { "type": "array", "items": { "type": "string" } },
-        "votes": { "type": "object" },
-        "vote_summary": { "type": "object" },
+        "votes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["validity"],
+            "additionalProperties": false,
+            "properties": {
+              "validity": { "enum": ["accept", "reject", "uncertain", "not_assessed"] },
+              "severity": { "enum": ["blocker", "major", "suggestion", null] }
+            }
+          }
+        },
+        "vote_summary": {
+          "type": "object",
+          "required": ["support", "reject", "not_assessed", "uncertain"],
+          "additionalProperties": false,
+          "properties": {
+            "support": { "type": "integer", "minimum": 0 },
+            "reject": { "type": "integer", "minimum": 0 },
+            "not_assessed": { "type": "integer", "minimum": 0 },
+            "uncertain": { "type": "integer", "minimum": 0 },
+            "support_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+            "severity_distribution": { "type": "object" },
+            "severity_disputed": { "type": "boolean" },
+            "vote_completeness": { "type": "string" }
+          }
+        },
         "status": { "enum": ["adopted", "rejected", "disputed", "need_human", "chief_supplement"] },
         "chief_decision": { "type": ["string", "null"] },
         "chief_reason": { "type": ["string", "null"] },

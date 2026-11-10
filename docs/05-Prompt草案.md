@@ -1,6 +1,6 @@
 # 05 · Prompt 草案
 
-> 版本：v0.11 · 2026-11-10（最后一轮冻结候选）
+> 版本：v1.1 · 2026-11-10（冻结修订）
 > 所有模板存放于 `app/prompts/*.jinja2`，变量用 `{{ }}` 注入；每次修改后哈希写入报告。
 
 ---
@@ -358,8 +358,8 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
 
 ## 6. P5 · 主审仲裁
 
-**模型**：`qwen-max`（第三次独立调用）
-**输入**：用例 + 知识库 + 三份盲评原始输出 + 融合后的候选问题清单 + 三份投票结果
+**模型**：`qwen-max`（第三次独立调用，条件触发）
+**输入**：动态参与者结构（topology + 每人的 review/vote），不再固定三份
 
 ### System
 
@@ -415,28 +415,26 @@ A6 是否超出自动化框架能力（若提供框架能力说明，须对照�
 【知识库上下文】
 {{ kb_context }}
 
-【三份盲评原始意见】
-[主审盲评]
-{{ chief_blind_json }}
+【参与者与意见（动态）】
+{{ participants_json }}
 
-[陪审甲]
-{{ jury_a_json }}
+结构示例：
+{
+  "topology": "dual",
+  "participants": [
+    { "role": "chief", "present": true, "review": {}, "vote": {} },
+    { "role": "jury_a", "present": true, "review": {}, "vote": {} }
+  ],
+  "absent": [
+    { "role": "jury_b", "reason": "timeout" }
+  ]
+}
 
-[陪审乙]
-{{ jury_b_json }}
+- 只处理 `present=true` 的参与者；`absent` 不得计为 reject/not_assessed。
+- 1 人参与时不得输出正式结论；2 人时按 2 票一致规则。
 
 【融合后的候选问题清单】
 {{ fused_candidates_json }}
-
-【三份投票结果】
-[主审盲评投票]
-{{ chief_votes_json }}
-
-[陪审甲投票]
-{{ jury_a_votes_json }}
-
-[陪审乙投票]
-{{ jury_b_votes_json }}
 
 请输出：
 {
