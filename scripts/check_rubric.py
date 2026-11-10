@@ -23,9 +23,100 @@ PROMPT_DOC = lib.DOCS_DIR / "05-Prompt草案.md"
 DICT_DOC = lib.DOCS_DIR / "17-全局数据字典.md"
 REPORT_SCHEMA = lib.SCHEMAS_DIR / "report.schema.json"
 README = lib.RUBRIC_DIR / "README.md"
+BIZ_DOC = lib.DOCS_DIR / "00-业务定位与范围.md"
+STANDARD_DOC = lib.DOCS_DIR / "04-评审标准.md"
+
+
+def _section(text: str, start_marker: str, end_marker: str) -> str:
+    start = text.find(start_marker)
+    if start < 0:
+        return ""
+    end = text.find(end_marker, start + len(start_marker))
+    return text[start : end if end > 0 else len(text)]
+
+
+def _table_rows(section: str) -> list[list[str]]:
+    rows: list[list[str]] = []
+    for line in section.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if not cells or set(cells[0]) <= set("-: "):
+            continue
+        if cells[0] in ("#", "代码", "ID"):
+            continue
+        rows.append(cells)
+    return rows
+
+
+def _check_business_dimensions(data: dict[str, Any], reporter: Reporter) -> None:
+    """校验 docs/00 §5.2 的 11 个业务维度与 docs/04 §2.1 映射、Rubric 检查点/分类一致。"""
+    biz_text = lib.read_text(BIZ_DOC)
+    dimension_block = _section(biz_text, "### 5.2 v1 评审维度", "### 5.3")
+    dimensions = re.findall(r"^\d+\.\s+\*\*(.+?)\*\*：", dimension_block, re.M)
+    if len(dimensions) != 11:
+        reporter.error(
+            CHECK,
+            rel(BIZ_DOC),
+            "§5.2",
+            f"应有 11 个业务评审维度，实际解析到 {len(dimensions)} 个: {dimensions}",
+        )
+
+    standard_text = lib.read_text(STANDARD_DOC)
+    mapping_block = _section(standard_text, "### 2.1 业务评审维度映射", "## 3. 检查点清单")
+    rows = [row for row in _table_rows(mapping_block) if row and row[0].isdigit()]
+    mapped = [row[1] for row in rows if len(row) > 1]
+    if mapped != dimensions:
+        missing = [item for item in dimensions if item not in mapped]
+        extra = [item for item in mapped if item not in dimensions]
+        reporter.error(
+            CHECK,
+            rel(STANDARD_DOC),
+            "§2.1 业务维度映射",
+            f"与 docs/00 §5.2 不一致：缺少 {missing}，多出 {extra}",
+        )
+    if len(rows) != 11:
+        reporter.error(CHECK, rel(STANDARD_DOC), "§2.1 业务维度映射", f"应为 11 行，实际 {len(rows)} 行")
+
+    checkpoint_ids = {
+        checkpoint.get("id")
+        for spec in data.get("dimensions", {}).values()
+        for checkpoint in spec.get("checkpoints", [])
+    }
+    categories = set(data.get("categories", {}))
+    for row in rows:
+        label = row[0]
+        checkpoints = set(re.findall(r"[BTA]\d{1,2}", row[2] if len(row) > 2 else ""))
+        if not checkpoints:
+            reporter.error(CHECK, rel(STANDARD_DOC), f"维度 {label}", "未映射任何 Rubric 检查点")
+        unknown = sorted(checkpoints - checkpoint_ids)
+        if unknown:
+            reporter.error(CHECK, rel(STANDARD_DOC), f"维度 {label}", f"映射了不存在的检查点: {unknown}")
+        used_categories = set(re.findall(r"`([^`]+)`", row[3] if len(row) > 3 else ""))
+        unknown_categories = sorted(used_categories - categories)
+        if unknown_categories:
+            reporter.error(CHECK, rel(STANDARD_DOC), f"维度 {label}", f"映射了不存在的分类: {unknown_categories}")
+
+    # docs/04 §5 的分类表必须与 Rubric 分类一致（数量、名称、顺序）
+    category_block = _section(standard_text, "## 5. 问题分类（category 枚举）", "## 6. 各角色权重")
+    doc_categories = []
+    for row in _table_rows(category_block):
+        match = re.fullmatch(r"`([^`]+)`", row[0])
+        if match:
+            doc_categories.append(match.group(1))
+    rubric_categories = list(data.get("categories", {}))
+    if doc_categories != rubric_categories:
+        reporter.error(
+            CHECK,
+            rel(STANDARD_DOC),
+            "§5 分类表",
+            f"与 rubric.yaml 不一致：文档 {doc_categories}，Rubric {rubric_categories}",
+        )
 
 
 def _validate_schema(data: dict[str, Any], reporter: Reporter) -> None:
+    """Rubric 结构必须通过 schema.json（jsonschema Draft 2020-12）。"""
     try:
         import jsonschema
     except ImportError:  # pragma: no cover - 环境缺少依赖时明确失败
@@ -214,6 +305,7 @@ def run(reporter: Reporter) -> None:
     _validate_schema(data, reporter)
     _check_version_and_copy(data, reporter)
     _check_business(data, reporter)
+    _check_business_dimensions(data, reporter)
     _check_prompt_references(data, reporter)
     _check_report_schema(data, reporter)
 

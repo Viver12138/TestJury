@@ -1,0 +1,122 @@
+# TestJury Rubric — 机器可执行事实源
+# 版本：0.2.0（业务基线 v1.0：新增 T8/重复冗余；草案，未用真实数据校准）
+# 规则说明见 docs/04；决策口径见 docs/12；枚举见 docs/17。
+version: "0.2.0"
+status: draft
+
+dimensions:
+  business:
+    name: 业务/需求
+    owner: jury_a
+    prompt_weight: { chief: 1.0, jury_a: 2.0, jury_b: 0.5 }
+    checkpoints:
+      - { id: B1, name: 用例意图一致 }
+      - { id: B2, name: 关键分支覆盖 }
+      - { id: B3, name: 业务规则正确性 }
+      - { id: B4, name: 前置条件充分 }
+      - { id: B5, name: 术语一致 }
+      - { id: B6, name: 业务状态自洽 }
+  test_design:
+    name: 测试设计
+    owner: jury_b
+    prompt_weight: { chief: 1.0, jury_a: 0.5, jury_b: 1.5 }
+    checkpoints:
+      - { id: T1, name: 步骤可执行 }
+      - { id: T2, name: 预期可判定 }
+      - { id: T3, name: 步骤-预期对应 }
+      - { id: T4, name: 测试数据齐备 }
+      - { id: T5, name: 边界与异常覆盖 }
+      - { id: T6, name: 可重复执行 }
+      - { id: T7, name: 无歧义 }
+      - { id: T8, name: 无重复冗余 }
+  automation:
+    name: 自动化可行性
+    owner: jury_b
+    prompt_weight: { chief: 1.0, jury_a: 0.5, jury_b: 1.5 }
+    checkpoints:
+      - { id: A1, name: 步骤可自动化 }
+      - { id: A2, name: 状态可获取 }
+      - { id: A3, name: 定位可维护 }
+      - { id: A4, name: 数据可准备 }
+      - { id: A5, name: 执行稳定 }
+      - { id: A6, name: 框架能力匹配 }
+
+severity:
+  blocker: "无法执行 / 无法判定 / 与 E1/E2 权威依据直接冲突"
+  major: "明显降低有效性，执行者可凭经验补全"
+  suggestion: "可读性、规范性、优化类"
+
+categories:
+  覆盖缺失: { dimensions: [business, test_design] }
+  规则冲突: { dimensions: [business] }
+  意图不符: { dimensions: [business] }
+  前置不足: { dimensions: [business] }
+  术语不一致: { dimensions: [business] }
+  状态不自洽: { dimensions: [business] }
+  步骤不可执行: { dimensions: [test_design] }
+  预期不明确: { dimensions: [test_design] }
+  数据缺失: { dimensions: [test_design] }
+  边界缺失: { dimensions: [test_design] }
+  不可重复: { dimensions: [test_design] }
+  歧义: { dimensions: [test_design] }
+  自动化不可行: { dimensions: [automation] }
+  状态不可读: { dimensions: [automation] }
+  定位不稳定: { dimensions: [automation] }
+  数据不可准备: { dimensions: [automation] }
+  框架不匹配: { dimensions: [automation] }
+  重复冗余: { dimensions: [test_design] }
+
+scope:
+  v1_single_case_only: true
+  coverage_claim_requires_full_scope: true
+
+voting:
+  validity_states: [accept, reject, uncertain, not_assessed]
+  severity_states: [blocker, major, suggestion]
+  vote_weight: 1
+  weights_are_prompt_only: true
+  severity_is_separate: true
+  severity_gap_for_human: 2
+  not_assessed_is_reject: false
+  min_valid_votes_per_candidate: 2
+
+conclusion_rules:
+  auto_pass: false
+  blocker_majority_reject_threshold: 2
+  chief_reject_requires_human_review: true
+  chief_supplement_blocker_requires_human_review: true
+  chief_downgrade_blocker_requires_human_review: true
+
+evidence:
+  levels:
+    E1: { types: [business_rule], strength: strong }
+    E2: { types: [requirement, known_limit, historical_bug], strength: [strong, medium, weak] }
+    E3: { types: [testing_standard], strength: medium }
+    E4: { types: [inference], strength: weak }
+  rules:
+    historical_bug_cannot_prove_current: true
+    testing_standard_is_not_business_fact: true
+    inference_requires_kb_grounded_false: true
+    no_e1_e2_means_no_blocker: true
+    same_level_conflict_requires_human: true
+    fusion_cannot_raise_strength: true
+  claim:
+    roles: [core, supporting]
+    relations: [and, or]
+    allow_empty_core: false
+  status: [grounded, partially_grounded, ungrounded, conflicted, insufficient]
+
+human_review_triggers:
+  disputed: true
+  severity_disputed: true
+  evidence_conflict: true
+  partially_grounded_blocker: true
+  chief_downgrades_blocker: true
+  chief_supplements_blocker: true
+
+fusion:
+  step_tolerance: 1
+  cosine_suspect: 0.70
+  cosine_high: 0.86
+  rerank_required: true
+  false_merge_target_max: 0.10

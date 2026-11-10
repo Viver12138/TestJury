@@ -2,9 +2,9 @@
 
 > **输入**：一份功能测试用例
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
-> **核心**：参考拓扑为 1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发
+> **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**v1.4 补充 14 落实**（幂等/代次契约唯一口径、可运行契约检查、M0 验收用例与 Verdict 可执行真值表）· 2026-11-10；可进入 M0
+> **状态**：**v1.5 业务基线纳入**（`docs/00` 业务定位与范围、v1 仅功能测试、Rubric 0.2.0 与 11 维度映射）· 2026-11-10；可进入 M0
 
 ---
 
@@ -160,7 +160,7 @@
 | 140 | 附件闭环 | 服务端上传接口；本机持久化卷；白名单 MIME/大小；SHA-256 校验；**v1 不发送给模型**；随评审删除 |
 | 141 | 复核任务实体 | 独立 `human_review_tasks`（issue/report、优先级、处理人、状态、期限、历史）；与报告 items 分离 |
 | 142 | 拓扑正式语义 | `single` 仅实验不出正式结论；生产至少 `dual`；`multi` 按 3 人规则；缺席不计票 |
-| 143 | Rubric 发布 | 使用 SemVer；当前 `0.1.0 draft`；上线前必须 `published`；任务冻结版本 |
+| 143 | Rubric 发布 | 使用 SemVer；当前 `0.2.0 draft`；上线前必须 `published`；任务冻结版本 |
 | 144 | Prompt 动态参与者 | 仲裁输入改为 `topology + participants[] + absent[]`，不再固定三份 |
 | 145 | Schema 严格化 | 报告 `summary/votes/human_review_items/decision_summary/kb_gaps` 明确结构；Rubric 业务校验器 |
 | 146 | 全局决策登记 | `docs/08` §2.0 PD-001–005 `approved`；事实源表唯一 |
@@ -205,11 +205,17 @@
 | 185 | 报告可读性验收 | 任务型验收：完成时间、误解率、复核一致性、主观可用性（`docs/07` §8.7） |
 | 186 | 契约清理记录 | 逐处标记 保留/更新/废弃/历史说明，历史语义不得被误读为当前规则（`docs/28` §2） |
 | 187 | 决策阶段分层 | `design/decisions.yaml` 增加 `phase`（M0/M1/M4/M5/M6/production）；未到阶段不得自行假设；M0 决策验证通过后才可标 `passed` |
+| 188 | 业务基线 | `docs/00` 为业务上位约束；BIZ-001–015 登记于 `docs/08` §2.0.2 与决策索引；CI 校验三处一致 |
+| 189 | 测试类型边界 | `case.test_type` 默认 `functional`；v1 仅接受 `functional`，其它类型 422 `UNSUPPORTED_TEST_TYPE`，不建任务、不出质量结论 |
+| 190 | 业务维度映射 | `docs/04` §2.1 将 `docs/00` §5.2 的 11 个业务维度映射到 Rubric；Rubric 0.2.0 新增 T8/重复冗余 |
+| 191 | AI 与审批边界 | `ai_verdict` 永不为 `approved`；最终业务审批由测试负责人或调用方负责；外部门禁由调用方定义 |
+| 192 | 业务角色映射 | 测试工程师=`reviewer`、测试负责人=`approver`、调用系统=系统级 Key；`admin` 不自动获得审批权 |
 
 ## 3. 文档索引
 
 | 文档 | 内容 |
 |---|---|
+| [docs/00-业务定位与范围.md](docs/00-业务定位与范围.md) | **业务上位约束**：产品定位、用户、职责边界、版本范围、BIZ-001–015 |
 | [docs/01-架构设计.md](docs/01-架构设计.md) | 流水线、检索链路、融合与投票、AI/人工结论、失败矩阵、队列与幂等 |
 | [docs/02-数据模型.md](docs/02-数据模型.md) | PostgreSQL 表结构与 DDL（含 review_decisions、kb_versions、issue_votes） |
 | [docs/03-API契约.md](docs/03-API契约.md) | 接口定义、请求/响应 Schema、错误码 |
@@ -240,7 +246,7 @@
 | [docs/28-契约清理与自动化验收.md](docs/28-契约清理与自动化验收.md) | 幂等清理记录、契约检查、M0 验收用例、Verdict 可执行真值表 |
 | [docs/29-Git协作协议.md](docs/29-Git协作协议.md) | 多人协作的提交规范、推送协议、MR 流程 |
 | [scripts/README.md](scripts/README.md) | 契约检查脚本：入口、检查项、输出格式与边界 |
-| [design/m0_acceptance.yaml](design/m0_acceptance.yaml) | M0 十项 + P0 四项验收用例（31 条，可回填结果） |
+| [design/m0_acceptance.yaml](design/m0_acceptance.yaml) | M0 十项 + P0 四项 + BIZ 业务边界验收用例（36 条，可回填结果） |
 | [design/verdict_cases.yaml](design/verdict_cases.yaml) | Verdict 可执行真值表用例（36 条，30 条规则） |
 | [rubric/README.md](rubric/README.md) | 机器可执行 Rubric：YAML、Schema、版本副本与 CI 校验规则 |
 | [schemas/README.md](schemas/README.md) | 报告 JSON Schema 与版本化规则 |
@@ -250,11 +256,13 @@
 
 - **不自动改写用例**：只给修改建议，不产出改写后的用例文本。
 - **不做功能点覆盖率评分/报表**：v1 只评审单条用例；覆盖评审 v1.5 另立。
+- **不做非功能测试类型正式评审**：性能/安全/兼容/可靠性/可用性等类型在 v1 被 `422 UNSUPPORTED_TEST_TYPE` 拒绝，不用功能 Rubric 强行出结论（`docs/00` §6）。
+- **不做自动化脚本生成/执行/环境配置**：只给自动化可行性提示与限制说明。
+- **不做自动审批 / 自动放行**：AI 结论是机器评审意见；最终审批由测试负责人或调用方负责。
 - **不做第四个模型 / 多 Agent 辩论**：三模型机制未通过评测前不扩复杂度。
 - **不做自动 Prompt 调优 / 自动阈值调整**：评测集未冻结前不做。
 - **不做复评 diff**：同一用例修改后重新提交视为新评审，不做版本对比（v1.5）。
 - **不做知识库编辑界面**：知识库以 Markdown 文件 + Git 管理，发布走脚本（v2）。
-- **不自动放行**：任何情况下系统结论都不是"通过"。
 - **不做多团队隔离**：单一内部团队使用（v2）。
 
 ## 5. 待定事项与风险
@@ -324,3 +332,6 @@
 | R61 | **参考判定器被误用** | `scripts/verdict_reference.py` 只是规范对照，不是生产实现；`app/` 不得 import，代码评审拦截 |
 | R62 | **决策索引覆盖不全** | `design/decisions.yaml` 只索引跨模块契约与门禁相关决策；不得宣称是 docs/08 的全量镜像 |
 | R63 | **M0 用例只跑 happy path** | 每条用例必须带失败判定；ACC-M0-017 用变异测试证明检查能失败，不允许"能启动即通过" |
+| R64 | **业务范围蔓延** | 新增测试类型、覆盖分析、自动化或审批能力必须先进 `docs/00` 与 BIZ 决策，不能由技术实现悄然扩大职责 |
+| R65 | **test_type 误判** | 调用方未显式声明时按 `functional` 处理，可能让非功能用例被误评；报告展示 `test_type`，调用方应显式传值，非功能类型必须被 422 拒绝 |
+| R66 | **Rubric 0.2.0 未发布** | 当前为 `draft`，生产加载前必须由 `kb_reviewer` 审核并置 `published`，否则服务端拒绝启动生产模式 |

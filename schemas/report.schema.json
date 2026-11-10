@@ -11,6 +11,7 @@
     "review_id": { "type": "string" },
     "case_id": { "type": "string" },
     "case_version": { "type": "integer", "minimum": 1 },
+    "test_type": { "enum": ["functional", "performance", "security", "compatibility", "reliability", "usability", "other"] },
     "generation": { "type": "integer", "minimum": 1 },
     "parent_review_id": { "type": ["string", "null"] },
     "status": { "enum": ["queued", "processing", "retrying", "done", "completed_with_warnings", "failed", "cancelled"] },

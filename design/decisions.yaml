@@ -1,15 +1,153 @@
 # TestJury 设计决策索引（机器可读）
 # 事实源：docs/08 §2.0 与 README 决策表；本文件只做结构化索引，冲突时以 docs/08 为准。
-# 编号规则（v1.4 起）：id 必须与 docs/08 的 D 编号一一对应，禁止同名不同义；
-#   PD-* 与 docs/08 §2.0 的五项产品决策对应。ID 唯一性与引用存在性由 scripts/check_docs.py 校验。
+# 编号规则（v1.5 起）：D* 必须与 docs/08 的 D 编号一一对应，禁止同名不同义；
+#   PD-* 对应 docs/08 §2.0 的五项产品决策；BIZ-* 对应 docs/08 §2.0.2 的业务基线（docs/00 §14）。
+#   ID 唯一性与引用存在性由 scripts/check_docs.py 校验。
 # 覆盖范围：只索引会影响跨模块契约、M0 准入或发布门禁的决策，不是 docs/08 全量镜像。
 # status 只表示是否已决策；验证/实施/发布状态分开，不能把 decided 当成已验证。
 # phase 表示该决策最早在哪个阶段被验证/落地：M0/M1/M4/M5/M6/production。
 #   未到 phase 的决策不得被实现人员自行假设；M0 决策必须在 M0 用例通过后把 validation_status 改为 passed。
-version: "1.3"
+version: "1.5"
 last_updated: "2026-11-10"
 
 decisions:
+  # ── 业务基线（docs/00 §14） ──
+  - id: BIZ-001
+    title: 产品定位
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: ai_test_case_quality_review_system
+    source: [docs/00, docs/08]
+  - id: BIZ-002
+    title: 第一层主要用户
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: test_engineers_primary_users
+    source: [docs/00, docs/08]
+  - id: BIZ-003
+    title: 第二层核心角色
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: test_leads_review_and_final_business_decision
+    source: [docs/00, docs/08]
+  - id: BIZ-004
+    title: 第三层使用方
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: test_management_platform_or_integrator
+    source: [docs/00, docs/08]
+  - id: BIZ-005
+    title: v1 测试类型
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: functional_only_unsupported_test_type_rejected_422
+    source: [docs/00, docs/03, docs/19]
+  - id: BIZ-006
+    title: 长期产品方向
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: production
+    choice: extend_by_independent_rubric_and_validation
+    source: [docs/00]
+  - id: BIZ-007
+    title: v1 核心评审对象
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: single_functional_test_case
+    source: [docs/00, docs/04]
+  - id: BIZ-008
+    title: v1 测试范围能力
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: listed_scenario_miss_hint_no_full_coverage_claim
+    source: [docs/00, docs/04]
+  - id: BIZ-009
+    title: 自动化能力
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M4
+    choice: feasibility_hint_only_no_script_generation_or_execution
+    source: [docs/00, docs/04]
+  - id: BIZ-010
+    title: AI 结论性质
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: machine_review_opinion_not_approval
+    source: [docs/00, docs/09, docs/12]
+  - id: BIZ-011
+    title: 最终审批权
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M5
+    choice: test_lead_or_caller_owns_final_approval
+    source: [docs/00, docs/09]
+  - id: BIZ-012
+    title: 外部流程门禁
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M5
+    choice: caller_defines_gating_testjury_does_not_control_external_flow
+    source: [docs/00, docs/09, docs/21]
+  - id: BIZ-013
+    title: 证据要求
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M4
+    choice: evidence_first_uncertainty_when_insufficient
+    source: [docs/00, docs/04]
+  - id: BIZ-014
+    title: 追溯要求
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M5
+    choice: link_input_and_rubric_versions_and_human_records
+    source: [docs/00, docs/02, docs/22]
+  - id: BIZ-015
+    title: 版本策略
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: production
+    choice: stabilize_v1_before_coverage_and_test_type_expansion
+    source: [docs/00, docs/08]
+
   - id: PD-001
     title: 附件能力
     status: decided
@@ -373,3 +511,41 @@ decisions:
     phase: M0
     choice: per_hit_disposition_keep_update_deprecate_history
     source: [docs/28, docs/02, README]
+
+  # ── v1.5（业务定位与范围落地） ──
+  - id: D165
+    title: 测试类型边界
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: test_type_functional_only_unsupported_returns_422
+    source: [docs/00, docs/03, docs/19, docs/02]
+  - id: D166
+    title: 业务维度映射
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: eleven_business_dimensions_mapped_to_rubric_v020
+    source: [docs/04, rubric]
+  - id: D167
+    title: 业务角色与审批边界
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: business_roles_mapped_ai_verdict_not_approval_external_gate
+    source: [docs/00, docs/09, docs/17]
+  - id: D168
+    title: 业务基线上位约束
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: docs00_authoritative_biz_001_015_registered_ci_checked
+    source: [docs/00, docs/08, design/decisions.yaml]

@@ -1,7 +1,7 @@
 # TestJury Rubric — 机器可执行事实源
-# 版本：0.1.0（草案，未用真实数据校准）
+# 版本：0.2.0（业务基线 v1.0：新增 T8/重复冗余；草案，未用真实数据校准）
 # 规则说明见 docs/04；决策口径见 docs/12；枚举见 docs/17。
-version: "0.1.0"
+version: "0.2.0"
 status: draft
 
 dimensions:
@@ -28,6 +28,7 @@ dimensions:
       - { id: T5, name: 边界与异常覆盖 }
       - { id: T6, name: 可重复执行 }
       - { id: T7, name: 无歧义 }
+      - { id: T8, name: 无重复冗余 }
   automation:
     name: 自动化可行性
     owner: jury_b
@@ -63,6 +64,7 @@ categories:
   定位不稳定: { dimensions: [automation] }
   数据不可准备: { dimensions: [automation] }
   框架不匹配: { dimensions: [automation] }
+  重复冗余: { dimensions: [test_design] }
 
 scope:
   v1_single_case_only: true

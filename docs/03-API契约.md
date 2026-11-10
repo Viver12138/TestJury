@@ -1,6 +1,6 @@
 # 03 · API 契约
 
-> 版本：v1.4 · 2026-11-10（补充 14 落实：幂等/代次契约收口与自动化验收）
+> 版本：v1.5 · 2026-11-10（业务基线 v1.0 落地：test_type 支持范围）
 
 - Base：`/v1`
 - 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
@@ -23,6 +23,7 @@
 
 - `INVALID_CASE`（400）：请求不是合法用例对象（JSON/Schema/类型）。
 - `INPUT_INVALID`（422）：用例对象合法但内容不可评审（空内容、`steps` 与 `raw_text` 同时为空、超长、模块缺失等业务校验）。
+- `UNSUPPORTED_TEST_TYPE`（422）：`case.test_type` 不是 v1 支持的 `functional`；不创建任务、不调用模型、不输出质量结论（业务边界见 `docs/00` §6）。
 - 两者不合并：前者是"格式不对"，后者是"内容不能评审"。
 
 ## 1. 提交单份评审
@@ -37,6 +38,7 @@
     "case_id": "TC-DIG-0012",
     "case_version": 3,
     "module": "挖宝",
+    "test_type": "functional",
     "title": "洛阳挖宝 - 藏宝点发现与挖掘",
     "priority": "P1",
     "source": "manual",
@@ -82,6 +84,7 @@
 | `case.case_id` | 是 | 全局唯一用例标识（v1 单团队，全局唯一）；多团队时引入 `project_id` 组合 |
 | `case.case_version` | 否 | 调用方业务版本号，默认 1；**不承担内容指纹职责**。内容是否变化由服务端 `input_hash` 判断 |
 | `case.module` | 是 | 用于知识库检索；未命中则降级评审 |
+| `case.test_type` | 否 | 测试类型，默认 `functional`；**v1 只接受 `functional`**，其它值返回 422 `UNSUPPORTED_TEST_TYPE`（见 `docs/00` §6.1） |
 | `case.title` | 是 | 用例标题 |
 | `case.preconditions` | 否 | 数组，缺失时由评审提示 |
 | `case.steps` | 条件必填 | 数组；若为 `null`/空，必须提供 `raw_text` |
@@ -136,7 +139,7 @@
 
 - `status` 与任务状态机一致：`queued` / `processing` / `retrying` / `done` / `completed_with_warnings` / `failed`。
 - `report_available=true` 时才返回 `report_json`；否则返回 `poll_url` 等待。
-- **硬校验在创建任务前完成**：字段/Schema/空内容/超长等不合法直接返回 400/422，不创建任务、不返回 202；Worker 只做软校验（记 `input_quality`），不再返回 422。
+- **硬校验在创建任务前完成**：字段/Schema/空内容/超长/`test_type` 不支持等不合法直接返回 400/422，不创建任务、不返回 202；Worker 只做软校验（记 `input_quality`），不再返回 422。
 - `force=true` 时：已有终态记录 → **202** + 新 `review_id` 与递增的 `generation`；active 仍在运行 → **409 `REVIEW_IN_PROGRESS`**（见 §1.1 S7）；用例内容变更另产生新 `case_version`。
 
 ### 1.1 版本与幂等语义
@@ -238,6 +241,7 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
   "review_id": "8f1c...",
   "case_id": "TC-DIG-0012",
   "module": "挖宝",
+  "test_type": "functional",
   "status": "done",
   "stage": "render",
   "generation": 1,
@@ -460,6 +464,7 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
 - 子任务仍按单条幂等规则处理：已成功的子任务保留原结果。
 - `force=true` 默认**只重跑失败/未完成子任务**；`force_all=true` 才整批重跑（需显式字段，避免误操作）。
 - 用例内容变化（`input_hash` 变）只影响对应子任务，其他子任务不重跑。
+- **测试类型边界**：批次内每条 `case.test_type` 独立校验；任一条不是 `functional` → 整批 422 `UNSUPPORTED_TEST_TYPE`，不创建批次，不允许"静默跳过不支持的子任务"（`docs/00` §6）。
 
 响应 202：
 
@@ -604,6 +609,7 @@ idempotency_key = sha256(input_hash + kb_version + rubric_version + prompt_versi
 | 409 | `INVALID_DECISION_STATE` | 当前状态不允许该决定（如终态后改判） |
 | 409 | `REVIEW_IN_PROGRESS` | `force=true` 但旧代次仍在执行 |
 | 422 | `INPUT_INVALID` | API 同步硬校验失败（内容为空、无 steps/raw_text、超长、字段非法），不创建任务 |
+| 422 | `UNSUPPORTED_TEST_TYPE` | `test_type` 不是 v1 支持的 `functional`；不创建任务、不出质量结论 |
 | 422 | `TOO_MANY_CASES` | 批量超过 50 份 |
 | 422 | `INVALID_DECISION` | `decision` 非法，或 `reject`/`request_changes` 缺少理由 |
 | 429 | `QUEUE_FULL` | 队列已满，返回 `Retry-After` |
