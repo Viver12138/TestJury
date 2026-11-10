@@ -1,6 +1,6 @@
 # 03 · API 契约
 
-> 版本：v0.6（并入补充评审：同步/异步校验分层、候选向量、claim 证据、case_version、报告锁定）
+> 版本：v0.7（并入补充评审：条件仲裁、候选投票完整性、错误码手册、资源限制）
 
 - Base：`/v1`
 - 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
@@ -158,7 +158,8 @@
   "review_completeness": {
     "blind": "3/3",
     "vote": "3/3",
-    "arbitration": "ok",
+    "arbitration": "skipped",
+    "arbitration_required": false,
     "stages_completed": ["input_check", "preprocess", "kb_retrieve", "blind_review", "fusion", "vote", "arbitration", "verdict", "render"],
     "complete": true
   },
@@ -263,7 +264,8 @@
     "support": 2, "reject": 0, "not_assessed": 1, "uncertain": 0,
     "support_ratio": 0.67,
     "severity_distribution": { "blocker": 1, "major": 1, "suggestion": 0 },
-    "severity_disputed": false
+    "severity_disputed": false,
+    "vote_completeness": "2/3"
   },
   "confidence": null,
   "confidence_source": "uncalibrated",
@@ -281,6 +283,7 @@
 - `not_assessed` 不计入 `reject`，服务端按 `docs/01` §7 重新计算结论。
 - `evidence_status` 取值：`grounded` / `partially_grounded` / `ungrounded` / `conflicted` / `insufficient`；`conflicted` 必须转人工。
 - `severity_disputed=true`（accept 票中最高与最低相差 ≥2 级）时该条转人工。
+- `vote_completeness` 是**该条候选**的有效票占比，不等于全局 `review_completeness`；<2 票时该条 `need_human`。
 - `confidence` 未校准时为 `null`，报告展示 `support_ratio` 与计数；校准后才写数值并标 `confidence_source=calibrated`。
 - `evidence_refs` 至少一条对应 `kb_grounded=true` 的知识条目；无 KB 依据时为空数组。
 - `evidence_type` 取值：`business_rule` / `requirement` / `known_limit` / `historical_bug` / `testing_standard` / `inference`；`historical_bug` 不得表述为当前缺陷。
@@ -447,3 +450,5 @@
 | 500 | `INTERNAL` | 服务内部错误 |
 | 502 | `OUTPUT_SCHEMA_INVALID` | 模型输出未通过 Schema/引用校验且重试后仍失败 |
 | 503 | `ALL_MODELS_FAILED` | 三模型全部失败 |
+
+> 完整错误码、`retryable` 语义与响应结构见 `docs/19-API错误码与契约.md`。
