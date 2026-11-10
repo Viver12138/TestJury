@@ -1,6 +1,6 @@
 # 03 · API 契约
 
-> 版本：v0.7（并入补充评审：条件仲裁、候选投票完整性、错误码手册、资源限制）
+> 版本：v0.8 · 2026-11-10（v0.8：跨文档冲突清理与 P0 决策冻结）
 
 - Base：`/v1`
 - 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
@@ -145,7 +145,7 @@
   "case_id": "TC-DIG-0012",
   "module": "挖宝",
   "status": "done",
-  "stage": "done",
+  "stage": "render",
   "generation": 1,
   "case_version": 1,
   "parent_review_id": null,
@@ -220,7 +220,7 @@
 }
 ```
 
-`degraded_reasons` 取值：`kb_module_missing`、`raw_text_unparsed`、`vector_unavailable`、`keyword_unavailable`、`rerank_skipped`、`model_missing`、`scope_missing`、`automation_context_missing`、`budget_exceeded`。前六项是链路降级，其余限制结论强度，都必须在报告顶部明示。
+`degraded_reasons` 取值：`kb_module_missing`、`raw_text_unparsed`、`vector_unavailable`、`keyword_unavailable`、`rerank_skipped`、`model_missing`、`scope_missing`、`automation_context_missing`、`budget_exceeded`、`arbitration_skipped`。前六项是链路降级，其余限制结论强度或表示流程跳过，都必须在报告顶部明示。
 
 > `ai_verdict` 是 AI 结论，永不为 `approved`；`human_status` 是人工审批状态。两者不可互相替代，详见 `docs/09`。可用模型不足（1/3 及以下）时 `ai_verdict=null`，表示未形成正式 AI 结论。
 
@@ -320,6 +320,25 @@
 5. 分歧与人工复核清单
 6. 知识库缺口
 7. 附录（三份原始意见摘要、投票明细、证据清单与原文位置、输入用例核对、模型调用情况）
+
+### 3.1 问题判断链（Decision Trace）
+
+每条最终问题（或候选）必须在 Markdown 报告中展示一条可读的判断链：
+
+```
+候选 C-001
+1. 初始发现：主审 发现 / 陪审甲 未发现 / 陪审乙 发现
+2. 融合：判定同一根因，生成 C-001
+3. 投票：主审 accept/blocker；陪审甲 reject；陪审乙 accept/major
+4. 证据：核心 claim supported（E2）；问题 evidence_status=partially_grounded
+5. 仲裁：adopted；理由「...」
+6. 结论：validity=accepted；severity=blocker；ai_verdict=blocked
+7. 人工：进入复核（证据部分支持）
+```
+
+- 数据来源：`model_runs`、`review_candidates.merged_from`、`issue_votes`、`claims`、`issues.chief_*`。
+- 不要求重新阅读三份原始输出即可理解判断过程。
+- v1 必须有；缺失时报告验收不通过（见 `docs/07` §8.7）。
 
 ---
 
