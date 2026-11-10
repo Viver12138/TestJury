@@ -25,10 +25,11 @@ def _clean_env() -> dict[str, str]:
     return env
 
 
-def test_missing_database_url_exits_nonzero() -> None:
+def test_missing_database_url_exits_nonzero(workdir: Path) -> None:
+    # 在无 .env 的工作目录启动，验证"缺少 DATABASE_URL 即失败"，不受本地 .env 影响
     process = subprocess.run(
         [sys.executable, "-m", "app.bootstrap"],
-        cwd=REPO_ROOT,
+        cwd=workdir,
         env=_clean_env(),
         capture_output=True,
         text=True,
@@ -72,10 +73,10 @@ def test_production_rejects_bootstrap_keys() -> None:
         )
 
 
-def test_error_message_does_not_echo_secret() -> None:
+def test_error_message_does_not_echo_secret(workdir: Path) -> None:
     process = subprocess.run(
         [sys.executable, "-m", "app.bootstrap"],
-        cwd=REPO_ROOT,
+        cwd=workdir,
         env=_clean_env(),
         capture_output=True,
         text=True,

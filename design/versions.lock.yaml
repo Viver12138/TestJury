@@ -2,9 +2,9 @@
 # 每个验证项只校验 execution_plan.yaml `version_dependencies` 声明的版本；
 # code_commit 必须等于当前门禁运行的 Git HEAD（或 GITHUB_SHA），不能用 n/a 绕过。
 version: "0.2"
-baseline: design-v1.12
+baseline: design-v1.13
 
-design: design-v1.11
+design: design-v1.13
 code_commit: null          # 运行门禁时由脚本与当前 HEAD/GITHUB_SHA 比较
 rubric: "0.2.0"
 report_schema: report-1.0
@@ -14,3 +14,4 @@ dataset: null               # 冻结评测集版本（M2 确定）
 kb: null                    # 知识库构建版本（M2 确定）
 embedding_profile: null     # embedding profile（M2 确定）
 adapter: adapter-v1
+

@@ -3,7 +3,7 @@
 # 状态模型：designed → implemented → verified → accepted；脚本检查通过只到 verified。
 # 校验：scripts/check_execution_plan.py；accepted 必须有 acceptance_evidence / acceptance_by / acceptance_at。
 version: "0.3"
-baseline: design-v1.12
+baseline: design-v1.13
 last_updated: "2026-11-10"
 
 status_model: [designed, implemented, verified, accepted]
@@ -323,3 +323,4 @@ verification_items:
     acceptance_evidence: null
     acceptance_by: null
     acceptance_at: null
+

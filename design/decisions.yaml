@@ -1041,6 +1041,35 @@ decisions:
     choice: q14_m2_protocol_text_check_topology_v06
     source: [docs/08, docs/30, scripts]
 
+  # ── v1.13（设计变更 2026-11-10-m1-implementation-gaps：实现补充回写） ──
+  - id: D222
+    title: 授权表与附件内容寻址+评审绑定
+    status: decided
+    validation_status: passed
+    implementation_status: implemented
+    release_status: draft
+    phase: M1
+    choice: api_keys_sha256_plus_attachments_review_binding
+    source: [docs/02, docs/03, docs/17, docs/10]
+  - id: D223
+    title: issues 投影同事务与可重建
+    status: decided
+    validation_status: passed
+    implementation_status: implemented
+    release_status: draft
+    phase: M1
+    choice: finalize_report_transaction_and_uuid5_projection_rebuild
+    source: [docs/02, docs/06, docs/14]
+  - id: D224
+    title: 模型 Adapter 协议与注册表
+    status: decided
+    validation_status: passed
+    implementation_status: implemented
+    release_status: draft
+    phase: M1
+    choice: chat_embedding_rerank_protocol_registry_retry_classification
+    source: [docs/06, docs/10, docs/17]
+
 open_questions:
   - id: Q-01
     title: Rubric 验收版本如何选择

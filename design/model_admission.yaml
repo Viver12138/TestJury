@@ -2,7 +2,7 @@
 # 技术验证与数据安全准入是两道独立门槛：两者都通过才允许进入生产拓扑。
 # 校验：scripts/check_execution_plan.py；verified/approved 必须有证据与审核人。
 version: "0.1"
-baseline: design-v1.12
+baseline: design-v1.13
 last_updated: "2026-11-10"
 
 status_values: [unverified, testing, verified, deprecated]
@@ -121,3 +121,4 @@ roles:
     evidence: []
     last_verified_at: null
     reviewer: null
+

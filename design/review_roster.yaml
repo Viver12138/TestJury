@@ -2,7 +2,7 @@
 # 角色名不等于真实人员；上线前每个试点模块必须有主责/备份/抽检/仲裁。
 # 校验：scripts/check_execution_plan.py；status=ready 时人员字段必须非空。
 version: "0.1"
-baseline: design-v1.12
+baseline: design-v1.13
 status: pending   # pending|ready
 last_updated: "2026-11-10"
 
@@ -44,3 +44,4 @@ modules:
     sampler: null
     arbitrator: null
     status: pending
+

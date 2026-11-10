@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.12 + M0 实现 + M1 前置**（投影、附件绑定、模型适配器契约；270 条测试通过；真实模型、知识库与生产部署未开始）· 2026-11-10
+> **状态**：**design-v1.13 + M0 实现 + M1 前置**（投影、附件绑定、模型适配器契约；270 条测试通过；真实模型、知识库与生产部署未开始）· 2026-11-10
 
 ---
 
@@ -18,7 +18,7 @@
 
 | 版本维度 | 当前值 | 用途 |
 |---|---|---|
-| 设计基线版本 | `design-v1.12` | 本仓库设计文档整体迭代版本；各文档文首 `vX.Y` 即此版本 |
+| 设计基线版本 | `design-v1.13` | 本仓库设计文档整体迭代版本；各文档文首 `vX.Y` 即此版本 |
 | 产品版本 | `product-v1.0`（规划） | 实际交付给用户的产品范围；见 `docs/00` §10 |
 | Rubric 版本 | `rubric-0.2.0` | 评审标准；`rubric/rubric.yaml` |
 | 报告格式版本 | `report-1.0` | `schemas/report.schema.json` |
@@ -198,6 +198,8 @@
 | 164 | 附件卷 | 所有 API/Worker 共享同一附件卷；多机前必须换对象存储 |
 | 165 | Schema 同步 | 报告 Schema 补 `cancelled`、issue 证据/置信度/校验状态、participants |
 | 166 | 复核状态 | 统一 `pending/in_progress/completed/cancelled`；不再用 `done` |
+
+> **v1.13 设计变更（2026-11-10，已批准）**：D222 授权表与附件"内容寻址 + 评审绑定"、D223 `issues` 投影同事务且可重建、D224 模型 Adapter 协议与注册表。变更记录见 [design/changes/2026-11-10-m1-implementation-gaps.md](design/changes/2026-11-10-m1-implementation-gaps.md)。
 | 167 | 复核结果 | Issue 5 种、Report 3 种（含 `reject`）；DB CHECK + API 层级校验 |
 | 168 | 幂等历史 | README #49 / D28 的旧幂等字段名全部改为 `idempotent_replay` |
 | 169 | 健康检查 | `/livez` 存活；`/readyz` 就绪；`/healthz` 等同 readyz；依赖失败 503 |
@@ -466,20 +468,18 @@ python scripts/check_m0_acceptance.py
 - `STORAGE_BACKEND=memory` 仅用于单测与本地演示；生产默认 `postgres` 且禁止 memory。
 - Rubric 仍为 `0.2.0 draft`：生产模式加载会被拒绝，待 V-03B 审核发布。
 
-### 6.4 实现与设计的已知差异（待设计同步）
+### 6.4 设计与实现差异（v1.13 已收口三处）
 
-M0 实现过程中发现设计缺口，以下差异已进入实现但**尚未回写设计文档**，需在下一次设计变更中收口（不得据此宣称设计已更新）：
+v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 评审绑定”、`issues` 投影同事务且可重建（D222–D224，见 [变更记录](design/changes/2026-11-10-m1-implementation-gaps.md)）。
+
+仍存在、且**尚未**回写设计的差异：
 
 | 差异 | 现状 | 后续动作 |
 |---|---|---|
-| `api_keys` 授权表 | docs/02 未定义；已实现 `api_keys`（sha256 摘要、actor_type、roles、caller_id、撤销/过期） | 补入 docs/02 DDL 与数据字典，并登记设计变更 |
-| `attachments` 表 | 已实现内容寻址附件 + `review_attachments` 评审绑定（Alembic 0002）；提交校验归属与摘要，删除评审级联绑定 | 回写 docs/02，替换/补充 `case_attachments` 语义 |
-| `issues` 投影 | **已补齐**：`finalize_report` 同事务写入；`rebuild_projection.py` 可重建，`check_consistency.py` 可检出漂移 | 设计文档确认（docs/14 §7 已要求，无结构变更） |
+| 存储适配器实现 | docs/06 列 SQLAlchemy 2.0 ORM；当前实现使用 asyncpg 直连 + Alembic 管理 DDL，语义与约束已由测试覆盖 | M1 前确认：补 ORM 层，或回写 docs/06 的适配器实现口径 |
 | 真实模型 Adapter | **协议层已补齐**：Chat/Embedding/Rerank 协议、注册表校验、OpenAI 兼容适配器、错误分类与重试；仍只有 Mock 参与流水线 | V-01 实测后接入真实 Key 与 Adapter |
 | 知识库检索 | 阶段固定 `skipped`，报告记 `kb_module_missing` | M2/M3 接入 KB、向量、RRF、Rerank |
 | CI 远端执行 | `.github/workflows/contracts.yml` 已定义 contract/unit/migration/mock-e2e/ci-all；本地等价命令全部通过，未在 GitHub 远端实际运行 | 首次 push 后确认各 Job 通过 |
-
-设计缺口与本次实现补充已记录在 [design/changes/2026-11-10-m1-implementation-gaps.md](design/changes/2026-11-10-m1-implementation-gaps.md)，状态为**待批准**；批准前不得宣称设计已更新。
 
 ### 6.5 M1 前置（不依赖供应商）
 
