@@ -15,6 +15,7 @@ import argparse
 import hashlib
 import json
 import os
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -51,7 +52,7 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _check_manifest(item: dict[str, Any], reporter: Reporter, lock: dict[str, Any]) -> dict[str, Any] | None:
+def _check_manifest(item: dict[str, Any], reporter: Reporter, lock: dict[str, Any], deps: list[str], current_sha: str | None) -> dict[str, Any] | None:
     item_id = str(item.get("id"))
     manifest_path = EVIDENCE_DIR / item_id / "manifest.yaml"
     if not manifest_path.exists():
@@ -68,15 +69,20 @@ def _check_manifest(item: dict[str, Any], reporter: Reporter, lock: dict[str, An
         reporter.error(CHECK, rel(manifest_path), "item_id", "manifest 的 item_id 与验证项不一致")
 
     versions = manifest.get("versions", {}) if isinstance(manifest.get("versions"), dict) else {}
-    if "code_commit" not in versions:
-        reporter.error(CHECK, rel(manifest_path), "versions.code_commit", "manifest 必须显式绑定代码 commit（不适用写 n/a）")
-    for key, expected in lock.items():
-        if expected is None or key in ("version", "baseline"):
-            continue
+    for key in deps:
+        expected = lock.get(key)
         actual = versions.get(key)
+        if key == "code_commit":
+            if not actual:
+                reporter.error(CHECK, rel(manifest_path), "versions.code_commit", "必须绑定代码 commit")
+            elif str(actual) == "n/a":
+                reporter.error(CHECK, rel(manifest_path), "versions.code_commit", "本项依赖代码版本，不能写 n/a")
+            elif current_sha and str(actual) != current_sha:
+                reporter.error(CHECK, rel(manifest_path), "versions.code_commit", f"与当前 HEAD 不一致：{actual} vs {current_sha}")
+            continue
         if actual is None:
-            reporter.error(CHECK, rel(manifest_path), f"versions.{key}", f"缺少版本绑定（期望 {expected}）")
-        elif str(actual) != str(expected):
+            reporter.error(CHECK, rel(manifest_path), f"versions.{key}", f"缺少本项必需版本（当前锁 {expected}）")
+        elif expected is not None and str(actual) != str(expected):
             reporter.error(CHECK, rel(manifest_path), f"versions.{key}", f"版本不一致：{actual} vs 当前 {expected}")
 
     artifacts = manifest.get("artifacts")
@@ -156,7 +162,7 @@ def _check_history(item: dict[str, Any], plan: dict[str, Any], reporter: Reporte
         reporter.error(CHECK, rel(history_path), f"{item_id}.history", f"历史最后状态 {previous} 与当前 {status} 不一致")
 
 
-def _check_item(item: dict[str, Any], required: str, plan: dict[str, Any], reporter: Reporter, lock: dict[str, Any]) -> None:
+def _check_item(item: dict[str, Any], required: str, plan: dict[str, Any], reporter: Reporter, lock: dict[str, Any], deps: list[str], current_sha: str | None) -> None:
     item_id = str(item.get("id"))
     if not item.get("owner"):
         reporter.error(CHECK, rel(PLAN), f"{item_id}.owner", "阶段门禁要求 owner 非空")
@@ -175,7 +181,7 @@ def _check_item(item: dict[str, Any], required: str, plan: dict[str, Any], repor
         reporter.error(CHECK, rel(PLAN), f"{item_id}.status", f"阶段要求至少 {required}，当前 {status}")
     manifest = None
     if status != "designed":
-        manifest = _check_manifest(item, reporter, lock)
+        manifest = _check_manifest(item, reporter, lock, deps, current_sha)
         _check_history(item, plan, reporter)
     if status == "accepted":
         for field in ("acceptance_evidence", "acceptance_by", "acceptance_at"):
@@ -202,12 +208,21 @@ def run(stage: str, reporter: Reporter) -> None:
         reporter.error(CHECK, rel(PLAN), f"{stage}.stage_gates", "stage_gates 与 requires 项目集合不一致")
     items = _items(plan)
     lock = lib.load_yaml(VERSIONS_LOCK, reporter, CHECK) if VERSIONS_LOCK.exists() else {}
+    deps_map = plan.get("version_dependencies", {})
+    current_sha = os.environ.get("GITHUB_SHA")
+    if not current_sha:
+        try:
+            current_sha = subprocess.check_output(
+                ["git", "rev-parse", "HEAD"], cwd=str(lib.ROOT), text=True
+            ).strip()
+        except (OSError, subprocess.CalledProcessError):
+            current_sha = None
     for item_id, required in gates.items():
         item = items.get(item_id)
         if item is None:
             reporter.error(CHECK, rel(PLAN), str(item_id), "阶段要求项不存在")
             continue
-        _check_item(item, required, plan, reporter, lock)
+        _check_item(item, required, plan, reporter, lock, list(deps_map.get(item_id, [])), current_sha)
 
     if mapping.get("protocol"):
         protocol = lib.load_yaml(PROTOCOL, reporter, CHECK)

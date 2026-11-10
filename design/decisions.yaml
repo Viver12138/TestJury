@@ -7,7 +7,7 @@
 # status 只表示是否已决策；验证/实施/发布状态分开，不能把 decided 当成已验证。
 # phase 表示该决策最早在哪个阶段被验证/落地：M0/M1/M4/M5/M6/production。
 #   未到 phase 的决策不得被实现人员自行假设；M0 决策必须在 M0 用例通过后把 validation_status 改为 passed。
-version: "1.10"
+version: "1.11"
 last_updated: "2026-11-10"
 
 decisions:
@@ -973,6 +973,44 @@ decisions:
     phase: M0
     choice: artifacts_list_acceptance_refs_must_resolve
     source: [scripts, evidence/README.md]
+
+  # ── v1.11（补充 20：跨文档一致性收口） ──
+  - id: D215
+    title: Q-14 协议定位统一
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M2
+    choice: q14_m2_protocol_only_v06_owns_experiment
+    source: [design/execution_plan.yaml, docs/30]
+  - id: D216
+    title: 按项版本依赖与 code_commit 校验
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: per_item_version_dependencies_and_head_sha_check
+    source: [design/execution_plan.yaml, design/versions.lock.yaml, scripts]
+  - id: D217
+    title: 复核结果与审批字段边界
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M0
+    choice: review_task_result_vs_report_decision
+    source: [docs/09, docs/17, docs/02]
+  - id: D218
+    title: 知识内容与构建版本分离
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    phase: M2
+    choice: kb_content_version_and_kb_build_version_pair
+    source: [docs/11, docs/25, docs/29]
 
 open_questions:
   - id: Q-01

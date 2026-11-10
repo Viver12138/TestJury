@@ -3,7 +3,7 @@
 # 状态模型：designed → implemented → verified → accepted；脚本检查通过只到 verified。
 # 校验：scripts/check_execution_plan.py；accepted 必须有 acceptance_evidence / acceptance_by / acceptance_at。
 version: "0.3"
-baseline: design-v1.10
+baseline: design-v1.11
 last_updated: "2026-11-10"
 
 status_model: [designed, implemented, verified, accepted]
@@ -74,6 +74,22 @@ evidence_policy:
   overwrite_original: false
   invalidate_on_version_change: true
 
+# 按验证项声明版本依赖（P1-02）：只校验与本项相关的版本，避免不相关版本变化使证据失效
+version_dependencies:
+  V-01: [design, code_commit, model_config, adapter]
+  V-02: [design, code_commit, dataset, rubric]
+  V-03A: [design, code_commit, rubric, dataset, model_config]
+  V-03B: [design, code_commit, rubric]
+  V-04: [design, code_commit, kb, embedding_profile]
+  V-05: [design, code_commit]
+  V-06: [design, code_commit, rubric, prompt, model_config, dataset]
+  V-07: [design, code_commit, kb, dataset]
+  V-08: [design, code_commit]
+  V-09: [design, code_commit, model_config]
+  V-10: [design, code_commit]
+  V-11: [design, code_commit]
+  V-12: [design, code_commit, model_config]
+
 open_items:
   - id: Q-07
     title: 知识库首批试点模块
@@ -132,13 +148,13 @@ open_items:
     acceptance_by: null
     acceptance_at: null
   - id: Q-14
-    title: A–E 模型组合实验
+    title: A–E 协议签署与预注册
     status: open
     owner: null
-    phase: M6
-    blocking: [M6, production]
-    next_action: 填全 experiment_protocol.yaml 阈值并签署，执行 A–E
-    evidence: [signed_protocol, experiment_report, topology_decision]
+    phase: M2
+    blocking: [M2, M6]
+    next_action: 评审并签署 experiment_protocol.yaml（实验执行与结果由 V-06 负责）
+    evidence: [signed_protocol, protocol_review_record]
     acceptance_evidence: null
     acceptance_by: null
     acceptance_at: null
@@ -243,7 +259,7 @@ verification_items:
     owner: null
     phase: M6
     blocking: [production]
-    evidence: [ae_experiment_report, topology_decision]
+    evidence: [experiment_report, topology_decision]
     acceptance_evidence: null
     acceptance_by: null
     acceptance_at: null
