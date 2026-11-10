@@ -1,16 +1,14 @@
 # A–E 模型组合实验协议（补充 16 Q-14）
 # 阈值必须在签署前填全；未签署不得启动正式实验。批准口径唯一来源：docs/15 §6.1。
 # status: draft → signed → running → completed；signed 前置：dataset_version + 全部阈值 + 签署人/时间。
-version: "0.1"
-baseline: design-v1.7
+version: "0.2"
+baseline: design-v1.9
 status: draft
 dataset_version: null
 rubric_version: "0.2.0"
 prompt_version: null
 model_config_version: null
 groups: [A, B, C, D, E]
-repeats_per_case: null
-random_seed: null
 
 thresholds:
   strict_blocker_recall_min_abs_gain: null   # D vs A，百分点
@@ -29,10 +27,17 @@ statistical_design:
   multiple_comparison: holm
   min_blocker_events_per_group: null
   min_samples_per_stratum: null
-  seed: null
+  random_seed: null
   repeats_per_case: null
+  aggregation_method: null        # mean | majority | union（多次运行的汇总）
+  mde_strict_blocker_recall_gain: null   # 最小可检测/业务有意义增益（百分点）
+  baseline_blocker_rate: null     # 样本量计算用的基线 blocker 比例
+  sample_size_method: null        # 例如 two_proportion_power
+  bootstrap_unit: case            # 重采样单位：case（同一用例内 issue 聚类）
+  clustering_unit: case
+  primary_hypotheses: []          # 主比较集合（Holm 校正范围）
   abnormal_sample_policy: null    # count_as_failure | exclude_with_reason
-  stopping_rule: null             # 仅预注册无效性停止
+  stopping_rule: null             # 预注册无效性停止；填写检查点/边界/批准人
 
 approval_rule_source: docs/15 §6.1
 hard_gates: [strict_blocker_recall, fdr, cost_per_valid_issue, p95_latency]

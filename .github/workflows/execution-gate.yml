@@ -9,6 +9,12 @@ on:
         default: "S2"
         type: choice
         options: [S1, S2, S3, S4]
+      mode:
+        description: "formal 仅 main 正式验收；precheck 允许其他分支预检"
+        required: true
+        default: "precheck"
+        type: choice
+        options: [precheck, formal]
 
 permissions:
   contents: read
@@ -16,6 +22,7 @@ permissions:
 jobs:
   gate:
     name: 阶段执行门禁
+    if: inputs.mode == 'precheck' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,5 +31,15 @@ jobs:
           python-version: "3.12"
       - name: 安装依赖
         run: python -m pip install --upgrade pip pyyaml jsonschema
-      - name: 执行门禁（owner/证据/阶段出口）
-        run: python scripts/check_execution_gate.py --stage ${{ inputs.stage }}
+      - name: 执行门禁（owner/最低状态/manifest/history/出口）
+        run: |
+          mkdir -p evidence/gate
+          python scripts/check_execution_gate.py --stage ${{ inputs.stage }} \
+            --json --out evidence/gate/${{ inputs.stage }}-${{ github.sha }}.json
+      - name: 归档门禁结果
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: execution-gate-${{ inputs.stage }}-${{ github.sha }}
+          path: evidence/gate/
+          retention-days: 90

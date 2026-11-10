@@ -41,6 +41,8 @@ def _require_fields(item: dict[str, Any], fields: tuple[str, ...], label: str, r
 
 def _check_stage_mapping(plan: dict[str, Any], reporter: Reporter) -> None:
     mapping = plan.get("stage_mapping", {})
+    gates = plan.get("stage_gates", {})
+    allowed_required = {"owner_assigned", "decision_recorded", "implemented", "verified", "accepted"}
     for stage in ("S1", "S2", "S3", "S4"):
         spec = mapping.get(stage)
         if not isinstance(spec, dict):
@@ -48,9 +50,18 @@ def _check_stage_mapping(plan: dict[str, Any], reporter: Reporter) -> None:
             continue
         if not spec.get("milestones") or not spec.get("requires"):
             reporter.error(CHECK, rel(PLAN), f"stage_mapping.{stage}", "必须有里程碑与必需项")
+        stage_gates = gates.get(stage)
+        if not isinstance(stage_gates, dict):
+            reporter.error(CHECK, rel(PLAN), f"stage_gates.{stage}", "缺少最低状态门槛")
+            continue
+        if set(stage_gates) != set(spec.get("requires", [])):
+            reporter.error(CHECK, rel(PLAN), f"stage_gates.{stage}", "与 stage_mapping.requires 项目集合不一致")
+        for item_id, required in stage_gates.items():
+            if required not in allowed_required:
+                reporter.error(CHECK, rel(PLAN), f"stage_gates.{stage}.{item_id}", f"未知最低状态 {required!r}")
     s2 = mapping.get("S2", {}).get("requires", [])
-    if "V-03" in s2:
-        reporter.error(CHECK, rel(PLAN), "stage_mapping.S2", "S2 不得要求 Rubric production 发布（V-03）")
+    if "V-03" in s2 or "V-03A" in s2 or "V-03B" in s2:
+        reporter.error(CHECK, rel(PLAN), "stage_mapping.S2", "S2 不得要求 Rubric 效果/生产发布（V-03A/V-03B）")
     lifecycle = plan.get("rubric_lifecycle", {})
     for key in ("M0", "M2_M6", "production"):
         if not lifecycle.get(key):
@@ -61,6 +72,16 @@ def _check_stage_mapping(plan: dict[str, Any], reporter: Reporter) -> None:
                      ("verified", "implemented"), ("accepted", "implemented"), ("accepted", "verified")):
         if required not in pairs:
             reporter.error(CHECK, rel(PLAN), "state_transitions", f"缺少转换 {required[0]} → {required[1]}")
+
+    readme = lib.read_text(lib.ROOT / "README.md")
+    match = re.search(r"\*\*状态\*\*：\*\*(design-v\d+\.\d+)", readme)
+    baseline = plan.get("baseline")
+    current = match.group(1) if match else None
+    for path in sorted(lib.DESIGN_DIR.glob("*.yaml")):
+        data = lib.load_yaml(path, reporter, CHECK)
+        value = data.get("baseline") if isinstance(data, dict) else None
+        if isinstance(value, str) and value.startswith("design-v") and current and value != current:
+            reporter.error(CHECK, rel(path), "baseline", f"与 README 设计基线不一致：{value} vs {current}")
 
 
 def _check_plan(plan: dict[str, Any], decisions: dict[str, Any], reporter: Reporter) -> None:
@@ -89,10 +110,10 @@ def _check_plan(plan: dict[str, Any], decisions: dict[str, Any], reporter: Repor
         if not item.get("evidence"):
             reporter.error(CHECK, rel(PLAN), f"{qid}.evidence", "必须声明所需证据")
 
-    expected_v = [f"V-{index:02d}" for index in range(1, 13)]
+    expected_v = ["V-01", "V-02", "V-03A", "V-03B", "V-04", "V-05", "V-06", "V-07", "V-08", "V-09", "V-10", "V-11", "V-12"]
     actual_v = [item.get("id") for item in plan.get("verification_items", [])]
     if actual_v != expected_v:
-        reporter.error(CHECK, rel(PLAN), "verification_items", f"必须包含 V-01–V-12 且顺序一致，实际 {actual_v}")
+        reporter.error(CHECK, rel(PLAN), "verification_items", f"必须包含 V-01/V-02/V-03A/V-03B/V-04–V-12 且顺序一致，实际 {actual_v}")
     for item in plan.get("verification_items", []):
         vid = item.get("id")
         _require_fields(item, ("id", "title", "status", "owner", "phase", "blocking", "evidence"), vid, reporter, PLAN)
@@ -156,12 +177,22 @@ def _check_protocol(data: dict[str, Any], reporter: Reporter) -> None:
         "multiple_comparison",
         "min_blocker_events_per_group",
         "min_samples_per_stratum",
-        "seed",
+        "random_seed",
         "repeats_per_case",
+        "aggregation_method",
+        "mde_strict_blocker_recall_gain",
+        "baseline_blocker_rate",
+        "sample_size_method",
+        "bootstrap_unit",
+        "clustering_unit",
+        "primary_hypotheses",
         "abnormal_sample_policy",
         "stopping_rule",
     ):
-        if stats.get(field) is None:
+        if field == "primary_hypotheses":
+            if not stats.get(field):
+                reporter.error(CHECK, rel(PROTOCOL), f"statistical_design.{field}", f"{status} 前必须冻结主假设集合")
+        elif stats.get(field) is None:
             reporter.error(CHECK, rel(PROTOCOL), f"statistical_design.{field}", f"{status} 前必须冻结统计设计")
 
 
