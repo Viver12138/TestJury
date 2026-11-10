@@ -1,0 +1,24 @@
+evidence_id: M1-PRE-verified-2026-11-10
+item_id: M1-PRE
+evidence_type: automated_test_run
+created_at: '2026-11-10T17:42:00+08:00'
+created_by: dsh-agent
+versions:
+  design: design-v1.12
+  code_commit: f37a8959f24e6eb9ceae30d0ed3d1bf43f6d18a8
+  rubric: 0.2.0
+  report_schema: report-1.0
+  db_migration: 0002_m1_review_attachments
+artifacts:
+- path: evidence/M1-PRE/m1-pre-test-run.txt
+  sha256: 5923dd6cb88c50e8562508edb5257f4df03a69c58a3637c07e358099298b48c0
+  kind: test_run_log
+validity:
+  valid: true
+  invalidated_by: null
+scope: M1 前置：issues 投影与重建/一致性检查；附件绑定评审；模型 Adapter 协议/注册表/OpenAI 兼容适配器与重试（MockTransport，无供应商调用）
+limitations:
+- 设计变更 design/changes/2026-11-10-m1-implementation-gaps.md 仍为待批准
+- 真实供应商 Adapter 未接入，需 V-01 实测与密钥
+- 知识库检索、性能、生产部署未验证
+- GitHub Actions 未在远端执行

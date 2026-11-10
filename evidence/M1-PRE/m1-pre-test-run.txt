@@ -1,0 +1,23 @@
+M1 前置（不依赖供应商）验证记录：verified，待设计批准
+commit: f37a8959f24e6eb9ceae30d0ed3d1bf43f6d18a8
+date: 2026-11-10T17:42:00+08:00
+environment: Windows 11, Python 3.13.13, PostgreSQL 16.15 + pgvector, MockTransport（无供应商网络调用）
+
+== pytest -q ==
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+270 passed, 1 warning in 37.81s
+
+== scripts/check_contracts.py ==
+
+结果: 通过（31 项检查，0 个警告）
+
+== alembic current ==
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+0002_m1_review_attachments (head)
+
+== ruff check app tests ==
+All checks passed!
+
+范围：issues 投影与重建/一致性检查；附件绑定评审；模型 Adapter 协议/注册表/OpenAI 兼容适配器（MockTransport 契约测试）。
+不含：真实供应商调用、知识库检索、性能与生产部署。
