@@ -1,6 +1,6 @@
 # 03 · API 契约
 
-> 版本：v1.2 · 2026-11-10（契约一致性冻结修订）
+> 版本：v1.3 · 2026-11-10（M0 前契约收口）
 
 - Base：`/v1`
 - 鉴权：请求头 `X-API-Key: <key>`，调用方标识 `X-Caller-Id: <团队/系统名>`
@@ -183,19 +183,21 @@
 - 只接受白名单 MIME（png/jpg/pdf/txt）；超限返回 422。
 - 上传后可被同一 `caller_id` 的评审引用；引用时再次校验 SHA-256。
 - **v1 不把附件内容发送给模型**，报告不得声称已分析附件；后续多模态能力单独设计。
-- 删除评审时按 `review_id` 级联删除附件对象与记录。
+- 删除评审时先将附件标记 `deleted` 并禁止下载，再异步清理物理文件；数据库保留最小引用元数据，历史报告显示"附件已删除"。
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
 | POST | `/v1/attachments` | 上传，返回 `attachment_id` |
 | GET | `/v1/attachments/{attachment_id}` | 下载（按评审授权） |
-| DELETE | `/v1/attachments/{attachment_id}` | 删除对象与记录（需授权） |
+| DELETE | `/v1/attachments/{attachment_id}` | 标记 `deleted`、立即禁止下载、异步清理物理文件；保留最小元数据 |
 
 ---
 
 ## 2. 查询评审结果
 
 `GET /v1/reviews/{review_id}`
+
+- `review_completeness.stages_completed` 只列 `succeeded` 阶段；条件跳过的阶段单列在 `stages_skipped`，不得混入完成列表。
 
 ```json
 {
@@ -224,7 +226,8 @@
     "vote": "3/3",
     "arbitration": "skipped",
     "arbitration_required": false,
-    "stages_completed": ["input_check", "preprocess", "kb_retrieve", "blind_review", "fusion", "vote", "arbitration", "verdict", "render"],
+    "stages_completed": ["input_check", "preprocess", "kb_retrieve", "blind_review", "fusion", "vote", "verdict", "render"],
+    "stages_skipped": ["arbitration"],
     "complete": true
   },
   "input_quality": {
@@ -524,7 +527,8 @@
   "due_at": "2026-11-12T18:00:00+08:00"}
 ```
 
-- 状态：`pending` / `in_progress` / `done` / `cancelled`。
+- 状态：`pending` / `in_progress` / `completed` / `cancelled`。
+- `PATCH` 需带 `expected_version`；版本不匹配返回 409，避免多人覆盖。
 - 允许转派与重新打开；每次变更写历史。
 - 报告生成时自动创建任务；不是所有 `human_review_items` 都必须成为任务（可按规则过滤）。
 

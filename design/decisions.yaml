@@ -1,112 +1,240 @@
 # TestJury 设计决策索引（机器可读）
 # 事实源：docs/08 §2.0 与 README 决策表；本文件只做结构化索引，冲突时以 docs/08 为准。
-version: "1.0"
+# status 只表示是否已决策；验证/实施/发布状态分开，不能把 decided 当成已验证。
+version: "1.1"
 last_updated: "2026-11-10"
 
 decisions:
   - id: PD-001
     title: 附件能力
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: server_upload_local_volume_sha256_no_ocr_not_sent_to_model
     source: [docs/03, docs/10]
   - id: PD-002
     title: 人工复核队列
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: human_review_tasks_plus_minimal_api
     source: [docs/02, docs/03, docs/09]
   - id: PD-003
     title: 生产模型拓扑
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: single_experimental_only_production_min_dual_default_by_experiment
     source: [docs/01, docs/15]
   - id: PD-004
     title: 数据保留
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: tiered_access_policy_based_compliance_delete_audit_minimum
     source: [docs/10, docs/14]
   - id: PD-005
     title: 部署拓扑
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: single_host_compose_api_worker_split_multi_worker
     source: [docs/06, docs/27]
 
   - id: D115
     title: fencing_token 递增时机
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: increment_on_ownership_transfer_only
     source: [docs/24, docs/13]
   - id: D116
     title: 批量幂等
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: batch_and_subtask_idempotency_force_failed_only
     source: [docs/03, docs/24]
   - id: D117
     title: 指标命名
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: strict_blocker_recall_high_risk_recall_fdr
     source: [docs/07, docs/21]
   - id: D118
     title: 报告 Schema 兼容
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: no_auto_migration_versioned_renderer_derived_conversion
     source: [schemas/README, docs/14]
   - id: D119
     title: 预算模型
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: hierarchical_budget_core_reserve_soft_hard
     source: [docs/20, docs/10]
   - id: D120
     title: 附件生命周期
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: upload_validate_store_authorize_delete_async
     source: [docs/03, docs/10]
   - id: D121
     title: 复核任务实体
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: separate_tasks_with_events
     source: [docs/02, docs/09]
   - id: D122
     title: 拓扑语义
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: role_participant_model_separated_snapshot
     source: [docs/01, docs/12]
   - id: D123
     title: Rubric 发布
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: semver_published_required_frozen_per_task
     source: [rubric/README, docs/04]
   - id: D124
     title: 五层输出校验
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: format_reference_evidence_applicability_decision
     source: [docs/18]
   - id: D125
     title: 模型置信度
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: model_confidence_not_trusted_server_confidence_calibrated
     source: [docs/02, docs/18]
   - id: D126
     title: 人工复核生命周期
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: task_states_result_events_reopen_supersede
     source: [docs/09]
   - id: D127
     title: 知识缺口处理
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: gap_type_plus_resolution_action
     source: [docs/16]
   - id: D128
     title: 统计单位
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: case_issue_claim_run_units
     source: [docs/07]
   - id: D129
     title: 增量价值
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: incremental_valid_issue_gain_cost_per_valid_issue
     source: [docs/07, docs/15]
   - id: D130
     title: 决策索引
-    status: approved
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
     choice: yaml_index_docs08_authoritative
     source: [design/decisions.yaml, docs/08]
+  - id: D146
+    title: 复核状态枚举
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    choice: pending_in_progress_completed_cancelled
+    source: [docs/02, docs/03, docs/09, docs/17]
+  - id: D147
+    title: 复核结果枚举
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    choice: issue_five_report_three_with_check
+    source: [docs/02, docs/17]
+  - id: D148
+    title: 健康检查语义
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    choice: livez_readyz_healthz_readyz_alias
+    source: [docs/03, docs/27]
+  - id: D149
+    title: 阶段完成语义
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    choice: completed_only_succeeded_skipped_separate
+    source: [docs/03, docs/13]
+  - id: D150
+    title: 多人复核裁决
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    choice: unanimous_adopt_conflict_escalate_no_overwrite
+    source: [docs/09]
+  - id: D151
+    title: Issue与Report关系
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    choice: two_state_machines_explicit_rules
+    source: [docs/09]
+  - id: D152
+    title: 决策状态维度
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    choice: status_validation_implementation_release
+    source: [design/decisions.yaml, docs/08]
+  - id: D153
+    title: M0准入
+    status: decided
+    validation_status: pending
+    implementation_status: not_started
+    release_status: draft
+    choice: ten_verifiable_exit_criteria_no_real_model
+    source: [docs/08]
