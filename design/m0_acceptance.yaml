@@ -1,9 +1,9 @@
-# TestJury M0 验收用例与 P0 契约清理用例（机器可读）
-# 事实源：docs/08 §5.2（M0 十项退出条件）、docs/28（用例说明与追踪链）、docs/12（Verdict）。
+# TestJury M0 验收用例、P0 契约清理用例与 BIZ 业务边界用例（机器可读）
+# 事实源：docs/08 §5.2（M0 十项退出条件）、docs/28（用例说明与追踪链）、docs/12（Verdict）、docs/00 §6/§8（业务边界）。
 # 用法：scripts/check_m0_acceptance.py 校验结构、覆盖度与追踪字段；
 #       CI 按 ci_job 分组执行；result 在 M0 执行后回填为 passed/failed。
 # 约定：
-#   - 每个 M0 退出条件至少 1 条用例；每个 P0 契约项至少 1 条用例；
+#   - 每个 M0 退出条件至少 1 条用例；每个 P0 契约项与 BIZ 业务项至少 1 条用例；
 #   - automation/test_file/ci_job 不得为空，避免"列出条件但无法执行"；
 #   - 用例 ID 稳定，后续实现不得复用或改号。
 version: "1.0"
@@ -71,6 +71,10 @@ contract_items:
     title: Verdict 属性与边界测试
     doc: docs/28 §5
     acceptance: 真值表可执行；关键规则有正例/反例/边界例；8 条不变量有自动化保护
+  - id: BIZ-1
+    title: 业务范围与职责边界
+    doc: docs/00 §6/§8、docs/03 §1、docs/09 §5.2
+    acceptance: 非 functional 测试类型被明确拒绝；AI 结论不表达审批；评审限制可见；11 个业务维度有 Rubric 映射
 
 cases:
   # ── M0-01 工程骨架 ──
@@ -607,4 +611,85 @@ cases:
     automation: pytest + 属性测试
     test_file: tests/unit/test_verdict_forbidden.py
     ci_job: unit
+    result: not_run
+
+  # ── BIZ-1 业务范围与职责边界 ──
+  - id: ACC-BIZ-001
+    maps_to: BIZ-1
+    title: 非功能测试类型被明确拒绝
+    preconditions: [API 可启动, 授权表可用]
+    input: POST /v1/reviews，case.test_type=performance / security / compatibility / reliability / usability
+    steps:
+      - 逐类提交，断言 422 `UNSUPPORTED_TEST_TYPE`
+      - 断言未创建 review_job、未调用模型、报告不存在
+      - 断言错误信息说明"v1 仅支持 functional"，不输出质量问题列表
+    expected: 明确拒绝而非用功能 Rubric 硬评；不产生质量结论
+    failure_criteria: [创建了任务, 返回 202, 用功能 Rubric 给出 blocked/conditional, 把不支持包装成用例缺陷]
+    automation: pytest + TestClient
+    test_file: tests/m0/test_business_boundary.py
+    ci_job: unit
+    result: not_run
+
+  - id: ACC-BIZ-002
+    maps_to: BIZ-1
+    title: test_type 缺省与非法值处理
+    preconditions: [API 可启动]
+    input: 缺省 test_type；test_type=unknown
+    steps:
+      - 不传 test_type，断言按 functional 处理并返回 202
+      - 传 unknown，断言 422（INVALID_CASE 或 INPUT_INVALID），不建任务
+      - 查询响应/报告能看到 test_type=functional
+    expected: 缺省值为 functional；非法值不猜测、不静默改写
+    failure_criteria: [缺省被当作其它类型, 非法值被忽略, 报告缺 test_type]
+    automation: pytest
+    test_file: tests/m0/test_business_boundary.py
+    ci_job: unit
+    result: not_run
+
+  - id: ACC-BIZ-003
+    maps_to: BIZ-1
+    title: AI 结论永不表达最终审批
+    preconditions: [Mock 全链路可跑]
+    input: 一份无 blocker 的用例；一份人工已 approve 的用例
+    steps:
+      - 断言报告 ai_verdict ∈ {conditional, need_human, null}，永不为 approved
+      - 断言人工 approve 只改变 human_status，不改变 ai_verdict
+      - 断言 Markdown/接口文案不出现"用例通过/审批通过"
+    expected: 机器评审与人工审批语义分离
+    failure_criteria: [ai_verdict=approved, approve 改写 ai_verdict, 渲染成"通过"]
+    automation: pytest + schema + 渲染快照
+    test_file: tests/m0/test_business_boundary.py
+    ci_job: unit
+    result: not_run
+
+  - id: ACC-BIZ-004
+    maps_to: BIZ-1
+    title: 评审限制与不确定性可见
+    preconditions: [Mock 全链路可跑]
+    input: 缺 test_scope 与需求上下文的用例；知识库未覆盖模块的用例
+    steps:
+      - 断言报告含 degraded_reasons 或 review_completeness.complete=false
+      - 断言 input_quality 或限制说明可被调用方读取
+      - 断言不把"依据不足"记录成确定用例缺陷
+    expected: 信息不足时明确限制，不伪装完整评审
+    failure_criteria: [限制字段为空, 把依据不足判成 blocker, 报告宣称完整评审]
+    automation: pytest + schema
+    test_file: tests/m0/test_business_boundary.py
+    ci_job: unit
+    result: not_run
+
+  - id: ACC-BIZ-005
+    maps_to: BIZ-1
+    title: 11 个业务评审维度均有 Rubric 映射
+    preconditions: [docs/00 与 docs/04 可读, rubric.yaml 可加载]
+    input: scripts/check_rubric.py + docs/04 §2.1 映射表
+    steps:
+      - 断言 docs/00 §5.2 的 11 个维度全部出现在 docs/04 §2.1
+      - 断言映射引用的 checkpoint/category 都存在于 rubric.yaml
+      - 断言 T8/重复冗余 已落地且被 Prompt 引用
+    expected: 业务维度与可执行规则一一对应，无悬空映射
+    failure_criteria: [维度缺失, 引用不存在的 checkpoint, 新增维度未同步 Rubric]
+    automation: scripts/check_rubric.py
+    test_file: tests/contract/test_rubric_dimensions.py
+    ci_job: contract
     result: not_run

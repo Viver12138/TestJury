@@ -18,7 +18,7 @@ from contract_lib import Reporter, rel
 CASES_PATH = lib.DESIGN_DIR / "m0_acceptance.yaml"
 DOCS08 = lib.DOCS_DIR / "08-评审修订与实施计划.md"
 CHECK = "m0-acceptance"
-CASE_RE = re.compile(r"^ACC-(M0|CON)-\d{3}$")
+CASE_RE = re.compile(r"^ACC-(M0|CON|BIZ)-\d{3}$")
 REQUIRED_CASE_KEYS = {
     "id",
     "maps_to",
@@ -132,7 +132,7 @@ def run(reporter: Reporter) -> None:
     for case in cases:
         cid = case.get("id", "<missing>")
         if not CASE_RE.match(cid):
-            reporter.error(CHECK, rel(CASES_PATH), cid, "用例 ID 必须形如 ACC-M0-001 / ACC-CON-001")
+            reporter.error(CHECK, rel(CASES_PATH), cid, "用例 ID 必须形如 ACC-M0-001 / ACC-CON-001 / ACC-BIZ-001")
         if cid in seen:
             reporter.error(CHECK, rel(CASES_PATH), cid, "用例 ID 重复")
         seen.add(cid)

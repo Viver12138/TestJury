@@ -1,6 +1,6 @@
 # 19 · API 错误码与契约
 
-> 版本：v1.4 · 2026-11-10（补充 14 落实：幂等错误边界与状态冲突）
+> 版本：v1.5 · 2026-11-10（业务基线 v1.0 落地：测试类型边界错误码）
 > 目的：让调用方稳定识别"参数错、权限错、状态冲突、限流、模型失败、内部错误"，而不是靠 message 猜。
 > 关联：03、18、20。
 
@@ -39,6 +39,7 @@
 | 409 | `INVALID_DECISION_STATE` | 终态后改判 | false |
 | 409 | `REVIEW_IN_PROGRESS` | `force=true` 但旧代次仍在执行 | true（等待终态后） |
 | 422 | `INPUT_INVALID` | API 同步硬校验失败，不创建任务 | false |
+| 422 | `UNSUPPORTED_TEST_TYPE` | 测试类型不在 v1 支持范围（仅 `functional`），不创建任务 | false |
 | 422 | `IDEMPOTENCY_KEY_CONFLICT` | 同一幂等键对应不同请求体 | false |
 | 422 | `TOO_MANY_CASES` | 批量超过上限 | false |
 | 422 | `INVALID_DECISION` | 决定非法或缺少理由 | false |

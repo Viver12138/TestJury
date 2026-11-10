@@ -18,6 +18,7 @@ from contract_lib import Reporter, rel
 CHECK = "docs"
 README = lib.ROOT / "README.md"
 DICT_DOC = lib.DOCS_DIR / "17-全局数据字典.md"
+BIZ_DOC = lib.DOCS_DIR / "00-业务定位与范围.md"
 DOCS08 = lib.DOCS_DIR / "08-评审修订与实施计划.md"
 API_DOC = lib.DOCS_DIR / "03-API契约.md"
 ARCH_DOC = lib.DOCS_DIR / "01-架构设计.md"
@@ -39,6 +40,7 @@ REQUIRED_ENUM_CHECKS = [
     ("human_status", ("properties", "human_status", "enum")),
     ("review_jobs.status", ("properties", "status", "enum")),
     ("review_stages.stage", ("properties", "stage", "enum")),
+    ("test_type", ("properties", "test_type", "enum")),
 ]
 
 ISSUE_ENUM_CHECKS = [
@@ -99,8 +101,9 @@ def check_doc_versions(reporter: Reporter) -> None:
         version = tuple(int(part) for part in match.group(1)[1:].split("."))
         if version > repo_version:
             reporter.error(CHECK, rel(doc), "版本", f"{match.group(1)} 高于 README 状态 v{match.group(1)[1:]}")
-        if match.group(1) not in ("v1.3", "v1.4"):
-            reporter.error(CHECK, rel(doc), "版本", f"未知版本 {match.group(1)}（只允许 v1.3/v1.4）")
+        allowed = {"v1.0"} if doc.name.startswith("00-") else {"v1.3", "v1.4", "v1.5"}
+        if match.group(1) not in allowed:
+            reporter.error(CHECK, rel(doc), "版本", f"未知版本 {match.group(1)}（允许 {sorted(allowed)}）")
 
 
 def _schema_enum(schema: dict[str, Any], path: tuple[str, ...], base: dict[str, Any] | None = None) -> set[Any]:
@@ -151,6 +154,26 @@ def check_enums(reporter: Reporter) -> None:
     vote_validity = _schema_enum(schema, ("additionalProperties", "properties", "validity", "enum"), issue["properties"]["votes"])
     if validity is None or set(validity) != vote_validity:
         reporter.error(CHECK, rel(SCHEMA), "issue_votes.validity", "Schema 投票枚举与 docs/17 不一致")
+
+
+def check_business_boundary(reporter: Reporter) -> None:
+    """业务边界 BIZ-005：test_type 必须在 API/错误码/数据模型/报告中同源出现。"""
+    reporter.checks_run += 1
+    api = lib.read_text(API_DOC)
+    data = lib.read_text(DATA_DOC)
+    error_doc = lib.read_text(ERROR_DOC)
+    for token, text, path in (
+        ("case.test_type", api, API_DOC),
+        ("UNSUPPORTED_TEST_TYPE", api, API_DOC),
+        ("test_type", data, DATA_DOC),
+        ("UNSUPPORTED_TEST_TYPE", error_doc, ERROR_DOC),
+    ):
+        if token not in text:
+            reporter.error(CHECK, rel(path), "业务边界", f"缺少 {token}（docs/00 BIZ-005 / D165）")
+
+    schema = lib.load_json(SCHEMA, reporter, CHECK)
+    if "test_type" not in schema.get("properties", {}):
+        reporter.error(CHECK, rel(SCHEMA), "test_type", "报告 Schema 缺少 test_type 字段")
 
 
 def check_idempotency(reporter: Reporter) -> None:
@@ -215,7 +238,8 @@ def check_decisions(reporter: Reporter) -> None:
     doc08_text = lib.read_text(DOCS08)
     doc08_ids = set(re.findall(r"\|\s*(D\d+)\s*\|", doc08_text))
     doc08_pd = set(re.findall(r"\|\s*(PD-\d{3})\s*\|", doc08_text))
-    known = doc08_ids | doc08_pd
+    doc08_biz = set(re.findall(r"\|\s*(BIZ-\d{3})\s*\|", doc08_text))
+    known = doc08_ids | doc08_pd | doc08_biz
 
     for index, decision in enumerate(decisions):
         did = decision.get("id")
@@ -241,11 +265,63 @@ def check_decisions(reporter: Reporter) -> None:
             if not _resolve_source(source):
                 reporter.error(CHECK, rel(DECISIONS), f"{did}.source", f"引用目标不存在: {source}")
 
-    for expected in ("D154", "D155", "D156", "D157", "D158", "D159", "D160", "D161", "D162", "D163", "D164"):
+    for expected in (
+        "D154", "D155", "D156", "D157", "D158", "D159", "D160", "D161", "D162", "D163", "D164",
+        "D165", "D166", "D167", "D168",
+    ):
         if expected not in known:
-            reporter.error(CHECK, rel(DOCS08), expected, "docs/08 缺少 v1.4 决策登记")
+            reporter.error(CHECK, rel(DOCS08), expected, "docs/08 缺少 v1.4/v1.5 决策登记")
         if expected not in seen:
-            reporter.error(CHECK, rel(DECISIONS), expected, "决策索引缺少 v1.4 决策")
+            reporter.error(CHECK, rel(DECISIONS), expected, "决策索引缺少 v1.4/v1.5 决策")
+
+    # 业务基线：docs/00 §14、docs/08 §2.0.2、decisions.yaml 三处必须同集合
+    biz_text = lib.read_text(BIZ_DOC)
+    biz_ids = set(re.findall(r"\|\s*(BIZ-\d{3})\s*\|", biz_text))
+    index_biz = {did for did in seen if did.startswith("BIZ-")}
+    if len(biz_ids) != 15:
+        reporter.error(CHECK, rel(BIZ_DOC), "§14", f"业务决策应为 15 条，实际 {len(biz_ids)} 条")
+    if biz_ids != doc08_biz:
+        reporter.error(
+            CHECK,
+            rel(DOCS08),
+            "§2.0.2",
+            f"BIZ 决策与 docs/00 §14 不一致：缺少 {sorted(biz_ids - doc08_biz)}，多出 {sorted(doc08_biz - biz_ids)}",
+        )
+    if biz_ids != index_biz:
+        reporter.error(
+            CHECK,
+            rel(DECISIONS),
+            "BIZ",
+            f"BIZ 决策索引不完整：缺少 {sorted(biz_ids - index_biz)}，多出 {sorted(index_biz - biz_ids)}",
+        )
+
+    # phase 在 docs/00 §14、docs/08 §2.0.2、decisions.yaml 三处必须一致
+    decision_phase = {str(item.get("id")): item.get("phase") for item in decisions}
+
+    def _phase_map(text: str, start: str, end: str) -> dict[str, str]:
+        start_index = text.find(start)
+        if start_index < 0:
+            return {}
+        end_index = text.find(end, start_index)
+        block = text[start_index : end_index if end_index > 0 else len(text)]
+        result: dict[str, str] = {}
+        for line in block.splitlines():
+            stripped = line.strip()
+            if not stripped.startswith("|"):
+                continue
+            cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+            if len(cells) >= 4 and re.fullmatch(r"BIZ-\d{3}", cells[0]):
+                result[cells[0]] = cells[3]
+        return result
+
+    biz_phase_doc = _phase_map(biz_text, "## 14. 当前业务决策基线", "## 15.")
+    biz_phase_08 = _phase_map(doc08_text, "### 2.0.2 业务决策基线", "### 2.1")
+    for did in sorted(biz_ids):
+        expected = decision_phase.get(did)
+        for source, mapping in ((rel(BIZ_DOC), biz_phase_doc), (rel(DOCS08), biz_phase_08)):
+            actual = mapping.get(did)
+            if actual and expected and actual != expected:
+                reporter.error(CHECK, source, f"{did}.phase", f"期望 {expected!r}，实际 {actual!r}")
 
     # 文档中出现的 D 编号必须真实登记，避免"引用一个不存在的决策"
     referenced: set[str] = set()
@@ -415,6 +491,7 @@ def run(reporter: Reporter) -> None:
     check_doc_index(reporter)
     check_doc_versions(reporter)
     check_enums(reporter)
+    check_business_boundary(reporter)
     check_idempotency(reporter)
     check_stale_semantics(reporter)
     check_decisions(reporter)
