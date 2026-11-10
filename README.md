@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：参考拓扑为 1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**v1.3 设计冻结修订**（契约枚举、复核并发与 M0 准入收口）· 2026-11-10；可进入 M0
+> **状态**：**v1.4 补充 14 落实**（幂等/代次契约唯一口径、可运行契约检查、M0 验收用例与 Verdict 可执行真值表）· 2026-11-10；可进入 M0
 
 ---
 
@@ -57,7 +57,7 @@
 | 37 | 证据类型 | 增加 `evidence_type` / `evidence_strength`；历史缺陷只能提示"曾出现"，不能证明当前仍存在 |
 | 38 | Embedding 维度 | v1 固定 1024 维并加约束；多维度需分表/分列，不在 v1 |
 | 39 | 中文关键词检索 | v1 = `pg_trgm` 三元组 + RULE-ID/字段/数值精确匹配；`zhparser` 可选升级 |
-| 40 | 幂等与重跑 | `idempotency_key` 覆盖输入与全部版本；`generation` 代次 + `superseded_by`，不再用复合唯一键硬顶 |
+| 40 | 幂等与重跑 | `idempotency_key` 覆盖输入与全部版本；`generation` 代次 + `superseded_by`（仅 `review_jobs` 代次链）；同一 key 并发串行化，不返回 409 `DUPLICATE`（`docs/03` §1.1） |
 | 41 | 模型配置 | `config/models.yaml` 注册表 + Chat/Embedding/Rerank 三类适配器 |
 | 42 | 知识库事实源 | Git + Markdown 为唯一事实源，PostgreSQL 只是索引；`kb_versions` 发布/回滚 |
 | 43 | 报告结构 | `report_json` 为唯一事实源，`report_schema_version` 版本化；Markdown 只做渲染 |
@@ -171,7 +171,7 @@
 | 151 | 契约 CI | 枚举/状态机/Schema/API/DB/Prompt/Rubric/文档路径自动检查 |
 | 152 | RPO/RTO 演练 | 目标值须通过季度恢复演练验证，不只在文档声明 |
 | 153 | 数据契约唯一 | `docs/17` 为全局字典；Pydantic/DB/JSON Schema/API/Prompt 必须由 CI 对齐 |
-| 154 | 幂等响应 | 幂等命中统一 200 + `idempotent_replay=true`；删除 409 `DUPLICATE`；同键不同体 422 |
+| 154 | 幂等响应 | 幂等命中统一 200 + `idempotent_replay=true`；`force` 新建代次 202；旧代次运行中 `force` 返回 409 `REVIEW_IN_PROGRESS`；删除 409 `DUPLICATE`；同键不同体 422 |
 | 155 | 复核生命周期 | 任务状态 + 结果 + append-only 事件；支持重开/转派/多人复核/多 generation |
 | 156 | 角色/参与者/模型 | `role_id` ≠ `participant_id` ≠ 模型实例；创建时快照，故障切换记 actual_model |
 | 157 | 五层校验 | 格式→引用→证据→适用性→决策；模型置信度不参与可信度 |
@@ -193,6 +193,18 @@
 | 173 | 阶段完成 | `stages_completed` 只含 succeeded；`stages_skipped` 单列 |
 | 174 | 决策状态 | `status/validation_status/implementation_status/release_status` 四维 |
 | 175 | M0 准入 | 10 项可验证退出条件；M0 不接真实模型 |
+| 176 | 幂等唯一口径 | `docs/03` §1.1 为唯一来源（S1–S7）；未 force 200、force 202、运行中 force 409 `REVIEW_IN_PROGRESS`；无 409 `DUPLICATE` |
+| 177 | 契约检查 CI | `scripts/check_contracts.py` 聚合文档/Rubric/报告 Schema/决策索引/Verdict 用例/M0 用例检查；失败输出文件+字段+期望值 |
+| 178 | M0 验收用例 | `design/m0_acceptance.yaml`：M0-01–10 每项映射到可执行用例，含前置/输入/步骤/预期/失败判定/自动化/CI Job |
+| 179 | Verdict 可执行用例 | `design/verdict_cases.yaml` + `scripts/verdict_reference.py`；固定/参数化/属性/边界用例；`verdict.py` 必须与用例一致 |
+| 180 | 决策索引对齐 | `design/decisions.yaml` 的 ID 与 `docs/08` 一一对应，禁止同名不同义；CI 校验唯一性与引用 |
+| 181 | 模型 Adapter 契约 | 统一请求/超时/重试/限流/模型标识/Token/成本/异常/JSON 能力/可观测性（`docs/10` §7.4） |
+| 182 | A–E 协议冻结 | 12 项协议在实验前冻结并签署；变更即作废重跑（`docs/15` §2.1） |
+| 183 | 成本口径分层 | 已发生/已预留/预计/失败/重试/缓存分层；补月预算与超预算行为（`docs/20` §6.3） |
+| 184 | 复核运营规则 | 分派/无人认领升级/超时状态/离职与权限变更/人机冲突/并发/抽检/回写（`docs/09` §12.6） |
+| 185 | 报告可读性验收 | 任务型验收：完成时间、误解率、复核一致性、主观可用性（`docs/07` §8.7） |
+| 186 | 契约清理记录 | 逐处标记 保留/更新/废弃/历史说明，历史语义不得被误读为当前规则（`docs/28` §2） |
+| 187 | 决策阶段分层 | `design/decisions.yaml` 增加 `phase`（M0/M1/M4/M5/M6/production）；未到阶段不得自行假设；M0 决策验证通过后才可标 `passed` |
 
 ## 3. 文档索引
 
@@ -225,7 +237,11 @@
 | [docs/25-知识解析与增量构建.md](docs/25-知识解析与增量构建.md) | 解析门禁、内容哈希、增量索引、版本隔离、缺口分型 |
 | [docs/26-测试环境与端到端测试.md](docs/26-测试环境与端到端测试.md) | Mock 供应商、故障注入、迁移与契约测试 |
 | [docs/27-生产部署与运维设计.md](docs/27-生产部署与运维设计.md) | API/Worker 拓扑、迁移、备份、健康检查、扩容 |
-| [docs/28-Git协作协议.md](docs/28-Git协作协议.md) | 多人协作的提交规范、推送协议、MR 流程 |
+| [docs/28-契约清理与自动化验收.md](docs/28-契约清理与自动化验收.md) | 幂等清理记录、契约检查、M0 验收用例、Verdict 可执行真值表 |
+| [docs/29-Git协作协议.md](docs/29-Git协作协议.md) | 多人协作的提交规范、推送协议、MR 流程 |
+| [scripts/README.md](scripts/README.md) | 契约检查脚本：入口、检查项、输出格式与边界 |
+| [design/m0_acceptance.yaml](design/m0_acceptance.yaml) | M0 十项 + P0 四项验收用例（31 条，可回填结果） |
+| [design/verdict_cases.yaml](design/verdict_cases.yaml) | Verdict 可执行真值表用例（36 条，30 条规则） |
 | [rubric/README.md](rubric/README.md) | 机器可执行 Rubric：YAML、Schema、版本副本与 CI 校验规则 |
 | [schemas/README.md](schemas/README.md) | 报告 JSON Schema 与版本化规则 |
 | [design/decisions.yaml](design/decisions.yaml) | 机器可读决策索引（与 docs/08 对齐） |
@@ -303,3 +319,8 @@
 | R56 | **附件未实现** | v1 只存引用与指纹；OCR/图片理解不在范围，避免误以为已支持 |
 | R57 | **指标改名影响历史** | FDR 与 FPR 不可互换；旧报告指标需重算并标注口径 |
 | R58 | **统计功效不足** | 三模型实验样本不足时只能作探索性结论，不能据此冻结架构 |
+| R59 | **契约脚本与文档一起漂移** | 检查器和被检查文件同时改错时仍会通过；用 `tests/contract/test_contract_drift.py` 变异测试兜底，脚本变更必须跑全量 |
+| R60 | **Verdict 用例与实现脱节** | 实现后可能只跑少量用例；ACC-M0-011 要求全量对照，改 `design/verdict_cases.yaml` 必须同步 `verdict.py` 与 `docs/12` |
+| R61 | **参考判定器被误用** | `scripts/verdict_reference.py` 只是规范对照，不是生产实现；`app/` 不得 import，代码评审拦截 |
+| R62 | **决策索引覆盖不全** | `design/decisions.yaml` 只索引跨模块契约与门禁相关决策；不得宣称是 docs/08 的全量镜像 |
+| R63 | **M0 用例只跑 happy path** | 每条用例必须带失败判定；ACC-M0-017 用变异测试证明检查能失败，不允许"能启动即通过" |

@@ -1,27 +1,14 @@
-# ---- Python ----
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-*.egg-info/
-.eggs/
-build/
-dist/
-wheels/
 .pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-htmlcov/
-.tox/
-venv/
-.venv/
-env/
-.env/
-virtualenv/
 
-# ---- 敏感 / 密钥（协议第 6.3 条禁止提交） ----
+# 本地密钥与环境变量
 .env
+
+# 附件本机持久化卷（不进 Git，见 docs/06 §1）
+data/attachments/
+
+# ---- 补充：密钥与环境（来自本地 GitLab 约定） ----
 .env.*
 *.pem
 *.key
@@ -30,22 +17,29 @@ virtualenv/
 config/secrets*
 !*.example
 
-# ---- 运行数据 / 产物 ----
-data/
-!data/golden/cases/
-!data/golden/labels/
-*.log
-logs/
+# ---- 补充：Python 运行环境 ----
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+wheels/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+venv/
+.venv/
+env/
+virtualenv/
 
-# ---- IDE / 系统 ----
+# ---- 补充：IDE / 系统 / 数据库 ----
 .idea/
 .vscode/
 .DS_Store
 Thumbs.db
-
-# ---- 本地数据库 / 缓存 ----
 *.sqlite3
 *.db
-
-# ---- Docker 本地卷 ----
+logs/
 docker-volumes/
+
