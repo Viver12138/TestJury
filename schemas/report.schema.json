@@ -43,7 +43,8 @@
         "arbitration": { "type": "string" },
         "arbitration_required": { "type": "boolean" },
         "complete": { "type": "boolean" },
-        "stages_completed": { "type": "array", "items": { "type": "string" } }
+        "stages_completed": { "type": "array", "items": { "type": "string" } },
+        "stages_skipped": { "type": "array", "items": { "type": "string" } }
       }
     },
     "input_quality": {

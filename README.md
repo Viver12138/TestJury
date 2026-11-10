@@ -2,9 +2,9 @@
 
 > **输入**：一份功能测试用例
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
-> **核心**：1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；主审仲裁按条件触发，不是固定第三次调用
+> **核心**：参考拓扑为 1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**v1.2 设计冻结修订**（契约一致性与复核生命周期收口）· 2026-11-10；可进入 M0 实现
+> **状态**：**v1.3 设计冻结修订**（契约枚举、复核并发与 M0 准入收口）· 2026-11-10；可进入 M0
 
 ---
 
@@ -66,7 +66,7 @@
 | 46 | 成立性与严重级 | `validity` 与 `severity` 两个独立字段；严重级跨两级分歧转人工；blocker 需同时满足成立、严重级、无多数否决 |
 | 47 | 模型失败阈值 | 3/3 完整；2/3 降级并标 `review_completeness`；1/3 不出正式 AI 结论；0/3 失败；主审不可由陪审替代 |
 | 48 | 报告投影 | `issues` 为 `report_json` 的只读派生投影，同事务写入，可重建、可校验 |
-| 49 | 幂等响应 | 命中返回原任务真实状态 + `idempotent_hit` + `generation` + `report_available`，不再统一 `done` |
+| 49 | 幂等响应 | 命中返回 200 + 原任务真实状态 + `idempotent_replay` + `generation` + `report_available`，不再统一 `done`，也不返回 409 |
 | 50 | 性能口径 | 排队/模型调用/评审执行/端到端/批量分开统计 P50/P95/P99，压测后定门槛 |
 | 51 | 证据分级 | E1 权威规则 / E2 需求与功能 / E3 测试规范 / E4 推断；无 E1/E2 不得判 blocker；同级冲突转人工 |
 | 52 | 输入质量 | 增加输入检查：硬错误 422，软问题记 `input_quality`，与模型发现的问题分开展示 |
@@ -183,6 +183,16 @@
 | 163 | 健康检查 | `/livez`、`/readyz`、`/healthz` 兼容、`/metrics` |
 | 164 | 附件卷 | 所有 API/Worker 共享同一附件卷；多机前必须换对象存储 |
 | 165 | Schema 同步 | 报告 Schema 补 `cancelled`、issue 证据/置信度/校验状态、participants |
+| 166 | 复核状态 | 统一 `pending/in_progress/completed/cancelled`；不再用 `done` |
+| 167 | 复核结果 | Issue 5 种、Report 3 种（含 `reject`）；DB CHECK + API 层级校验 |
+| 168 | 幂等历史 | README #49 / D28 的旧幂等字段名全部改为 `idempotent_replay` |
+| 169 | 健康检查 | `/livez` 存活；`/readyz` 就绪；`/healthz` 等同 readyz；依赖失败 503 |
+| 170 | 附件删除 | 先软删禁止下载，异步清物理文件，保留最小元数据；不级联物理删除 |
+| 171 | 多人复核 | 一致采纳；冲突升级裁决；`version` 乐观锁；事件不覆盖 |
+| 172 | Issue/Report 关系 | 两个独立状态机；blocker 未完成不得 approve；新 generation 使旧审批失效 |
+| 173 | 阶段完成 | `stages_completed` 只含 succeeded；`stages_skipped` 单列 |
+| 174 | 决策状态 | `status/validation_status/implementation_status/release_status` 四维 |
+| 175 | M0 准入 | 10 项可验证退出条件；M0 不接真实模型 |
 
 ## 3. 文档索引
 
