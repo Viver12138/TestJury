@@ -13,7 +13,6 @@ from typing import Any
 
 from app.core.enums import VoteValidity
 from app.llm.base import AdapterError, ReviewModel, VoteDecision
-from app.llm.retry import call_with_retry
 from app.storage.models import CandidateRecord, VoteRecord
 
 
@@ -40,9 +39,9 @@ async def run_vote(
     async def _one(candidate: CandidateRecord, role: str):
         material = build_vote_material(candidate)
         try:
-            vote_call = call_with_retry(
-                lambda: model.vote(role, material), max_attempts=3, base_delay=2.0
-            )
+            # Retry 的唯一所有者是 ChatReviewModel._complete；此处不再包一层，
+            # 避免一次投票最多触发 3×3=9 次供应商调用（docs/18 §3）。
+            vote_call = model.vote(role, material)
             if timeout_seconds:
                 decision = await asyncio.wait_for(vote_call, timeout=timeout_seconds)
             else:
@@ -55,6 +54,7 @@ async def run_vote(
                 VoteDecision(
                     validity=VoteValidity.NOT_ASSESSED.value,
                     reason=f"vote_failed:{exc.code}",
+                    attempts=list(getattr(exc, "attempts", []) or []),
                 ),
                 "failed",
                 exc.code,
@@ -114,6 +114,9 @@ async def run_vote(
                 "raw_request": getattr(decision, "raw_request", None),
                 "raw_response": getattr(decision, "raw_response", None),
                 "warnings": list(decision.warnings),
+                "masking_policy_id": getattr(decision, "masking_policy_id", None),
+                "masking_policy_version": getattr(decision, "masking_policy_version", None),
+                "masking_report": getattr(decision, "masking_report", None),
             }
         )
     return votes, calls

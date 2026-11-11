@@ -39,8 +39,8 @@ subitems:
       - tests/unit/test_retry_and_rate_limit.py
       - app/llm/retry.py
       - app/llm/review.py
-    verified_at: "2026-11-11T11:55:00+08:00"
-    note: "call_with_retry 已接入 _complete；指数退避+抖动、取消传播、限流 semaphore 竞态有测试；真实供应商 429 长跑未单独演练。"
+    verified_at: "2026-11-11T13:15:00+08:00"
+    note: "call_with_retry 只由 _complete 持有；run_vote 不再包第二层，单次调用最多 3 次；指数退避+抖动、取消传播、限流 semaphore 竞态、失败 attempts 有测试。"
 
   - id: V-01D
     title: 长输出、非法 JSON、截断输出和异常结构
@@ -49,8 +49,9 @@ subitems:
       - tests/unit/test_llm_adapters.py
       - tests/unit/test_chat_review_model.py
       - tests/unit/test_evidence_validation.py
-    verified_at: "2026-11-11T11:55:00+08:00"
-    note: "非法 JSON、截断 finish_reason、非法枚举丢弃、引用越界、step_index 越界均有测试。"
+      - evidence/M1/strict-schema-live-2026-11-11.json
+    verified_at: "2026-11-11T13:15:00+08:00"
+    note: "缺 issues/null、字段错类型、category 非枚举、非法 JSON、截断 finish_reason、引用越界、step_index 越界均有测试；严格门禁后真实运行中 Kimi 一票 OUTPUT_INVALID 被记为失败。"
 
   - id: V-01E
     title: 多次运行稳定性与成本记录
@@ -67,7 +68,8 @@ subitems:
     evidence:
       - design/model_admission.yaml
       - tests/unit/test_model_admission.py
+      - tests/unit/test_masking.py
     verified_at: null
     blockers:
       - Q-09
-    note: "生产准入 Gate 已实现并测试（未 verified/未 data approved 会拒绝启动；approved_with_masking 需显式启用脱敏）；模型数据准入仍未完成，F 不通过。"
+    note: "MaskingPolicy 已在 Prompt 前真实脱敏（邮箱/手机/身份证/银行卡/IP/密钥字段），每次调用记录策略 ID/版本/命中数；生产 Gate 校验 reviewer、DPA、allowed_data_level、evidence 文件与哈希、requires_masking/allow_raw_case 与策略 ID。模型数据准入仍未完成，F 不通过。"

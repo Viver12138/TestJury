@@ -204,6 +204,9 @@ class ReviewPipeline:
                 parse_warnings=list(opinion.warnings or []),
                 cost_estimate=opinion.cost_estimate,
                 price_config_version=versions.price_config,
+                masking_policy_id=getattr(opinion, "masking_policy_id", None),
+                masking_policy_version=getattr(opinion, "masking_policy_version", None),
+                masking_report=getattr(opinion, "masking_report", None),
             )
         )
 
@@ -215,6 +218,16 @@ class ReviewPipeline:
         error: Exception,
         versions: Any,
     ) -> None:
+        attempts = list(getattr(error, "attempts", []) or [])
+        await self._persist_attempt_errors(
+            job,
+            role=role,
+            operation=operation,
+            model=versions.models.get(role, "unknown"),
+            prompt_version=versions.prompts.get(role),
+            attempts=attempts,
+            versions=versions,
+        )
         await self.storage.add_model_run(
             ModelRunRecord(
                 review_id=job.id,
@@ -284,6 +297,9 @@ class ReviewPipeline:
                 error_code=call.get("error_code"),
                 error=call.get("error"),
                 price_config_version=versions.price_config,
+                masking_policy_id=call.get("masking_policy_id"),
+                masking_policy_version=call.get("masking_policy_version"),
+                masking_report=call.get("masking_report"),
             )
         )
 

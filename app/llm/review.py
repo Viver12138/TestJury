@@ -31,6 +31,7 @@ from app.llm.base import (
     parse_json_object,
 )
 from app.llm.evidence import verify_evidence
+from app.llm.masking import MaskingPolicy
 from app.llm.registry import ModelRegistry, RoleConfig
 from app.llm.retry import call_with_retry
 from app.pipeline.validate import sanitize_model_output
@@ -62,8 +63,29 @@ A1 步骤可自动化、A2 状态可获取、A3 定位可维护、A4 数据可�
 可以对业务维度提出问题，但严重级不超过 major。""",
 }
 
-_OUTPUT_SCHEMA = """严格输出一个 JSON 对象：
-{
+_DEFAULT_CATEGORIES = {
+    "覆盖缺失",
+    "规则冲突",
+    "意图不符",
+    "前置不足",
+    "术语不一致",
+    "状态不自洽",
+    "步骤不可执行",
+    "预期不明确",
+    "数据缺失",
+    "边界缺失",
+    "不可重复",
+    "歧义",
+    "自动化不可行",
+    "状态不可读",
+    "定位不稳定",
+    "数据不可准备",
+    "框架不匹配",
+    "重复冗余",
+}
+
+
+_OUTPUT_SCHEMA = """严格输出一个 JSON 对象：{
   "overall": {"comment": "不超过 80 字的整体判断"},
   "issues": [
     {
@@ -150,6 +172,7 @@ class ChatReviewModel:
         adapters: dict[str, ChatAdapter],
         *,
         rubric: Rubric | None = None,
+        masking_policy: MaskingPolicy | None = None,
         max_attempts: int = 3,
         base_delay: float = 0.5,
         max_delay: float = 8.0,
@@ -158,6 +181,7 @@ class ChatReviewModel:
         self.registry = registry
         self.adapters = adapters
         self.rubric = rubric
+        self.masking_policy = masking_policy
         self.max_attempts = max_attempts
         self.base_delay = base_delay
         self.max_delay = max_delay
@@ -215,14 +239,19 @@ class ChatReviewModel:
             )
 
         async with self._semaphores[role]:
-            response = await call_with_retry(
-                send,
-                max_attempts=self.max_attempts,
-                base_delay=self.base_delay,
-                max_delay=self.max_delay,
-                jitter=self.jitter,
-                on_attempt=on_attempt,
-            )
+            try:
+                response = await call_with_retry(
+                    send,
+                    max_attempts=self.max_attempts,
+                    base_delay=self.base_delay,
+                    max_delay=self.max_delay,
+                    jitter=self.jitter,
+                    on_attempt=on_attempt,
+                )
+            except AdapterError as exc:
+                # 失败也要把完整 attempts 交给调用方/审计，不只保留最后一次异常
+                exc.attempts = list(attempts)
+                raise
         return response, attempts
 
     async def review(self, role: str, case: dict[str, Any]) -> ReviewOpinion:
@@ -230,11 +259,17 @@ class ChatReviewModel:
         if adapter is None:
             raise AdapterError("MODEL_MISSING", f"role {role} 没有可用 Adapter", retryable=False)
         config = self.registry.role(role)
+        review_case = case
+        masking_report = None
+        if self.masking_policy is not None:
+            masked = self.masking_policy.apply(case)
+            review_case = masked.data
+            masking_report = masked.report
         user_prompt = (
             f"【评审标准】\n{_rubric_compact(self.rubric)}\n\n"
-            f"【用例】\n{json.dumps(case, ensure_ascii=False, indent=2)}\n\n"
-            f"【测试范围】\n{json.dumps(case.get('test_scope'), ensure_ascii=False)}\n\n"
-            f"【自动化上下文】\n{json.dumps(case.get('automation_context'), ensure_ascii=False)}\n\n"
+            f"【用例】\n{json.dumps(review_case, ensure_ascii=False, indent=2)}\n\n"
+            f"【测试范围】\n{json.dumps(review_case.get('test_scope'), ensure_ascii=False)}\n\n"
+            f"【自动化上下文】\n{json.dumps(review_case.get('automation_context'), ensure_ascii=False)}\n\n"
             "【检索状态】\nkb_module_missing（无知识库覆盖，不得声称知识库确认）\n\n"
             "【知识库上下文】\n（无）\n\n"
             "最多输出 6 条最明确的问题，按严重级排序。\n\n" + _OUTPUT_SCHEMA
@@ -252,8 +287,11 @@ class ChatReviewModel:
         payload = parse_json_object(response.text)
         sanitized = sanitize_model_output(payload)
         data = sanitized.data
+        overall = data.get("overall")
+        if not isinstance(overall, dict):
+            raise AdapterError("OUTPUT_INVALID", "缺少 overall 对象", retryable=False)
         issues, issue_warnings = self._normalize_issues(
-            data.get("issues"), role, case=case
+            data.get("issues"), role, case=review_case
         )
         warnings = list(sanitized.warnings) + issue_warnings
         if len(issues) > 6:
@@ -263,7 +301,6 @@ class ChatReviewModel:
             )
             issues = issues[:6]
             warnings.append("issues_truncated:6")
-        overall = data.get("overall") if isinstance(data.get("overall"), dict) else {}
         summary = str(overall.get("comment") or "").strip()
         request_snapshot = _request_snapshot(request, config)
         response_snapshot = _response_snapshot(response)
@@ -284,6 +321,9 @@ class ChatReviewModel:
             response_hash=_sha256_json(response_snapshot),
             raw_request=request_snapshot,
             raw_response=response_snapshot,
+            masking_policy_id=masking_report["policy_id"] if masking_report else None,
+            masking_policy_version=masking_report["version"] if masking_report else None,
+            masking_report=masking_report,
         )
 
     def _normalize_issues(
@@ -297,7 +337,7 @@ class ChatReviewModel:
 
         warnings: list[str] = []
         if raw_issues is None:
-            return [], warnings
+            raise AdapterError("OUTPUT_INVALID", "缺少 issues 字段", retryable=False)
         if not isinstance(raw_issues, list):
             raise AdapterError("OUTPUT_INVALID", "issues 必须是数组", retryable=False)
         if len(raw_issues) > 20:
@@ -346,25 +386,39 @@ class ChatReviewModel:
         for field_name in needed:
             if raw.get(field_name) in (None, ""):
                 return drop(f"{field_name}_missing")
-        dimension = str(raw["dimension"])
+        for field_name in ("dimension", "severity", "category", "rationale", "evidence_type", "evidence_strength", "evidence_status"):
+            if not isinstance(raw[field_name], str):
+                return drop(f"{field_name}_type")
+        dimension = raw["dimension"]
         if dimension not in {item.value for item in Dimension}:
             return drop("dimension_invalid")
-        severity = str(raw["severity"])
+        severity = raw["severity"]
         if severity not in {item.value for item in Severity}:
             return drop("severity_invalid")
-        category = str(raw["category"]).strip()
+        category = raw["category"].strip()
         if not category:
             return drop("category_empty")
-        rationale = str(raw["rationale"]).strip()
+        allowed_categories = (
+            set(self.rubric.categories)
+            if self.rubric is not None
+            else _DEFAULT_CATEGORIES
+        ) or _DEFAULT_CATEGORIES
+        if category not in allowed_categories:
+            return drop("category_invalid")
+        if len(category) > 64:
+            return drop("category_too_long")
+        rationale = raw["rationale"].strip()
         if not rationale:
             return drop("rationale_empty")
-        evidence_type = str(raw["evidence_type"])
+        if len(rationale) > 5000:
+            return drop("rationale_too_long")
+        evidence_type = raw["evidence_type"]
         if evidence_type not in {item.value for item in EvidenceType}:
             return drop("evidence_type_invalid")
-        strength = str(raw["evidence_strength"])
+        strength = raw["evidence_strength"]
         if strength not in {item.value for item in EvidenceStrength}:
             return drop("evidence_strength_invalid")
-        model_status = str(raw["evidence_status"])
+        model_status = raw["evidence_status"]
         if model_status not in {item.value for item in EvidenceStatus}:
             return drop("evidence_status_invalid")
 
@@ -380,6 +434,19 @@ class ChatReviewModel:
         quote = raw.get("evidence_quote")
         if quote is not None and not isinstance(quote, str):
             return drop("evidence_quote_invalid")
+        if isinstance(quote, str) and len(quote) > 2000:
+            return drop("evidence_quote_too_long")
+        suggestion = raw.get("suggestion")
+        if suggestion is not None and not isinstance(suggestion, str):
+            return drop("suggestion_invalid")
+        if isinstance(suggestion, str) and len(suggestion) > 2000:
+            return drop("suggestion_too_long")
+        for refs_field in ("kb_refs", "evidence_refs"):
+            refs = raw.get(refs_field, [])
+            if refs is None:
+                refs = []
+            if not isinstance(refs, list) or any(not isinstance(item, str) for item in refs):
+                return drop(f"{refs_field}_invalid_type")
 
         confidence = raw.get("self_confidence")
         if confidence is not None and (
@@ -429,12 +496,18 @@ class ChatReviewModel:
         if adapter is None:
             raise AdapterError("MODEL_MISSING", f"role {role} 没有可用 Adapter", retryable=False)
         config = self.registry.role(role)
+        masked_material = material
+        masking_report = None
+        if self.masking_policy is not None:
+            masked = self.masking_policy.apply(material)
+            masked_material = masked.data
+            masking_report = masked.report
         user_prompt = (
             f"{_rubric_compact(self.rubric)}\n\n"
             f"【候选问题】\n"
-            f"步骤：{material.get('step_index')}\n"
-            f"维度：{material.get('dimension')}\n"
-            f"描述：{material.get('description')}\n\n"
+            f"步骤：{masked_material.get('step_index')}\n"
+            f"维度：{masked_material.get('dimension')}\n"
+            f"描述：{masked_material.get('description')}\n\n"
             "请按 schema 输出投票 JSON。"
         )
         request = ChatRequest(
@@ -478,4 +551,7 @@ class ChatReviewModel:
             response_hash=_sha256_json(response_snapshot),
             raw_request=request_snapshot,
             raw_response=response_snapshot,
+            masking_policy_id=masking_report["policy_id"] if masking_report else None,
+            masking_policy_version=masking_report["version"] if masking_report else None,
+            masking_report=masking_report,
         )

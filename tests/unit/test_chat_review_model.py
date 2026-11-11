@@ -217,3 +217,47 @@ def test_output_schema_has_no_role_field() -> None:
     from app.llm.review import _OUTPUT_SCHEMA
 
     assert '"role"' not in _OUTPUT_SCHEMA
+
+
+@pytest.mark.asyncio
+async def test_missing_issues_field_is_rejected() -> None:
+    model, _ = _model(json.dumps({"overall": {"comment": "没有发现问题"}}))
+    with pytest.raises(AdapterError):
+        await model.review("chief_blind", {"case_id": "TC-MISS", "steps": []})
+
+    model, _ = _model(json.dumps({"overall": {"comment": "x"}, "issues": None}))
+    with pytest.raises(AdapterError):
+        await model.review("chief_blind", {"case_id": "TC-NULL", "steps": []})
+
+
+@pytest.mark.asyncio
+async def test_invalid_category_and_types_are_dropped() -> None:
+    base = {
+        "step_index": 1,
+        "dimension": "test_design",
+        "severity": "major",
+        "category": "预期不明确",
+        "evidence_quote": "a",
+        "rationale": "缺预期",
+        "suggestion": "补预期",
+        "kb_grounded": False,
+        "evidence_type": "testing_standard",
+        "evidence_strength": "medium",
+        "evidence_status": "partially_grounded",
+    }
+    bad_category = dict(base, category="不在枚举里的分类")
+    bad_type = dict(base, category="前置不足", rationale={"not": "string"})
+    good = dict(base, category="数据缺失")
+    good2 = dict(base, category="边界缺失")
+    content = json.dumps(
+        {"overall": {"comment": "x"}, "issues": [bad_category, bad_type, good, good2]},
+        ensure_ascii=False,
+    )
+    model, _ = _model(content)
+    opinion = await model.review(
+        "chief_blind", {"case_id": "TC-CAT", "steps": [{"index": 1, "action": "a"}]}
+    )
+    assert len(opinion.issues) == 2
+    assert {item["category"] for item in opinion.issues} == {"数据缺失", "边界缺失"}
+    assert any("category_invalid" in item for item in opinion.warnings)
+    assert any("rationale_type" in item for item in opinion.warnings)

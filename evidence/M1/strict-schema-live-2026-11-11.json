@@ -1,0 +1,48 @@
+{
+  "review_id": "cda5eb3a-8794-4304-959b-856bbf79e1bc",
+  "case_id": "UI-HOME-005",
+  "status": "done",
+  "ai_verdict": "blocked",
+  "blind": "3/3",
+  "vote": "2/3",
+  "model_calls": 27,
+  "ok": 26,
+  "failed": 1,
+  "total_cost_estimate": 1.3183,
+  "degraded_reasons": [
+    "kb_module_missing"
+  ],
+  "issues": [
+    {
+      "severity": "blocker",
+      "evidence_status": "insufficient",
+      "validation_status": "passed",
+      "n": 1
+    },
+    {
+      "severity": "blocker",
+      "evidence_status": "partially_grounded",
+      "validation_status": "passed",
+      "n": 1
+    },
+    {
+      "severity": "blocker",
+      "evidence_status": "ungrounded",
+      "validation_status": "passed",
+      "n": 3
+    },
+    {
+      "severity": "major",
+      "evidence_status": "insufficient",
+      "validation_status": "passed",
+      "n": 1
+    },
+    {
+      "severity": "major",
+      "evidence_status": "ungrounded",
+      "validation_status": "passed",
+      "n": 2
+    }
+  ],
+  "note": "严格 Schema/Evidence 门禁后的真实运行；Kimi 一票 OUTPUT_INVALID 被记录为失败，其余 7 票正常，验证非法输出不会静默通过。"
+}

@@ -54,6 +54,11 @@ def test_empty_database_migrates_and_rolls_back(clean_database: str) -> None:
     tables = asyncio.run(_tables())
     assert CORE_TABLES <= tables
     assert "review_attachments" in tables
+    assert asyncio.run(_alembic_version()) == "0004_m1_masking_audit"
+
+    # 回滚 0004：只撤销脱敏审计列
+    downgrade_0004 = run_alembic("downgrade", "0003_m1_audit_evidence")
+    assert downgrade_0004.returncode == 0, downgrade_0004.stdout + downgrade_0004.stderr
     assert asyncio.run(_alembic_version()) == "0003_m1_audit_evidence"
 
     # 回滚 0003：只撤销审计/证据列，不破坏附件表与 M0 核心表
@@ -84,7 +89,7 @@ def test_empty_database_migrates_and_rolls_back(clean_database: str) -> None:
     rebuilt = asyncio.run(_tables())
     assert CORE_TABLES <= rebuilt
     assert "review_attachments" in rebuilt
-    assert asyncio.run(_alembic_version()) == "0003_m1_audit_evidence"
+    assert asyncio.run(_alembic_version()) == "0004_m1_masking_audit"
 
 
 def test_repeated_upgrade_is_noop(clean_database: str) -> None:
@@ -92,5 +97,6 @@ def test_repeated_upgrade_is_noop(clean_database: str) -> None:
     assert first.returncode == 0, first.stdout + first.stderr
     second = run_alembic("upgrade", "head")
     assert second.returncode == 0, second.stdout + second.stderr
+
 
 

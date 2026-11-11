@@ -124,6 +124,9 @@ class Settings(BaseSettings):
     model_admission_path: Path = Path("design/model_admission.yaml")
     enforce_model_admission: bool = True
     masking_policy_enabled: bool = False
+    masking_policy_id: str = "mask-pii-v1"
+    masking_policy_version: str = "1.0"
+    data_level: Literal["public", "internal", "sensitive"] = "internal"
 
     # ── 审批与业务边界 ──
     decision_require_separation: bool = True
@@ -215,4 +218,5 @@ def load_settings_or_exit() -> Settings:
             location = ".".join(str(part) for part in error["loc"])
             missing.append(f"{location.upper()}: {error['msg']}")
         raise SystemExit("缺少或非法配置，服务未启动：\n  " + "\n  ".join(missing)) from None
+
 

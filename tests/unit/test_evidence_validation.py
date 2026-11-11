@@ -73,8 +73,8 @@ def test_missing_quote_never_grounded() -> None:
         _issue(evidence_quote=None, evidence_type="testing_standard"), CASE
     )
     assert result.status == "ungrounded"
+    assert result.evidence_support_status == "unsupported"
     assert "evidence_quote_missing" in result.warnings
-    assert result.evidence_support_status == "supported"
 
 
 def test_inference_with_quote_is_ungrounded() -> None:
@@ -82,4 +82,4 @@ def test_inference_with_quote_is_ungrounded() -> None:
         _issue(evidence_type="inference", evidence_status="grounded"), CASE
     )
     assert result.status == "ungrounded"
-    assert result.evidence_support_status == "supported"
+    assert result.evidence_support_status == "unsupported"

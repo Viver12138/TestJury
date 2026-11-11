@@ -800,9 +800,10 @@ class PostgresStorage(_PooledStorage):
                      prompt_version, attempt, status, request_tokens, response_tokens,
                      latency_ms, raw_request, raw_response, parsed_output, parse_warnings,
                      cost_estimate, cost_currency, price_config_version, error,
-                     operation, request_hash, response_hash, error_code)
+                     operation, request_hash, response_hash, error_code,
+                     masking_policy_id, masking_policy_version, masking_report)
                 VALUES ($1::uuid,$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
-                        $16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
+                        $16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28)
                 """,
                 UUID(run.id),
                 UUID(run.review_id),
@@ -829,6 +830,9 @@ class PostgresStorage(_PooledStorage):
                 run.request_hash,
                 run.response_hash,
                 run.error_code,
+                run.masking_policy_id,
+                run.masking_policy_version,
+                run.masking_report,
             )
 
     async def list_model_runs(self, review_id: str) -> list[ModelRunRecord]:
@@ -865,6 +869,9 @@ class PostgresStorage(_PooledStorage):
                 request_hash=row["request_hash"],
                 response_hash=row["response_hash"],
                 error_code=row["error_code"],
+                masking_policy_id=row["masking_policy_id"],
+                masking_policy_version=row["masking_policy_version"],
+                masking_report=row["masking_report"],
                 created_at=row["created_at"],
             )
             for row in rows

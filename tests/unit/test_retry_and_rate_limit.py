@@ -14,7 +14,9 @@ from app.llm.base import AdapterError, ChatResponse, TokenUsage
 from app.llm.registry import ModelRegistry
 from app.llm.retry import call_with_retry
 from app.llm.review import ChatReviewModel
+from app.pipeline.vote import run_vote
 from app.rubric.loader import RubricRepository
+from app.storage.models import CandidateRecord
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MODELS = REPO_ROOT / "config" / "models.yaml"
@@ -142,3 +144,34 @@ async def test_attempt_hook_records_retry_and_success() -> None:
     assert result == "ok"
     assert attempts[0][0] == 1 and attempts[0][1] == "PROVIDER_UNAVAILABLE"
     assert attempts[1] == (2, None, 0.0)
+
+
+@pytest.mark.asyncio
+async def test_vote_does_not_add_second_retry_layer() -> None:
+    class FailingModel:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def vote(self, role, material):
+            self.calls += 1
+            raise AdapterError("RATE_LIMITED", "429", retryable=True)
+
+        async def review(self, role, case):  # pragma: no cover - protocol completeness
+            raise AssertionError
+
+    model = FailingModel()
+    candidate = CandidateRecord(
+        id="c1",
+        review_id="r1",
+        candidate_no=1,
+        dimension="test_design",
+        standardized_text="第 1 步缺预期",
+        step_index=1,
+        category="预期不明确",
+    )
+    votes, calls = await run_vote("r1", [candidate], model, ["jury_a"], timeout_seconds=5)
+    assert model.calls == 1  # 外层不得再次重试
+    assert votes[0].validity == "not_assessed"
+    assert calls[0]["error_code"] == "RATE_LIMITED"
+
+

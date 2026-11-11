@@ -9,6 +9,10 @@
 from __future__ import annotations
 
 import csv
+import os
+import re
+import tempfile
+from copy import deepcopy
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -18,10 +22,23 @@ import yaml
 VALIDITY_VALUES = {"pending", "valid", "invalid", "uncertain", "needs_spec"}
 SEVERITY_VALUES = {"blocker", "major", "suggestion"}
 CASE_VERDICTS = {"pending", "pass", "needs_fix", "blocked", "uncertain"}
+CASE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 
 class AdjudicationError(Exception):
     pass
+
+
+def case_path(root: Path, case_id: str) -> Path:
+    """构造并校验裁决文件路径，禁止 CSV 中的 case_id 路径穿越。"""
+
+    if not CASE_ID_RE.fullmatch(case_id or ""):
+        raise AdjudicationError(f"非法 case_id: {case_id!r}")
+    root_resolved = Path(root).resolve()
+    path = (root_resolved / f"{case_id}.yaml").resolve()
+    if path.parent != root_resolved:
+        raise AdjudicationError(f"case_id 越界: {case_id!r}")
+    return path
 
 
 def load_case(path: Path) -> dict[str, Any]:
@@ -32,9 +49,18 @@ def load_case(path: Path) -> dict[str, Any]:
 
 
 def save_case(path: Path, data: dict[str, Any]) -> None:
-    Path(path).write_text(
-        yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8"
-    )
+    """原子写：同目录临时文件 + os.replace，避免半写 YAML。"""
+
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+            yaml.safe_dump(data, handle, allow_unicode=True, sort_keys=False)
+        os.replace(temp_name, path)
+    finally:
+        if os.path.exists(temp_name):
+            os.unlink(temp_name)
 
 
 def _find_candidate(data: dict[str, Any], candidate_id: str) -> dict[str, Any]:
@@ -108,6 +134,31 @@ def set_case_verdict(
         raise AdjudicationError(f"非法用例结论: {verdict!r}")
     if not adjudicator or not adjudicator.strip():
         raise AdjudicationError("adjudicator 必填")
+    if defect_count is not None and (not isinstance(defect_count, int) or defect_count < 0):
+        raise AdjudicationError("defect_count 必须是非负整数")
+    valid_count = sum(
+        1
+        for candidate in data.get("candidates", [])
+        if candidate.get("final", {}).get("validity") == "valid"
+    )
+    if defect_count is None:
+        defect_count = valid_count
+    elif defect_count != valid_count:
+        raise AdjudicationError(
+            f"defect_count={defect_count} 与 valid 候选数 {valid_count} 不一致"
+        )
+    if verdict == "pass" and valid_count:
+        raise AdjudicationError("pass 不允许存在 valid 问题")
+    if verdict == "needs_fix" and not valid_count:
+        raise AdjudicationError("needs_fix 至少需要一条 valid 问题")
+    if verdict == "blocked":
+        has_blocker = any(
+            candidate.get("final", {}).get("validity") == "valid"
+            and candidate.get("final", {}).get("severity") == "blocker"
+            for candidate in data.get("candidates", [])
+        )
+        if not has_blocker:
+            raise AdjudicationError("blocked 至少需要一条 valid blocker")
     level = data.setdefault("case_level", {})
     level.update(
         {
@@ -218,13 +269,17 @@ def import_decisions_from_csv(
 ) -> dict[str, Any]:
     """把填写好的 CSV 合并回 YAML；只合并 final_validity 非空的行走。
 
-    CSV 以 `candidate_id` 为键；同一 case 的 case_verdict/case_defect_count 取第一行非空值。
-    每合并一条候选写一条 history，不覆盖已有裁决以外的历史。
+    安全与一致性：
+    - case_id 走白名单并校验 resolve 后的目录边界，禁止路径穿越；
+    - 先对所有行做完整校验并生成内存中的新 YAML，再原子写文件；
+    - 校验失败时不会写 history，也不会写半份 YAML；
+    - 同一 case 的 case_verdict 必须唯一。
     """
 
     if not Path(csv_path).exists():
         raise AdjudicationError(f"CSV 不存在: {csv_path}")
     grouped: dict[str, list[dict[str, str]]] = {}
+    seen_candidates: set[tuple[str, str]] = set()
     with Path(csv_path).open("r", encoding="utf-8-sig", newline="") as handle:
         for row in csv.DictReader(handle):
             validity = (row.get("final_validity") or "").strip()
@@ -233,52 +288,79 @@ def import_decisions_from_csv(
             case_id = (row.get("case_id") or "").strip()
             if not case_id:
                 raise AdjudicationError("CSV 存在缺 case_id 的已裁决行")
+            candidate_id = (row.get("candidate_id") or "").strip()
+            if not candidate_id:
+                raise AdjudicationError(f"{case_id} 存在缺 candidate_id 的已裁决行")
+            key = (case_id, candidate_id)
+            if key in seen_candidates:
+                raise AdjudicationError(f"CSV 重复候选行: {case_id}/{candidate_id}")
+            seen_candidates.add(key)
             grouped.setdefault(case_id, []).append(row)
 
+    prepared: list[tuple[Path, dict[str, Any], list[dict[str, Any]]]] = []
     decided = 0
-    cases = 0
     for case_id, rows in grouped.items():
-        path = Path(root) / f"{case_id}.yaml"
+        path = case_path(root, case_id)
         if not path.exists():
             raise AdjudicationError(f"CSV 引用了不存在的用例: {case_id}")
-        data = load_case(path)
-        case_verdict_row = next(
-            (row for row in rows if (row.get("case_verdict") or "").strip() not in ("", "pending")),
-            None,
-        )
+        data = deepcopy(load_case(path))
+        case_verdicts: set[str] = set()
+        case_verdict_row: dict[str, str] | None = None
+        entries: list[dict[str, Any]] = []
         for row in rows:
             adjudicator = (row.get("adjudicator") or default_adjudicator or "").strip()
             if not adjudicator:
                 raise AdjudicationError(f"{case_id}/{row.get('candidate_id')} 缺少 adjudicator")
-            entry = record_decision(
-                data,
-                (row.get("candidate_id") or "").strip(),
-                validity=(row.get("final_validity") or "").strip(),
-                severity=(row.get("final_severity") or "").strip() or None,
-                category=(row.get("final_category") or "").strip() or None,
-                correction=(row.get("correction") or "").strip() or None,
-                adjudicator=adjudicator,
-                note=(row.get("note") or "").strip() or None,
-                at=(row.get("adjudicated_at") or "").strip() or None,
+            entries.append(
+                record_decision(
+                    data,
+                    (row.get("candidate_id") or "").strip(),
+                    validity=(row.get("final_validity") or "").strip(),
+                    severity=(row.get("final_severity") or "").strip() or None,
+                    category=(row.get("final_category") or "").strip() or None,
+                    correction=(row.get("correction") or "").strip() or None,
+                    adjudicator=adjudicator,
+                    note=(row.get("note") or "").strip() or None,
+                    at=(row.get("adjudicated_at") or "").strip() or None,
+                )
             )
-            if not dry_run:
-                append_history(Path(root) / "history.jsonl", entry)
             decided += 1
+            v = (row.get("case_verdict") or "").strip()
+            if v and v != "pending":
+                case_verdicts.add(v)
+                if case_verdict_row is None:
+                    case_verdict_row = row
+        if len(case_verdicts) > 1:
+            raise AdjudicationError(f"{case_id} 的 case_verdict 不一致: {sorted(case_verdicts)}")
         if case_verdict_row is not None:
             verdict = (case_verdict_row.get("case_verdict") or "").strip()
             defect_raw = (case_verdict_row.get("case_defect_count") or "").strip()
-            set_case_verdict(
-                data,
-                verdict=verdict,
-                defect_count=int(defect_raw) if defect_raw else None,
-                adjudicator=(
-                    (case_verdict_row.get("adjudicator") or default_adjudicator or "").strip()
-                ),
-                note=(case_verdict_row.get("case_note") or "").strip() or None,
-                at=(case_verdict_row.get("adjudicated_at") or "").strip() or None,
+            try:
+                defect_count = int(defect_raw) if defect_raw else None
+            except ValueError as exc:
+                raise AdjudicationError(f"{case_id} 的 case_defect_count 不是整数") from exc
+            entries.append(
+                set_case_verdict(
+                    data,
+                    verdict=verdict,
+                    defect_count=defect_count,
+                    adjudicator=(
+                        (case_verdict_row.get("adjudicator") or default_adjudicator or "").strip()
+                    ),
+                    note=(case_verdict_row.get("case_note") or "").strip() or None,
+                    at=(case_verdict_row.get("adjudicated_at") or "").strip() or None,
+                )
             )
-        if not dry_run:
-            save_case(path, data)
-        cases += 1
-    return {"cases": cases, "decisions": decided, "dry_run": dry_run}
+        prepared.append((path, data, entries))
+
+    if dry_run:
+        return {"cases": len(prepared), "decisions": decided, "dry_run": True}
+
+    # 全部校验通过后再落盘；YAML 原子写，最后追加 history
+    for path, data, _ in prepared:
+        save_case(path, data)
+    for _, _, entries in prepared:
+        for entry in entries:
+            append_history(Path(root) / "history.jsonl", entry)
+    return {"cases": len(prepared), "decisions": decided, "dry_run": False}
 

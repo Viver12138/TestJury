@@ -85,6 +85,7 @@ class AdapterError(Exception):
         self.retryable = retryable
         self.status_code = status_code
         self.raw = raw
+        self.attempts: list[dict[str, Any]] = []
         super().__init__(f"{code}: {message}")
 
 
@@ -124,6 +125,9 @@ class ReviewOpinion:
     response_hash: str | None = None
     raw_request: dict[str, Any] | None = None
     raw_response: dict[str, Any] | None = None
+    masking_policy_id: str | None = None
+    masking_policy_version: str | None = None
+    masking_report: dict[str, Any] | None = None
 
 
 @dataclass
@@ -142,6 +146,9 @@ class VoteDecision:
     response_hash: str | None = None
     raw_request: dict[str, Any] | None = None
     raw_response: dict[str, Any] | None = None
+    masking_policy_id: str | None = None
+    masking_policy_version: str | None = None
+    masking_report: dict[str, Any] | None = None
 
 
 class ReviewModel(Protocol):

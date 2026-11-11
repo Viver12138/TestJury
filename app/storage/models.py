@@ -174,6 +174,9 @@ class ModelRunRecord:
     price_config_version: str | None = None
     error_code: str | None = None
     error: str | None = None
+    masking_policy_id: str | None = None
+    masking_policy_version: str | None = None
+    masking_report: dict[str, Any] | None = None
     id: str = field(default_factory=new_id)
     created_at: datetime = field(default_factory=now)
 

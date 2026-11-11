@@ -144,6 +144,8 @@ def verify_evidence(
     if model_status == "grounded" and status != "grounded":
         warnings.append("model_grounded_downgraded")
 
+    # `evidence_support_status` 是服务端验证后的支持结果，不是模型声明；
+    # 模型原始声明保存在 `model_evidence_status`。
     support_map = {
         "grounded": "supported",
         "partially_grounded": "insufficient",
@@ -151,7 +153,7 @@ def verify_evidence(
         "conflicted": "conflicted",
         "insufficient": "insufficient",
     }
-    support = support_map.get(str(model_status)) if model_status else None
+    support = support_map.get(status)
     validation = "needs_review" if warnings else "passed"
     return EvidenceResult(
         status=status,
