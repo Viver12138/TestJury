@@ -1,0 +1,625 @@
+[
+  {
+    "case": {
+      "case_id": "UI-GAME-007",
+      "case_version": 1,
+      "module": "三维弹球功能",
+      "test_type": "functional",
+      "title": "启动中与保存中禁用状态",
+      "priority": "P0",
+      "source": "manual",
+      "preconditions": [
+        "可触发启动或成绩保存。"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "action": "点击启动按钮。",
+          "expected": "启动中按钮禁用并保持原位置。"
+        },
+        {
+          "index": 2,
+          "action": "在启动请求未完成时观察按钮。",
+          "expected": "保存中显示明确状态。"
+        },
+        {
+          "index": 3,
+          "action": "触发保存状态并观察界面。",
+          "expected": "界面不允许导致重复记录的连续操作。"
+        }
+      ],
+      "test_data": {
+        "环境与数据": "无。",
+        "规范依据": "9.3、11"
+      }
+    },
+    "test_scope": {
+      "feature_point": "三维弹球功能",
+      "required_scenarios": [],
+      "scope_version": "ui-spec-v1.0-functional"
+    },
+    "automation_context": {
+      "framework": "人工浏览器验收",
+      "supported_operations": [
+        "键盘操作",
+        "表单提交",
+        "状态观察"
+      ],
+      "limitations": [
+        "部分瞬时状态需网络节流"
+      ]
+    },
+    "options": {
+      "force": false
+    }
+  },
+  {
+    "case": {
+      "case_id": "UI-GAME-008",
+      "case_version": 1,
+      "module": "三维弹球功能",
+      "test_type": "functional",
+      "title": "游戏状态消息可见性",
+      "priority": "P0",
+      "source": "manual",
+      "preconditions": [
+        "游戏可切换状态。"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "action": "依次触发不同游戏状态。",
+          "expected": "消息位于控制按钮下方。"
+        },
+        {
+          "index": 2,
+          "action": "观察侧栏底部状态消息。",
+          "expected": "文字使用14px浅色并保持可读。；动态变化通过礼貌播报区域对辅助技术可用。"
+        }
+      ],
+      "test_data": {
+        "环境与数据": "ready、playing、paused、error等状态。",
+        "规范依据": "9.2、11"
+      }
+    },
+    "test_scope": {
+      "feature_point": "三维弹球功能",
+      "required_scenarios": [],
+      "scope_version": "ui-spec-v1.0-functional"
+    },
+    "automation_context": {
+      "framework": "人工浏览器验收",
+      "supported_operations": [
+        "键盘操作",
+        "表单提交",
+        "状态观察"
+      ],
+      "limitations": [
+        "部分瞬时状态需网络节流"
+      ]
+    },
+    "options": {
+      "force": false
+    }
+  },
+  {
+    "case": {
+      "case_id": "UI-GLOBAL-005",
+      "case_version": 1,
+      "module": "全局功能",
+      "test_type": "functional",
+      "title": "按钮通用视觉与按压反馈",
+      "priority": "P0",
+      "source": "manual",
+      "preconditions": [
+        "页面存在可用主按钮和次按钮。"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "action": "观察按钮默认状态。",
+          "expected": "按钮最小高度44px，胶囊圆角。"
+        },
+        {
+          "index": 2,
+          "action": "悬停主按钮。",
+          "expected": "主按钮悬停时变为深橙色。"
+        },
+        {
+          "index": 3,
+          "action": "按住并释放按钮。",
+          "expected": "按下时按钮缩放至约98%。"
+        },
+        {
+          "index": 4,
+          "action": "使用键盘聚焦按钮。",
+          "expected": "键盘焦点轮廓清晰可见。"
+        }
+      ],
+      "test_data": {
+        "环境与数据": "无。",
+        "规范依据": "3.4"
+      }
+    },
+    "test_scope": {
+      "feature_point": "全局功能",
+      "required_scenarios": [],
+      "scope_version": "ui-spec-v1.0-functional"
+    },
+    "automation_context": {
+      "framework": "人工浏览器验收",
+      "supported_operations": [
+        "键盘操作",
+        "表单提交",
+        "状态观察"
+      ],
+      "limitations": [
+        "部分瞬时状态需网络节流"
+      ]
+    },
+    "options": {
+      "force": false
+    }
+  },
+  {
+    "case": {
+      "case_id": "UI-GLOBAL-007",
+      "case_version": 1,
+      "module": "全局功能",
+      "test_type": "functional",
+      "title": "减少动态效果设置",
+      "priority": "P1",
+      "source": "manual",
+      "preconditions": [
+        "操作系统或浏览器可模拟prefers-reduced-motion。"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "action": "开启减少动态效果。",
+          "expected": "动画与过渡时长降至接近零。"
+        },
+        {
+          "index": 2,
+          "action": "刷新页面。",
+          "expected": "内容和交互功能仍然可用。"
+        },
+        {
+          "index": 3,
+          "action": "触发按钮悬停、按下和页面动态状态。",
+          "expected": "不存在快速闪烁。"
+        }
+      ],
+      "test_data": {
+        "环境与数据": "减少动态效果=开启。",
+        "规范依据": "11"
+      }
+    },
+    "test_scope": {
+      "feature_point": "全局功能",
+      "required_scenarios": [],
+      "scope_version": "ui-spec-v1.0-functional"
+    },
+    "automation_context": {
+      "framework": "人工浏览器验收",
+      "supported_operations": [
+        "键盘操作",
+        "表单提交",
+        "状态观察"
+      ],
+      "limitations": [
+        "部分瞬时状态需网络节流"
+      ]
+    },
+    "options": {
+      "force": false
+    }
+  },
+  {
+    "case": {
+      "case_id": "UI-LOGIN-004",
+      "case_version": 1,
+      "module": "登录功能",
+      "test_type": "functional",
+      "title": "登录提交中状态",
+      "priority": "P0",
+      "source": "manual",
+      "preconditions": [
+        "可触发登录请求。"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "action": "填写邮箱和密码。",
+          "expected": "按钮显示旋转加载图标和处理中提示。"
+        },
+        {
+          "index": 2,
+          "action": "提交表单。",
+          "expected": "按钮处于禁用状态，不能重复提交。"
+        },
+        {
+          "index": 3,
+          "action": "在请求完成前观察按钮。",
+          "expected": "表单布局不发生明显跳动。"
+        }
+      ],
+      "test_data": {
+        "环境与数据": "有效或任意格式正确的登录数据。",
+        "规范依据": "6.2"
+      }
+    },
+    "test_scope": {
+      "feature_point": "登录功能",
+      "required_scenarios": [],
+      "scope_version": "ui-spec-v1.0-functional"
+    },
+    "automation_context": {
+      "framework": "人工浏览器验收",
+      "supported_operations": [
+        "键盘操作",
+        "表单提交",
+        "状态观察"
+      ],
+      "limitations": [
+        "部分瞬时状态需网络节流"
+      ]
+    },
+    "options": {
+      "force": false
+    }
+  },
+  {
+    "case": {
+      "case_id": "UI-LOGIN-005",
+      "case_version": 1,
+      "module": "登录功能",
+      "test_type": "functional",
+      "title": "登录错误提示位置",
+      "priority": "P0",
+      "source": "manual",
+      "preconditions": [
+        "可返回登录失败。"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "action": "输入错误凭据并提交。",
+          "expected": "错误显示在按钮上方的固定错误区。"
+        },
+        {
+          "index": 2,
+          "action": "观察错误消息位置、颜色和内容。",
+          "expected": "文字为危险色、14px。；提示不泄露邮箱是否存在。"
+        }
+      ],
+      "test_data": {
+        "环境与数据": "错误凭据。",
+        "规范依据": "6.2"
+      }
+    },
+    "test_scope": {
+      "feature_point": "登录功能",
+      "required_scenarios": [],
+      "scope_version": "ui-spec-v1.0-functional"
+    },
+    "automation_context": {
+      "framework": "人工浏览器验收",
+      "supported_operations": [
+        "键盘操作",
+        "表单提交",
+        "状态观察"
+      ],
+      "limitations": [
+        "部分瞬时状态需网络节流"
+      ]
+    },
+    "options": {
+      "force": false
+    }
+  },
+  {
+    "case": {
+      "case_id": "UI-PROFILE-004",
+      "case_version": 1,
+      "module": "个人中心功能",
+      "test_type": "functional",
+      "title": "退出按钮处理中状态",
+      "priority": "P0",
+      "source": "manual",
+      "preconditions": [
+        "用户已登录。"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "action": "点击退出登录。",
+          "expected": "按钮显示处理中提示并禁用。"
+        },
+        {
+          "index": 2,
+          "action": "在退出请求完成前观察按钮。",
+          "expected": "按钮位置和尺寸保持稳定。；完成后按功能设计离开受保护页面。"
+        }
+      ],
+      "test_data": {
+        "环境与数据": "无。",
+        "规范依据": "10.1、11"
+      }
+    },
+    "test_scope": {
+      "feature_point": "个人中心功能",
+      "required_scenarios": [],
+      "scope_version": "ui-spec-v1.0-functional"
+    },
+    "automation_context": {
+      "framework": "人工浏览器验收",
+      "supported_operations": [
+        "键盘操作",
+        "表单提交",
+        "状态观察"
+      ],
+      "limitations": [
+        "部分瞬时状态需网络节流"
+      ]
+    },
+    "options": {
+      "force": false
+    }
+  },
+  {
+    "case": {
+      "case_id": "UI-REG-003",
+      "case_version": 1,
+      "module": "注册功能",
+      "test_type": "functional",
+      "title": "密码不一致错误状态",
+      "priority": "P0",
+      "source": "manual",
+      "preconditions": [
+        "注册页已加载。"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "action": "填写合法名称和邮箱。",
+          "expected": "错误显示在提交按钮上方。"
+        },
+        {
+          "index": 2,
+          "action": "输入两次不同密码。",
+          "expected": "错误区保留布局位置。"
+        },
+        {
+          "index": 3,
+          "action": "点击创建账号。",
+          "expected": "页面不跳转，按钮恢复可用。"
+        }
+      ],
+      "test_data": {
+        "环境与数据": "两次密码不同。",
+        "规范依据": "7"
+      }
+    },
+    "test_scope": {
+      "feature_point": "注册功能",
+      "required_scenarios": [],
+      "scope_version": "ui-spec-v1.0-functional"
+    },
+    "automation_context": {
+      "framework": "人工浏览器验收",
+      "supported_operations": [
+        "键盘操作",
+        "表单提交",
+        "状态观察"
+      ],
+      "limitations": [
+        "部分瞬时状态需网络节流"
+      ]
+    },
+    "options": {
+      "force": false
+    }
+  },
+  {
+    "case": {
+      "case_id": "UI-REG-004",
+      "case_version": 1,
+      "module": "注册功能",
+      "test_type": "functional",
+      "title": "注册提交中状态",
+      "priority": "P0",
+      "source": "manual",
+      "preconditions": [
+        "可触发注册请求。"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "action": "填写表单并提交。",
+          "expected": "按钮显示加载图标和处理中提示。"
+        },
+        {
+          "index": 2,
+          "action": "在请求完成前观察按钮。",
+          "expected": "按钮禁用，不能连续提交。；其他字段位置保持稳定。"
+        }
+      ],
+      "test_data": {
+        "环境与数据": "格式有效且两次一致的密码。",
+        "规范依据": "7"
+      }
+    },
+    "test_scope": {
+      "feature_point": "注册功能",
+      "required_scenarios": [],
+      "scope_version": "ui-spec-v1.0-functional"
+    },
+    "automation_context": {
+      "framework": "人工浏览器验收",
+      "supported_operations": [
+        "键盘操作",
+        "表单提交",
+        "状态观察"
+      ],
+      "limitations": [
+        "部分瞬时状态需网络节流"
+      ]
+    },
+    "options": {
+      "force": false
+    }
+  },
+  {
+    "case": {
+      "case_id": "UI-RESP-003",
+      "case_version": 1,
+      "module": "响应式与可访问功能",
+      "test_type": "functional",
+      "title": "全站Tab焦点顺序",
+      "priority": "P0",
+      "source": "manual",
+      "preconditions": [
+        "页面含多个交互元素。"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "action": "从地址栏后开始连续按Tab。",
+          "expected": "焦点顺序与页面视觉阅读顺序一致。"
+        },
+        {
+          "index": 2,
+          "action": "记录焦点经过顺序。",
+          "expected": "所有按钮、链接和输入框均可聚焦。"
+        },
+        {
+          "index": 3,
+          "action": "使用Shift+Tab反向检查。",
+          "expected": "不存在焦点陷阱。"
+        }
+      ],
+      "test_data": {
+        "环境与数据": "无。",
+        "规范依据": "11"
+      }
+    },
+    "test_scope": {
+      "feature_point": "响应式与可访问功能",
+      "required_scenarios": [],
+      "scope_version": "ui-spec-v1.0-functional"
+    },
+    "automation_context": {
+      "framework": "人工浏览器验收",
+      "supported_operations": [
+        "键盘操作",
+        "表单提交",
+        "状态观察"
+      ],
+      "limitations": [
+        "部分瞬时状态需网络节流"
+      ]
+    },
+    "options": {
+      "force": false
+    }
+  },
+  {
+    "case": {
+      "case_id": "UI-RESP-004",
+      "case_version": 1,
+      "module": "响应式与可访问功能",
+      "test_type": "functional",
+      "title": "焦点可见性",
+      "priority": "P0",
+      "source": "manual",
+      "preconditions": [
+        "页面含交互元素。"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "action": "使用键盘依次聚焦按钮、链接和输入框。",
+          "expected": "每个焦点均显示清晰轮廓或强调边框。；焦点指示不被父容器裁切。；焦点不只依赖轻微颜色变化。"
+        }
+      ],
+      "test_data": {
+        "环境与数据": "无。",
+        "规范依据": "3.4、11"
+      }
+    },
+    "test_scope": {
+      "feature_point": "响应式与可访问功能",
+      "required_scenarios": [],
+      "scope_version": "ui-spec-v1.0-functional"
+    },
+    "automation_context": {
+      "framework": "人工浏览器验收",
+      "supported_operations": [
+        "键盘操作",
+        "表单提交",
+        "状态观察"
+      ],
+      "limitations": [
+        "部分瞬时状态需网络节流"
+      ]
+    },
+    "options": {
+      "force": false
+    }
+  },
+  {
+    "case": {
+      "case_id": "UI-RESP-005",
+      "case_version": 1,
+      "module": "响应式与可访问功能",
+      "test_type": "functional",
+      "title": "动态错误与状态语义",
+      "priority": "P1",
+      "source": "manual",
+      "preconditions": [
+        "可触发表单错误和游戏状态变化。"
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "action": "触发登录或注册错误。",
+          "expected": "表单错误具有警告语义。"
+        },
+        {
+          "index": 2,
+          "action": "触发游戏状态消息变化。",
+          "expected": "游戏消息使用礼貌播报。"
+        },
+        {
+          "index": 3,
+          "action": "使用辅助技术或可访问性树检查。",
+          "expected": "状态更新不会抢夺当前键盘焦点。"
+        }
+      ],
+      "test_data": {
+        "环境与数据": "无。",
+        "规范依据": "11"
+      }
+    },
+    "test_scope": {
+      "feature_point": "响应式与可访问功能",
+      "required_scenarios": [],
+      "scope_version": "ui-spec-v1.0-functional"
+    },
+    "automation_context": {
+      "framework": "人工浏览器验收",
+      "supported_operations": [
+        "键盘操作",
+        "表单提交",
+        "状态观察"
+      ],
+      "limitations": [
+        "部分瞬时状态需网络节流"
+      ]
+    },
+    "options": {
+      "force": false
+    }
+  }
+]

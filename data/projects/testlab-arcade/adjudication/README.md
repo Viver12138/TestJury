@@ -35,5 +35,6 @@
 
 - UI-GAME-007：真实三模型评审，8 条原始问题去重为 6 条候选；
 - UI-LOGIN-006、UI-REG-005、UI-PROFILE-004、UI-RESP-002、UI-RESP-006、UI-HOME-005、UI-GLOBAL-005：静态比对候选，待人工裁决（可补真实模型评审）。
+- 分类版口径：当前 8 个用例中功能测试 3 个（10 条候选）、页面测试 5 个（9 条候选）；页面候选不应直接当作 functional 评测标签。详见 [classification.md](../classification.md)。
 
 > AI 建议只是线索，不是标签；`likely_valid` 也不等于 valid。

@@ -507,14 +507,18 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 | 一期策划案（需求/功能） | [kb_content/TestLab-Arcade/requirements.md](kb_content/TestLab-Arcade/requirements.md) · [原件](data/projects/testlab-arcade/source/requirements.md) |
 | UI 前端设计规范 V1.0 | [kb_content/TestLab-Arcade/ui_spec.md](kb_content/TestLab-Arcade/ui_spec.md) · [原件](data/projects/testlab-arcade/source/ui_spec.md) |
 | UI 测试案例 V1.0（55 条） | [data/projects/testlab-arcade/source/ui_test_cases_v1.0.xlsx](data/projects/testlab-arcade/source/ui_test_cases_v1.0.xlsx) |
+| 分类版：页面测试 43 / 功能测试 12 | [data/projects/testlab-arcade/source/ui_test_cases_v1.1_classified.xlsx](data/projects/testlab-arcade/source/ui_test_cases_v1.1_classified.xlsx) · [分类说明](data/projects/testlab-arcade/classification.md) |
 | 规范化用例（原始字段） | [data/projects/testlab-arcade/cases.json](data/projects/testlab-arcade/cases.json) |
-| 可直接提交的评审请求 | [data/projects/testlab-arcade/case_payloads.json](data/projects/testlab-arcade/case_payloads.json) |
+| 分类后的用例/功能测试送审请求 | [cases_classified.json](data/projects/testlab-arcade/cases_classified.json) · [functional_case_payloads.json](data/projects/testlab-arcade/functional_case_payloads.json) |
+| 页面测试用例（43 条，暂不送 functional） | [page_cases.json](data/projects/testlab-arcade/page_cases.json) |
+| 可直接提交的旧版评审请求（55 条） | [data/projects/testlab-arcade/case_payloads.json](data/projects/testlab-arcade/case_payloads.json) |
 | 项目画像/模块统计 | [data/projects/testlab-arcade/project.yaml](data/projects/testlab-arcade/project.yaml) |
 | 人工裁决工作台（8 用例 / 19 条候选，当前 0 条已裁决） | [填写教程](data/projects/testlab-arcade/adjudication/填写教程.md) · [工作台说明](data/projects/testlab-arcade/adjudication/README.md) · [汇总 CSV](data/projects/testlab-arcade/adjudication/adjudication.csv) |
 | 静态体检记录（非模型结论） | [data/projects/testlab-arcade/static_review.md](data/projects/testlab-arcade/static_review.md) |
 
-- 共 **55 条 UI 用例**：P0 41 / P1 14；模块：全局规范 7、公共首页 6、登录 7、注册 6、登录后主界面 7、三维弹球 10、个人中心 6、响应式与可访问性 6。
-- **范围提醒**：这 55 条是 UI 布局/响应式/可访问性用例，不是功能验收用例；当前评审器 v1 只接受 `test_type=functional`，且 Rubric 面向功能用例质量，不能据此判断像素坐标是否符合 UI 规范。
+- 共 **55 条用例**：**页面测试 43 条 + 功能测试 12 条**；内容与原表一致，仅模块名按分类调整。
+- **范围提醒**：当前评审器 v1 只接受 `test_type=functional`，只有 12 条功能测试可直接送审；43 条页面测试需要页面/UI 专用 Rubric，不应伪装成 functional 送审。
+- 当前人工裁决工作台 8 个用例 / 19 条候选，其中功能测试 3 个用例 / 10 条候选，页面测试 5 个用例 / 9 条候选；12 条功能测试中还有 9 条未抽样。
 - 当前知识库装载/检索未实现（M2），送审时会降级为 `kb_module_missing`；UI 规范尚未作为检索证据注入。
 - AI 生成的 55 条用例**未经人工复核**：已标记 `human_reviewed: false`、`do_not_use_as_golden: true`，不能作为评测真值。
 - 裁决工作台：`python scripts/adjudicate.py list|show|stats|decide|case-verdict|export-csv`；只有人工填写 `final.adjudicator` 后才算标签。
