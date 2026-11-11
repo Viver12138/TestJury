@@ -1,0 +1,59 @@
+case_id: UI-LOGIN-006
+case_title: 注册入口样式与位置
+module: 登录页
+priority: P1
+source: ai_generated_unreviewed
+preconditions:
+- 登录页已加载。
+steps:
+- 1、观察表单下方注册入口。
+- 2、使用Tab键聚焦链接。
+expected:
+- 1、注册提示位于表单下方约28px。
+- 2、链接为深强调色粗体并带下划线。
+- 3、键盘焦点清晰可见。
+ui_spec_ref: '6.1'
+model_review: null
+candidates:
+- candidate_id: CAND-UI-LOGIN-006-01
+  title: 注册链接颜色/字重超出 UI 规范
+  claim: 预期 2 要求“深强调色粗体”，UI 规范 §6.1 只规定“文字链接带下划线”，未定义颜色与字重。
+  evidence_case: 预期 2
+  evidence_spec: UI 规范 §6.1
+  source_issue_ids: []
+  ai_recommendation: needs_spec
+  ai_reason: 若产品未定义颜色/字重，该断言可能造成误报；需产品/设计确认。
+  ai_suggested_severity: suggestion
+  ai_suggested_category: 预期不明确
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+- candidate_id: CAND-UI-LOGIN-006-02
+  title: “键盘焦点清晰可见”缺少可判定标准
+  claim: '预期 3 只写“清晰可见”，未引用 §3.4 的 2px #a84222 外轮廓与 4px 偏移。'
+  evidence_case: 预期 3
+  evidence_spec: UI 规范 §3.4
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 规范有明确焦点样式，用例应写成可测量值。
+  ai_suggested_severity: major
+  ai_suggested_category: 预期不明确
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null

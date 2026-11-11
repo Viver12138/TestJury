@@ -1,0 +1,59 @@
+case_id: UI-PROFILE-004
+case_title: 退出按钮处理中状态
+module: 个人中心
+priority: P0
+source: ai_generated_unreviewed
+preconditions:
+- 用户已登录。
+steps:
+- 1、点击退出登录。
+- 2、在退出请求完成前观察按钮。
+expected:
+- 1、按钮显示处理中提示并禁用。
+- 2、按钮位置和尺寸保持稳定。
+- 3、完成后按功能设计离开受保护页面。
+ui_spec_ref: 10.1、11
+model_review: null
+candidates:
+- candidate_id: CAND-UI-PROFILE-004-01
+  title: 退出按钮“处理中提示并禁用”未在规范中定义
+  claim: 预期 1 要求退出请求期间显示处理中并禁用；UI 规范 §10.1 未定义退出加载态，§11 只给通用状态规则。
+  evidence_case: 预期 1
+  evidence_spec: UI 规范 §10.1、§11
+  source_issue_ids: []
+  ai_recommendation: needs_spec
+  ai_reason: 需确认退出是否有异步请求与加载态；否则该断言无依据。
+  ai_suggested_severity: major
+  ai_suggested_category: 预期不明确
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+- candidate_id: CAND-UI-PROFILE-004-02
+  title: 未说明如何让退出请求保持未完成
+  claim: 步骤 2 要求“在退出请求完成前观察”，但没有网络延迟/请求挂起手段，状态转瞬即逝。
+  evidence_case: 步骤 2
+  evidence_spec: UI 规范 §12.1
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 与 UI-GAME-007 同类：瞬时状态不可重复观察。
+  ai_suggested_severity: major
+  ai_suggested_category: 不可重复
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null

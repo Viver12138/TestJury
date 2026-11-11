@@ -1,0 +1,58 @@
+case_id: UI-RESP-006
+case_title: 44px最小交互高度
+module: 响应式与可访问性
+priority: P0
+source: ai_generated_unreviewed
+preconditions:
+- 各页面已加载。
+steps:
+- 1、抽查主按钮、次按钮、危险按钮。
+- 2、测量可点击区域高度。
+expected:
+- 1、主要按钮可点击区域高度不低于44px。
+- 2、相邻操作之间有足够间隔，不发生误触区域重叠。
+ui_spec_ref: 3.4、11
+model_review: null
+candidates:
+- candidate_id: CAND-UI-RESP-006-01
+  title: “足够间隔”没有量化阈值
+  claim: 预期 2 要求相邻操作之间有足够间隔，但未给出最小间距，执行者无法判定。
+  evidence_case: 预期 2
+  evidence_spec: UI 规范 §3.4
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 建议给出最小 8px/44px 触控目标等可测量阈值。
+  ai_suggested_severity: major
+  ai_suggested_category: 预期不明确
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+- candidate_id: CAND-UI-RESP-006-02
+  title: “抽查”未指定页面与按钮清单
+  claim: 步骤 1 只写“抽查主按钮、次按钮、危险按钮”，未说明页面范围与每种按钮的实例，结果不可复现。
+  evidence_case: 步骤 1
+  evidence_spec: UI 规范 §12.1
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 应列出页面、按钮名称/选择器与至少一个危险按钮实例。
+  ai_suggested_severity: major
+  ai_suggested_category: 步骤不可执行
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null
