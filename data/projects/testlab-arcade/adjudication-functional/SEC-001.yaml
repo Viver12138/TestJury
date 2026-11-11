@@ -36,6 +36,9 @@ candidates:
     adjudicator: null
     adjudicated_at: null
     note: null
+  ai_suggested_validity: valid
+  ai_suggested_correction: 补充禁用脚本/查看源码步骤，或删除该预期。
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
 - candidate_id: CAND-SEC-001-02
   title: 未检查服务端响应，只检查页面跳转
   claim: 预期要求服务端拒绝受保护内容，但没有直接请求受保护 API 或检查响应状态。
@@ -54,9 +57,15 @@ candidates:
     adjudicator: null
     adjudicated_at: null
     note: null
+  ai_suggested_validity: valid
+  ai_suggested_correction: 增加直接请求受保护 API 并断言 401/403 的步骤。
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
 case_level:
   verdict: pending
   defect_count: null
   adjudicator: null
   adjudicated_at: null
   note: null
+  ai_suggested_verdict: needs_fix
+  ai_suggested_defect_count: 2
+  ai_suggested_note: AI 静态建议：2 条 valid；请人工独立判断。

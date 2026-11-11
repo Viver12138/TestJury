@@ -100,69 +100,34 @@ COLUMNS: list[Column] = [
     Column("claim", "AI 问题描述\n(claim)", 40.0, "candidate", "read"),
     Column("evidence_case", "证据·用例位置\n(evidence_case)", 17.0, "candidate", "read"),
     Column("evidence_spec", "证据·规范\n(evidence_spec)", 22.0, "candidate", "read"),
-    Column(
-        "final_validity",
-        "裁决结论\n(final_validity)",
-        18.0,
-        "manual",
-        "select",
-        hint="必填。valid=问题成立需改用例；invalid=不成立；uncertain=信息不足；needs_spec=规范未定义需产品确认。",
-    ),
-    Column(
-        "final_severity",
-        "严重级\n(final_severity)",
-        18.0,
-        "manual",
-        "select",
-        hint="仅 valid 填写：blocker / major / suggestion。invalid、uncertain、needs_spec 必须留空。",
-    ),
-    Column(
-        "final_category",
-        "问题分类\n(final_category)",
-        18.0,
-        "manual",
-        "select",
-        hint="仅 valid 填写，从 Rubric 的 18 个分类里选一个。",
-    ),
-    Column(
-        "correction",
-        "改写建议\n(correction)",
-        34.0,
-        "manual",
-        "text",
-        hint="valid 建议必填：写具体怎么改，不要写“建议补充”。",
-    ),
+    Column("ai_recommendation", "AI 线索\n(ai_recommendation)", 18.0, "hint", "hint", hint="AI 的原始线索只是参考；建议先自己判，再看这一组。"),
+    Column("ai_reason", "AI 理由\n(ai_reason)", 28.0, "hint", "hint"),
+    Column("ai_suggested_severity", "AI 建议严重级\n(ai_suggested_severity)", 20.0, "hint", "hint"),
+    Column("ai_suggested_validity", "AI 建议结论\n(ai_suggested_validity)", 20.0, "hint", "hint", hint="AI 建议的最终结论，不是人工标签；采纳与否由你决定。"),
+    Column("ai_suggested_category", "AI 建议分类\n(ai_suggested_category)", 21.0, "hint", "hint"),
+    Column("ai_suggested_correction", "AI 改写建议\n(ai_suggested_correction)", 38.0, "hint", "hint"),
+    Column("ai_suggestion_note", "AI 建议说明\n(ai_suggestion_note)", 28.0, "hint", "hint"),
+    Column("final_validity", "裁决结论\n(final_validity)", 18.0, "manual", "select", hint="必填。valid=问题成立需改用例；invalid=不成立；uncertain=信息不足；needs_spec=规范未定义需产品确认。"),
+    Column("final_severity", "严重级\n(final_severity)", 18.0, "manual", "select", hint="仅 valid 填写：blocker / major / suggestion。invalid、uncertain、needs_spec 必须留空。"),
+    Column("final_category", "问题分类\n(final_category)", 18.0, "manual", "select", hint="仅 valid 填写，从 Rubric 的 18 个分类里选一个。"),
+    Column("correction", "改写建议\n(correction)", 34.0, "manual", "text", hint="valid 建议必填：写具体怎么改，不要写“建议补充”。"),
     Column("adjudicator", "裁决人\n(adjudicator)", 16.0, "manual", "text", hint="真实姓名/工号，不能写 AI、agent、system。"),
     Column("adjudicated_at", "裁决时间\n(adjudicated_at)", 20.0, "manual", "text", hint="可留空，导入时自动补当前时间（ISO 8601）。"),
     Column("note", "备注\n(note)", 24.0, "manual", "text", hint="裁决理由、合并关系、待确认事项。"),
-    Column("ai_recommendation", "AI 建议\n(ai_recommendation)", 21.0, "hint", "hint", hint="AI 的建议只是线索，likely_valid ≠ valid；建议先自己判完再看这一组。"),
-    Column("ai_reason", "AI 理由\n(ai_reason)", 30.0, "hint", "hint"),
-    Column("ai_suggested_severity", "AI 建议严重级\n(ai_suggested_severity)", 25.0, "hint", "hint"),
-    Column(
-        "case_verdict",
-        "用例结论\n(case_verdict)",
-        16.0,
-        "level",
-        "select",
-        hint="每个用例只在首行填一次：还有 pending 用 in_progress；最终结论要求该用例全部候选已裁决。",
-    ),
-    Column(
-        "case_defect_count",
-        "缺陷数\n(case_defect_count)",
-        21.0,
-        "level",
-        "select",
-        hint="留空自动按 valid 条数计算；手填必须等于 valid 条数。",
-    ),
+    Column("ai_case_verdict", "AI 建议用例结论\n(ai_case_verdict)", 20.0, "level", "hint", hint="AI 静态建议，仅供对照；人工结论以 case_verdict 为准。"),
+    Column("ai_case_defect_count", "AI 建议缺陷数\n(ai_case_defect_count)", 16.0, "level", "hint"),
+    Column("ai_case_note", "AI 建议说明\n(ai_case_note)", 32.0, "level", "hint"),
+    Column("case_verdict", "用例结论\n(case_verdict)", 16.0, "level", "select", hint="每个用例只在首行填一次：还有 pending 用 in_progress；最终结论要求该用例全部候选已裁决。"),
+    Column("case_defect_count", "缺陷数\n(case_defect_count)", 21.0, "level", "select", hint="留空自动按 valid 条数计算；手填必须等于 valid 条数。"),
     Column("case_note", "用例备注\n(case_note)", 24.0, "level", "text", hint="拆分/重跑/待确认说明。"),
 ]
 
 GROUP_TITLES = {
     "case": "① 原始案例（只读，来自 <case_id>.yaml）",
     "candidate": "② AI 候选问题（只读）",
-    "manual": "③ 人工裁决（黄色列下拉选择，白色列手写）",
-    "hint": "④ AI 提示（建议先自己判完再看）",
-    "level": "⑤ 用例级结论（每个用例只填首行）",
+    "hint": "③ AI 建议（只读，仅供参考；采不采纳由人决定）",
+    "manual": "④ 人工裁决（黄色列下拉选择，白色列手写）",
+    "level": "⑤ 用例级结论（先看 AI 建议，再填人工结论）",
 }
 
 COLUMN_INDEX = {column.key: index + 1 for index, column in enumerate(COLUMNS)}
@@ -185,6 +150,10 @@ CSV_ORDER = [
     "ai_recommendation",
     "ai_reason",
     "ai_suggested_severity",
+    "ai_suggested_validity",
+    "ai_suggested_category",
+    "ai_suggested_correction",
+    "ai_suggestion_note",
     "module",
     "priority",
     "source",
@@ -202,6 +171,9 @@ CSV_ORDER = [
     "case_verdict",
     "case_defect_count",
     "case_note",
+    "ai_case_verdict",
+    "ai_case_defect_count",
+    "ai_case_note",
 ]
 
 
@@ -266,6 +238,10 @@ def case_rows(cases: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     "ai_recommendation": candidate.get("ai_recommendation"),
                     "ai_reason": candidate.get("ai_reason"),
                     "ai_suggested_severity": candidate.get("ai_suggested_severity"),
+                    "ai_suggested_validity": candidate.get("ai_suggested_validity") or "",
+                    "ai_suggested_category": candidate.get("ai_suggested_category") or "",
+                    "ai_suggested_correction": candidate.get("ai_suggested_correction") or "",
+                    "ai_suggestion_note": candidate.get("ai_suggestion_note") or "",
                     "final_validity": "" if validity == "pending" else validity,
                     "final_severity": final.get("severity") or "",
                     "final_category": final.get("category") or "",
@@ -273,6 +249,13 @@ def case_rows(cases: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     "adjudicator": final.get("adjudicator") or "",
                     "adjudicated_at": final.get("adjudicated_at") or "",
                     "note": final.get("note") or "",
+                    "ai_case_verdict": (level.get("ai_suggested_verdict") or "") if first else "",
+                    "ai_case_defect_count": (
+                        level.get("ai_suggested_defect_count")
+                        if level.get("ai_suggested_defect_count") is not None
+                        else ""
+                    ) if first else "",
+                    "ai_case_note": (level.get("ai_suggested_note") or "") if first else "",
                     "case_verdict": ("" if verdict == "pending" else verdict) if first else "",
                     "case_defect_count": (defect if defect is not None else "") if first else "",
                     "case_note": (level.get("note") or "") if first else "",
@@ -554,6 +537,8 @@ def _build_main_sheet(ws, rows, cases, validations, data_start, data_end, Commen
                 cell.fill = fill(SELECT_FILL if column.kind == "select" else WHITE)
             elif column.group == "hint":
                 cell.fill = fill(HINT_FILL if banded else "FAFAFA")
+            elif column.group == "level":
+                cell.fill = fill(HINT_FILL if column.kind == "hint" else LEVEL_FILL)
             else:
                 cell.fill = fill(LEVEL_FILL)
             top = side(CASE_LINE, "medium") if case_start else side()

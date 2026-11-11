@@ -345,6 +345,10 @@ def export_csv(root: Path, destination: Path) -> int:
                     "ai_recommendation": candidate.get("ai_recommendation"),
                     "ai_reason": candidate.get("ai_reason"),
                     "ai_suggested_severity": candidate.get("ai_suggested_severity"),
+                    "ai_suggested_validity": candidate.get("ai_suggested_validity"),
+                    "ai_suggested_category": candidate.get("ai_suggested_category"),
+                    "ai_suggested_correction": candidate.get("ai_suggested_correction"),
+                    "ai_suggestion_note": candidate.get("ai_suggestion_note"),
                     "module": snapshot["module"],
                     "priority": snapshot["priority"],
                     "source": snapshot["source"],
@@ -364,6 +368,11 @@ def export_csv(root: Path, destination: Path) -> int:
                     if level.get("defect_count") is not None
                     else "",
                     "case_note": level.get("note") or "",
+                    "ai_case_verdict": level.get("ai_suggested_verdict") or "",
+                    "ai_case_defect_count": level.get("ai_suggested_defect_count")
+                    if level.get("ai_suggested_defect_count") is not None
+                    else "",
+                    "ai_case_note": level.get("ai_suggested_note") or "",
                 }
             )
     if not rows:

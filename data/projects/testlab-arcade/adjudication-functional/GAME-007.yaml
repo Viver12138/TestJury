@@ -36,6 +36,9 @@ candidates:
     adjudicator: null
     adjudicated_at: null
     note: null
+  ai_suggested_validity: valid
+  ai_suggested_correction: 定义最小碰撞间隔/冷却时间（例如 200ms）和允许的重复计分次数。
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
 - candidate_id: CAND-GAME-007-02
   title: “及时更新”没有时间上限
   claim: 当前分数及时更新，未给出可接受的 UI 刷新延迟。
@@ -54,9 +57,15 @@ candidates:
     adjudicator: null
     adjudicated_at: null
     note: null
+  ai_suggested_validity: valid
+  ai_suggested_correction: 定义 UI 刷新延迟上限（下一帧或 ≤100ms）。
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
 case_level:
   verdict: pending
   defect_count: null
   adjudicator: null
   adjudicated_at: null
   note: null
+  ai_suggested_verdict: needs_fix
+  ai_suggested_defect_count: 2
+  ai_suggested_note: AI 静态建议：2 条 valid；请人工独立判断。

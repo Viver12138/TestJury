@@ -36,6 +36,9 @@ candidates:
     adjudicator: null
     adjudicated_at: null
     note: null
+  ai_suggested_validity: valid
+  ai_suggested_correction: 删除条款勾选，只保留重复邮箱校验步骤。
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
 - candidate_id: CAND-REG-002-02
   title: 错误提示位置使用“邮箱字段或页面”二选一
   claim: 预期允许“邮箱字段或页面显示明确提示”，未限定位置，无法稳定判定。
@@ -54,9 +57,15 @@ candidates:
     adjudicator: null
     adjudicated_at: null
     note: null
+  ai_suggested_validity: valid
+  ai_suggested_correction: 指定错误提示位置（邮箱字段错误或页面固定错误区）。
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
 case_level:
   verdict: pending
   defect_count: null
   adjudicator: null
   adjudicated_at: null
   note: null
+  ai_suggested_verdict: blocked
+  ai_suggested_defect_count: 2
+  ai_suggested_note: AI 静态建议：2 条 valid，其中 1 条 blocker；请人工独立判断。

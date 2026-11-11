@@ -26,6 +26,7 @@ from app.adjudication import (
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ADJ_ROOT = REPO_ROOT / "data" / "projects" / "testlab-arcade" / "adjudication"
+FUNC_ADJ_ROOT = REPO_ROOT / "data" / "projects" / "testlab-arcade" / "adjudication-functional"
 
 
 def test_all_candidates_start_pending() -> None:
@@ -179,6 +180,19 @@ def test_recover_imports_rejects_missing_backup(workdir: Path) -> None:
     assert result["failed"] == 1
     journal = json.loads((imports / "batch2.json").read_text(encoding="utf-8"))
     assert journal["status"] == "recovery_failed"
+
+
+def test_functional_workbench_has_ai_suggestions_but_human_pending() -> None:
+    data = load_case(FUNC_ADJ_ROOT / "GAME-001.yaml")
+    first = data["candidates"][0]
+    assert first["final"]["validity"] == "pending"
+    assert first["ai_suggested_validity"] == "valid"
+    assert first["ai_suggested_severity"] == "major"
+    assert first["ai_suggested_category"] == "预期不明确"
+    assert first["ai_suggested_correction"]
+    assert data["case_level"]["ai_suggested_verdict"] == "needs_fix"
+    assert data["case_level"]["ai_suggested_defect_count"] == 2
+    assert data["case_level"]["verdict"] == "pending"
 
 
 def test_case_snapshot_formats_functional_steps() -> None:

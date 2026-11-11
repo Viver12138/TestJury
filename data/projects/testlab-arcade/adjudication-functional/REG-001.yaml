@@ -45,6 +45,9 @@ candidates:
     adjudicator: null
     adjudicated_at: null
     note: null
+  ai_suggested_validity: valid
+  ai_suggested_correction: 删除服务条款勾选步骤；本期该控件不实现。
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
 - candidate_id: CAND-REG-001-02
   title: 注册成功去向有两个可接受结果
   claim: 预期写“自动登录或按产品流程进入登录页”，同一用例允许两种不同结果，无法确定唯一断言。
@@ -63,9 +66,15 @@ candidates:
     adjudicator: null
     adjudicated_at: null
     note: null
+  ai_suggested_validity: valid
+  ai_suggested_correction: 明确唯一的注册成功去向（自动登录或进入登录页）。
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
 case_level:
   verdict: pending
   defect_count: null
   adjudicator: null
   adjudicated_at: null
   note: null
+  ai_suggested_verdict: blocked
+  ai_suggested_defect_count: 2
+  ai_suggested_note: AI 静态建议：2 条 valid，其中 1 条 blocker；请人工独立判断。

@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.13 + M0 实现 + M1 工程收口**（真实三模型 3/3 盲评 + 3/3 投票；329 条测试通过；V-01F 数据准入与 M2 知识库未完成）· 2026-11-11
+> **状态**：**design-v1.13 + M0 实现 + M1 工程收口**（真实三模型 3/3 盲评 + 3/3 投票；330 条测试通过；V-01F 数据准入与 M2 知识库未完成）· 2026-11-11
 
 ---
 
@@ -486,7 +486,7 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 
 | 能力 | 入口 | 验证 |
 |---|---|---|
-| M1 工程收口 | [evidence/M1/closure-2026-11-11.md](evidence/M1/closure-2026-11-11.md) | P0/P1 审查项关闭；329 passed；远端 CI 全绿（run 42982761632）；V-01F 仍 pending |
+| M1 工程收口 | [evidence/M1/closure-2026-11-11.md](evidence/M1/closure-2026-11-11.md) | P0/P1 审查项关闭；330 passed；远端 CI 全绿（run 42982761632）；V-01F 仍 pending |
 | V-01 子项 | [design/v01_acceptance.yaml](design/v01_acceptance.yaml) | A–E verified、F pending（数据准入） |
 | functional 专项证据 | [functional-live-REG-001.json](evidence/V-01/functional-live-REG-001.json) | REG-001：3/3 盲评、3/3 投票、27 次调用 0 失败、¥1.4209；UI-HOME-005 仅作页面历史证据 |
 | 真实评审 | `.env` 设 `REVIEW_MODEL_MODE=live`；模型见 [config/models.yaml](config/models.yaml) | 三路盲评 + 投票真实调用；`TC-LIVE-006`：blind 3/3、vote 3/3、27 次调用 0 失败、成本约 ¥1.04、结论 `need_human`（模型间成立性分歧） |
@@ -527,6 +527,7 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 - 当前知识库装载/检索未实现（M2），送审时会降级为 `kb_module_missing`；UI 规范尚未作为检索证据注入。
 - AI 生成的 55 条用例**未经人工复核**：已标记 `human_reviewed: false`、`do_not_use_as_golden: true`，不能作为评测真值。
 - 裁决工作台：人工填写入口是 `adjudication/adjudication.xlsx`（黄列下拉选择，左侧带原始用例），填完 `python scripts/adjudication_sheet.py to-csv` + `python scripts/adjudicate.py import-csv` 入库；也可直接 `python scripts/adjudicate.py list|show|stats|decide|case-verdict|export-csv`。只有人工填写 `final.adjudicator` 后才算标签。
+
 
 
 
