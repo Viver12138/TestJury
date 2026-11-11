@@ -24,3 +24,6 @@ data/projects/*/adjudication*/adjudication.xlsx
 
 # pip editable install
 *.egg-info/
+
+# Excel 临时锁文件
+~$*.xlsx
