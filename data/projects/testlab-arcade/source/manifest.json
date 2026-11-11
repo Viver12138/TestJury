@@ -18,5 +18,10 @@
     "original_name": "TestLab-Arcade-UI前端测试案例V1.0-页面测试与功能测试分类版.xlsx",
     "sha256": "1cbe5e0040b875cadba67b87e43c027c1ad227da885a8cc37d60f1770dfc7040",
     "size_bytes": 32220
+  },
+  "functional_test_cases_v1.1.xlsx": {
+    "original_name": "TestLab-Arcade-第一期测试案例V1.1.xlsx",
+    "sha256": "e880616ac4db42d5e99384e654c21e8a7a4a37d73e8bf7bbe2ebf44c9c175169",
+    "size_bytes": 50405
   }
 }

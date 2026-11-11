@@ -1,0 +1,107 @@
+[
+  {
+    "case_id": "NFR-001",
+    "module": "权限、安全与非功能",
+    "title": "页面离开时释放游戏资源",
+    "priority": "P1",
+    "requirement_ref": "策划案6.9、10.2。",
+    "case_type": "non_functional",
+    "preconditions": [
+      "游戏正在运行。"
+    ],
+    "test_data": "无。",
+    "steps": [
+      {
+        "index": 1,
+        "action": "离开游戏页；在其他页面按游戏按键；返回游戏页并重复三次。",
+        "expected": "离开后旧渲染循环、物理世界、音频和键盘监听停止；其他页面不响应游戏按键；返回后只有一套游戏实例。"
+      }
+    ],
+    "cleanup": "退出游戏页。",
+    "result": "未执行"
+  },
+  {
+    "case_id": "NFR-002",
+    "module": "权限、安全与非功能",
+    "title": "降低动态效果",
+    "priority": "P2",
+    "requirement_ref": "策划案6.9、10.2。",
+    "case_type": "non_functional",
+    "preconditions": [
+      "系统开启prefers-reduced-motion。"
+    ],
+    "test_data": "公共页、登录页、游戏页。",
+    "steps": [
+      {
+        "index": 1,
+        "action": "依次访问页面并完成主要操作。",
+        "expected": "非必要动画减少；不影响登录、状态反馈和游戏核心功能；不出现闪烁或信息缺失。"
+      }
+    ],
+    "cleanup": "恢复系统设置。",
+    "result": "未执行"
+  },
+  {
+    "case_id": "NFR-003",
+    "module": "权限、安全与非功能",
+    "title": "低性能画质降级",
+    "priority": "P2",
+    "requirement_ref": "策划案6.9、13.4。",
+    "case_type": "non_functional",
+    "preconditions": [
+      "低性能设备或性能限制环境。"
+    ],
+    "test_data": "降低CPU/GPU能力的测试配置。",
+    "steps": [
+      {
+        "index": 1,
+        "action": "加载游戏并完成发球、挡板、计分和结束流程。",
+        "expected": "可降低阴影和画质；核心操作仍可进行；不会因降级改变分数和球数规则。"
+      }
+    ],
+    "cleanup": "恢复设备配置。",
+    "result": "未执行"
+  },
+  {
+    "case_id": "NFR-004",
+    "module": "权限、安全与非功能",
+    "title": "桌面浏览器兼容",
+    "priority": "P1",
+    "requirement_ref": "策划案11阶段六。",
+    "case_type": "non_functional",
+    "preconditions": [
+      "产品已确定浏览器及最低版本。"
+    ],
+    "test_data": "各目标浏览器。",
+    "steps": [
+      {
+        "index": 1,
+        "action": "每个浏览器执行注册、登录、开始游戏、发球、挡板、结束、保存和退出。",
+        "expected": "主流程均可完成；无浏览器特有的页面错位、键盘失效、三维空白或保存失败。"
+      }
+    ],
+    "cleanup": "清除各浏览器测试数据。",
+    "result": "未执行"
+  },
+  {
+    "case_id": "NFR-005",
+    "module": "权限、安全与非功能",
+    "title": "固定物理时间步一致性",
+    "priority": "P1",
+    "requirement_ref": "策划案10.2、13.2。",
+    "case_type": "non_functional",
+    "preconditions": [
+      "可模拟不同渲染帧率。"
+    ],
+    "test_data": "高、中、低三档帧率。",
+    "steps": [
+      {
+        "index": 1,
+        "action": "在三档环境分别完成发球和挡板击球，多局观察。",
+        "expected": "游戏速度、重力方向和挡板控制无明显帧率依赖；低帧率不导致高速穿模或球直接越过边界。"
+      }
+    ],
+    "cleanup": "恢复默认帧率。",
+    "result": "未执行"
+  }
+]

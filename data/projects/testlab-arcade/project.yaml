@@ -7,14 +7,18 @@ documents:
   ui_spec: source/ui_spec.md
   ui_test_cases: source/ui_test_cases_v1.0.xlsx
   ui_test_cases_classified: source/ui_test_cases_v1.1_classified.xlsx
+  functional_test_cases: source/functional_test_cases_v1.1.xlsx
 normalized:
   cases_json: cases.json
   review_payloads: case_payloads.json
-  cases_classified: cases_classified.json
   functional_review_payloads: functional_case_payloads.json
-  page_cases: page_cases.json
-case_count: 55
-classification: {page: 43, functional: 12}
+  functional_cases_v1_1: functional_cases_v1.1.json
+  excluded_nonfunctional_v1_1: excluded_nonfunctional_v1.1.json
+ui_case_count: 55
+functional_case_count: 62
+functional_case_count_in_scope: 57
+nonfunctional_case_count: 5
+classification: {ui_page: 55, functional: 57, nonfunctional_excluded: 5}
 modules: {"全局规范": 7, "公共首页": 6, "登录页": 7, "注册页": 6, "登录后主界面": 7, "三维弹球页": 10, "个人中心": 6, "响应式与可访问性": 6}
 provenance:
   generator: ai
@@ -26,6 +30,7 @@ provenance:
   do_not_use_as_golden: true
   note: 由 AI 生成、未经人工复核；只能作为待评审候选输入，不能作为验收真值或评测标签。
 notes:
-  - 分类版：43 条页面测试 + 12 条功能测试；页面/功能分类由用户提供，内容与原 55 条一致（仅模块名按分类调整）。
-  - 当前评审器 v1 只接受 test_type=functional：只有 12 条功能测试可直接送审；43 条页面测试需要页面/UI 专用 Rubric，不应伪装成 functional。
+  - 55 条 UI 用例均为页面/UI 用例；早先分类版把其中 12 条标为功能测试是错误口径，已由 functional_test_cases_v1.1.xlsx 取代。
+  - 功能用例以 TestLab-Arcade-第一期测试案例V1.1.xlsx 为准：62 条，其中 57 条 functional（含 SEC 安全用例）、5 条 NFR 非功能用例不进入当前 functional 送审。
+  - 当前评审器 v1 只接受 test_type=functional；页面/UI 用例需要页面/UI 专用 Rubric。
   - 知识库装载/检索未实现（M2），当前评审会记 kb_module_missing。
