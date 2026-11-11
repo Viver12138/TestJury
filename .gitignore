@@ -21,3 +21,6 @@ data/projects/*/adjudication*/adjudication.xlsx
 
 # 文档工具临时目录
 .dsh-office-*/
+
+# pip editable install
+*.egg-info/

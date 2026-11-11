@@ -486,7 +486,7 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 
 | 能力 | 入口 | 验证 |
 |---|---|---|
-| M1 工程收口 | [evidence/M1/closure-2026-11-11.md](evidence/M1/closure-2026-11-11.md) | P0/P1 审查项关闭；321 passed；真实运行 3/3 + 3/3；V-01F 仍 pending |
+| M1 工程收口 | [evidence/M1/closure-2026-11-11.md](evidence/M1/closure-2026-11-11.md) | P0/P1 审查项关闭；329 passed；远端 CI 全绿（run 42982761632）；V-01F 仍 pending |
 | V-01 子项 | [design/v01_acceptance.yaml](design/v01_acceptance.yaml) | A–E verified、F pending（数据准入） |
 | functional 专项证据 | [functional-live-REG-001.json](evidence/V-01/functional-live-REG-001.json) | REG-001：3/3 盲评、3/3 投票、27 次调用 0 失败、¥1.4209；UI-HOME-005 仅作页面历史证据 |
 | 真实评审 | `.env` 设 `REVIEW_MODEL_MODE=live`；模型见 [config/models.yaml](config/models.yaml) | 三路盲评 + 投票真实调用；`TC-LIVE-006`：blind 3/3、vote 3/3、27 次调用 0 失败、成本约 ¥1.04、结论 `need_human`（模型间成立性分歧） |
