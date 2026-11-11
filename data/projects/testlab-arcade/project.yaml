@@ -1,0 +1,17 @@
+# TestLab Arcade 测试项目画像
+project_id: testlab-arcade
+name: TestLab Arcade（测试实验场）一期
+source_date: "2026-11-10"
+documents:
+  requirements: source/requirements.md
+  ui_spec: source/ui_spec.md
+  ui_test_cases: source/ui_test_cases_v1.0.xlsx
+normalized:
+  cases_json: cases.json
+  review_payloads: case_payloads.json
+case_count: 55
+modules: {"全局规范": 7, "公共首页": 6, "登录页": 7, "注册页": 6, "登录后主界面": 7, "三维弹球页": 10, "个人中心": 6, "响应式与可访问性": 6}
+notes:
+  - UI 用例仅依据 UI 规范编写，不是功能验收用例。
+  - 当前评审器 v1 只接受 test_type=functional；本批按 functional 送审，但 Rubric 是功能用例维度。
+  - 知识库装载/检索未实现（M2），当前评审会记 kb_module_missing。

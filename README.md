@@ -494,6 +494,25 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 | 附件绑定 | 上传 → `case.attachments[]` 引用校验（存在/摘要/归属）→ 报告展示（`analyzed_by_ai=false`）→ 删除评审级联绑定 | `tests/m0/test_attachments.py` |
 | 模型适配器 | `app/llm/base.py` 协议；`registry.py` 注册表校验；`adapters/` OpenAI 兼容 Chat/Embedding + HTTP Rerank；`retry.py` 仅重试可重试错误 | `tests/unit/test_model_registry.py`、`tests/unit/test_llm_adapters.py`（MockTransport，无供应商调用） |
 
-> 电流水线仍使用 `MockChatClient`；真实 Adapter 只完成协议与工厂，接入真实供应商需 V-01 准入与密钥。
+> `.env` 的 `REVIEW_MODEL_MODE=live` 走真实模型；单测/CI 默认 `mock`，不调用供应商。
+
+## 7. 首个测试项目：TestLab Arcade 一期
+
+项目资料已接入仓库：
+
+| 资产 | 位置 |
+|---|---|
+| 一期策划案（需求/功能） | [kb_content/TestLab-Arcade/requirements.md](kb_content/TestLab-Arcade/requirements.md) · [原件](data/projects/testlab-arcade/source/requirements.md) |
+| UI 前端设计规范 V1.0 | [kb_content/TestLab-Arcade/ui_spec.md](kb_content/TestLab-Arcade/ui_spec.md) · [原件](data/projects/testlab-arcade/source/ui_spec.md) |
+| UI 测试案例 V1.0（55 条） | [data/projects/testlab-arcade/source/ui_test_cases_v1.0.xlsx](data/projects/testlab-arcade/source/ui_test_cases_v1.0.xlsx) |
+| 规范化用例（原始字段） | [data/projects/testlab-arcade/cases.json](data/projects/testlab-arcade/cases.json) |
+| 可直接提交的评审请求 | [data/projects/testlab-arcade/case_payloads.json](data/projects/testlab-arcade/case_payloads.json) |
+| 项目画像/模块统计 | [data/projects/testlab-arcade/project.yaml](data/projects/testlab-arcade/project.yaml) |
+| 静态体检记录（非模型结论） | [data/projects/testlab-arcade/static_review.md](data/projects/testlab-arcade/static_review.md) |
+
+- 共 **55 条 UI 用例**：P0 41 / P1 14；模块：全局规范 7、公共首页 6、登录 7、注册 6、登录后主界面 7、三维弹球 10、个人中心 6、响应式与可访问性 6。
+- **范围提醒**：这 55 条是 UI 布局/响应式/可访问性用例，不是功能验收用例；当前评审器 v1 只接受 `test_type=functional`，且 Rubric 面向功能用例质量，不能据此判断像素坐标是否符合 UI 规范。
+- 当前知识库装载/检索未实现（M2），送审时会降级为 `kb_module_missing`；UI 规范尚未作为检索证据注入。
+
 
 
