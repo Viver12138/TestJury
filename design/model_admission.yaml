@@ -1,102 +1,103 @@
 # 模型准入看板（补充 16 V-01/V-12）
 # 技术验证与数据安全准入是两道独立门槛：两者都通过才允许进入生产拓扑。
 # 校验：scripts/check_execution_plan.py；verified/approved 必须有证据与审核人。
-version: "0.1"
+version: "0.2"
 baseline: design-v1.13
-last_updated: "2026-11-10"
+last_updated: "2026-11-11"
 
 status_values: [unverified, testing, verified, deprecated]
 admission_values: [pending, approved, approved_with_masking, rejected]
 
+# 2026-11-11 实测：真实 Model ID 与最小连通性验证；仍为 testing，未完成 V-01 正式准入。
 roles:
   - role: chief_blind
     provider: qwen
     alias: qwen-max
-    real_model_id: null
-    verification_status: unverified
-    adapter_test: pending
+    real_model_id: qwen3.8-max
+    verification_status: testing
+    adapter_test: passed
     data_admission_status: pending
     allowed_data_level: null
     allow_raw_case: false
     requires_masking: true
     dpa_signed: null
-    evidence: []
-    last_verified_at: null
+    evidence: [evidence/V-01/model-smoke-2026-11-11.json, evidence/V-01/live-review-TC-LIVE-006.json]
+    last_verified_at: "2026-11-11T10:05:00+08:00"
     reviewer: null
   - role: chief_vote
     provider: qwen
     alias: qwen-max
-    real_model_id: null
-    verification_status: unverified
-    adapter_test: pending
+    real_model_id: qwen3.8-max
+    verification_status: testing
+    adapter_test: passed
     data_admission_status: pending
     allowed_data_level: null
     allow_raw_case: false
     requires_masking: true
     dpa_signed: null
-    evidence: []
-    last_verified_at: null
+    evidence: [evidence/V-01/model-smoke-2026-11-11.json]
+    last_verified_at: "2026-11-11T10:05:00+08:00"
     reviewer: null
   - role: arbitration
     provider: qwen
     alias: qwen-max
-    real_model_id: null
-    verification_status: unverified
-    adapter_test: pending
+    real_model_id: qwen3.8-max
+    verification_status: testing
+    adapter_test: passed
     data_admission_status: pending
     allowed_data_level: null
     allow_raw_case: false
     requires_masking: true
     dpa_signed: null
-    evidence: []
-    last_verified_at: null
+    evidence: [evidence/V-01/model-smoke-2026-11-11.json]
+    last_verified_at: "2026-11-11T10:05:00+08:00"
     reviewer: null
   - role: jury_a
     provider: deepseek
     alias: deepseek-flash
-    real_model_id: null
-    verification_status: unverified
-    adapter_test: pending
+    real_model_id: deepseek-flash
+    verification_status: testing
+    adapter_test: passed
     data_admission_status: pending
     allowed_data_level: null
     allow_raw_case: false
     requires_masking: true
     dpa_signed: null
-    evidence: []
-    last_verified_at: null
+    evidence: [evidence/V-01/model-smoke-2026-11-11.json, evidence/V-01/live-review-TC-LIVE-006.json]
+    last_verified_at: "2026-11-11T10:05:00+08:00"
     reviewer: null
   - role: jury_b
     provider: kimi
     alias: kimi-k3
-    real_model_id: null
-    verification_status: unverified
-    adapter_test: pending
+    real_model_id: kimi-k3.1-pro
+    verification_status: testing
+    adapter_test: passed
     data_admission_status: pending
     allowed_data_level: null
     allow_raw_case: false
     requires_masking: true
     dpa_signed: null
-    evidence: []
-    last_verified_at: null
+    evidence: [evidence/V-01/model-smoke-2026-11-11.json, evidence/V-01/live-review-TC-LIVE-006.json]
+    last_verified_at: "2026-11-11T10:05:00+08:00"
     reviewer: null
   - role: preprocess
     provider: deepseek
-    alias: deepseek-chat
-    real_model_id: null
-    verification_status: unverified
-    adapter_test: pending
+    alias: deepseek-flash
+    real_model_id: deepseek-flash
+    verification_status: testing
+    adapter_test: not_run
     data_admission_status: pending
     allowed_data_level: null
     allow_raw_case: false
     requires_masking: true
     dpa_signed: null
-    evidence: []
+    evidence: [evidence/V-01/model-smoke-2026-11-11.json]
     last_verified_at: null
     reviewer: null
   - role: embedding
     provider: qwen
     alias: qwen3.7-text-embedding-flash
-    real_model_id: null
+    real_model_id: qwen3.7-text-embedding-flash
     verification_status: unverified
     adapter_test: pending
     data_admission_status: pending
@@ -110,7 +111,7 @@ roles:
   - role: rerank
     provider: qwen
     alias: qwen3.7-text-rerank
-    real_model_id: null
+    real_model_id: qwen3.7-text-rerank
     verification_status: unverified
     adapter_test: pending
     data_admission_status: pending
@@ -121,4 +122,3 @@ roles:
     evidence: []
     last_verified_at: null
     reviewer: null
-

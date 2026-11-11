@@ -7,6 +7,7 @@ M0 只做规则键分桶：`(step_index ± STEP_TOLERANCE, category)`；
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from typing import Any
 from uuid import uuid4
@@ -48,9 +49,28 @@ def _aggregate_status(claims: list[dict[str, Any]]) -> str:
     return aggregate_claim_evidence(parsed)
 
 
-def _standardize(step_index: int | None, category: str) -> str:
+def _issue_evidence_status(issue: dict[str, Any]) -> str:
+    """模型直接给出问题级 evidence_status 时使用（无 claim 结构）。"""
+
+    value = str(issue.get("evidence_status") or "ungrounded")
+    allowed = {"grounded", "partially_grounded", "ungrounded", "conflicted", "insufficient"}
+    return value if value in allowed else "ungrounded"
+
+
+def _standardize(
+    step_index: int | None, category: str, rationale: str | None
+) -> str:
+    """投票材料：只描述现象与事实，去掉严重级倾向，避免锚定（docs/12 §7）。"""
+
     location = f"第 {step_index} 步" if step_index is not None else "用例整体"
-    return f"{location}存在「{category}」问题，需要确认是否补齐相关描述"
+    detail = (rationale or "").strip()
+    detail = re.sub(r"(blocker|major|suggestion|阻断|严重|致命)", "", detail, flags=re.IGNORECASE)
+    detail = re.sub(r"\s+", " ", detail).strip(" ：:。")
+    if detail:
+        text = f"{location}存在「{category}」问题：{detail}"
+    else:
+        text = f"{location}存在「{category}」问题"
+    return text[:300]
 
 
 def fuse(
@@ -86,6 +106,9 @@ def fuse(
         severity_proposal = SEVERITY_BY_RANK[
             max(SEVERITY_RANK.get(str(issue.get("severity")), 0) for _, issue in members)
         ]
+        evidence_status = (
+            _aggregate_status(claims) if claims else _issue_evidence_status(strongest[1])
+        )
         candidates.append(
             CandidateRecord(
                 id=str(uuid4()),
@@ -93,10 +116,12 @@ def fuse(
                 candidate_no=candidate_no,
                 step_index=step_index,
                 dimension=str(strongest[1].get("dimension", "test_design")),
-                standardized_text=_standardize(step_index, category),
+                standardized_text=_standardize(
+                    step_index, category, strongest[1].get("rationale")
+                ),
                 severity_proposal=severity_proposal,
                 claims=claims,
-                evidence_status=_aggregate_status(claims),
+                evidence_status=evidence_status,
                 evidence_refs=[],
                 proposed_by=sorted({role for role, _ in members}),
                 merged_from=[

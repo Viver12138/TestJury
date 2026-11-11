@@ -51,6 +51,7 @@ ignore = ["B008"]
 
 [tool.ruff.lint.per-file-ignores]
 "app/db/migrations/versions/*.py" = ["E501"]
+"app/llm/review.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.11"

@@ -1,0 +1,62 @@
+case_id: UI-GLOBAL-005
+case_title: 按钮通用视觉与按压反馈
+module: 全局规范
+priority: P0
+source: ai_generated_unreviewed
+preconditions:
+- 页面存在可用主按钮和次按钮。
+steps:
+- 1、观察按钮默认状态。
+- 2、悬停主按钮。
+- 3、按住并释放按钮。
+- 4、使用键盘聚焦按钮。
+expected:
+- 1、按钮最小高度44px，胶囊圆角。
+- 2、主按钮悬停时变为深橙色。
+- 3、按下时按钮缩放至约98%。
+- 4、键盘焦点轮廓清晰可见。
+ui_spec_ref: '3.4'
+model_review: null
+candidates:
+- candidate_id: CAND-UI-GLOBAL-005-01
+  title: 未指定被测按钮，步骤不可复现
+  claim: 前置只写“页面存在可用主按钮和次按钮”，步骤未说明打开哪个页面、操作哪个按钮。
+  evidence_case: 前置条件 / 步骤 1-4
+  evidence_spec: UI 规范 §3.4
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 至少指定公共首页“创建账号”主按钮与“登录”次按钮。
+  ai_suggested_severity: major
+  ai_suggested_category: 步骤不可执行
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+- candidate_id: CAND-UI-GLOBAL-005-02
+  title: 按下缩放 98% 缺少测量方法
+  claim: 预期 3 要求按下时缩放约 98%，未说明通过计算样式 transform 还是截图测量，容差未定义。
+  evidence_case: 预期 3
+  evidence_spec: UI 规范 §3.4
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 建议读取 computed transform matrix 并给出容差。
+  ai_suggested_severity: major
+  ai_suggested_category: 预期不明确
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null

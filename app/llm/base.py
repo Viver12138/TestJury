@@ -111,10 +111,32 @@ class ReviewOpinion:
     role: str
     summary: str
     issues: list[dict[str, Any]] = field(default_factory=list)
+    model: str | None = None
+    model_version: str | None = None
+    latency_ms: int | None = None
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cost_estimate: float | None = None
+    warnings: list[str] = field(default_factory=list)
+
+
+@dataclass
+class VoteDecision:
+    validity: str
+    severity: str | None = None
+    reason: str | None = None
+    model: str | None = None
+    latency_ms: int | None = None
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cost_estimate: float | None = None
+    warnings: list[str] = field(default_factory=list)
 
 
 class ReviewModel(Protocol):
-    def review(self, role: str, case: dict[str, Any]) -> ReviewOpinion: ...
+    async def review(self, role: str, case: dict[str, Any]) -> ReviewOpinion: ...
+
+    async def vote(self, role: str, material: dict[str, Any]) -> VoteDecision: ...
 
 
 def parse_json_object(text: str) -> dict[str, Any]:

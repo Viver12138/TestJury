@@ -1,70 +1,89 @@
-# 模型注册表（M0 使用 Mock；真实 Model ID 待 V-01 实测后标 verified）
-version: models-2026-11-10
+# 模型注册表（2026-11-11 接入真实供应商；准入状态仍为 testing，待 V-01 验证报告）
+# 真实 Model ID 来自供应商 /models 接口与最小调用实测：
+#   qwen: qwen3.8-max；deepseek: deepseek-flash；kimi: kimi-k3.1-pro（用户指定 pro）
+# 注意：kimi-k3.1-pro 仅接受 temperature=1；max_output_tokens 需覆盖 reasoning + 正文。
+version: models-2026-11-11
 providers:
-  mock:
-    base_url: mock://local
-    api_key_env: MOCK_API_KEY
+  qwen:
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    api_key_env: QWEN_API_KEY
+  deepseek:
+    base_url: https://api.deepseek.com/v1
+    api_key_env: DEEPSEEK_API_KEY
+  kimi:
+    base_url: https://api.moonshot.cn/v1
+    api_key_env: KIMI_API_KEY
 roles:
   chief_blind:
-    provider: mock
-    model_id: mock-chief
-    timeout: 120
-    max_output_tokens: 4096
-    concurrency: 4
+    provider: qwen
+    model_id: qwen3.8-max
+    timeout: 240
+    max_output_tokens: 8192
+    concurrency: 2
+    temperature: 0.0
     verification_status: testing
     data_admission_status: pending
   jury_a:
-    provider: mock
-    model_id: mock-jury-a
-    timeout: 120
-    max_output_tokens: 4096
-    concurrency: 4
+    provider: deepseek
+    model_id: deepseek-flash
+    timeout: 240
+    max_output_tokens: 8192
+    concurrency: 2
+    temperature: 0.0
     verification_status: testing
     data_admission_status: pending
   jury_b:
-    provider: mock
-    model_id: mock-jury-b
-    timeout: 120
-    max_output_tokens: 4096
-    concurrency: 4
+    provider: kimi
+    model_id: kimi-k3.1-pro
+    timeout: 300
+    max_output_tokens: 16384
+    concurrency: 1
+    # 实测约 3 RPM；投票/评审调用需限速，避免 429
+    min_interval_seconds: 20
+    temperature: 1.0
     verification_status: testing
     data_admission_status: pending
   vote:
-    provider: mock
-    model_id: mock-vote
+    provider: qwen
+    model_id: qwen3.8-max
     timeout: 120
     max_output_tokens: 2048
-    concurrency: 4
+    concurrency: 2
+    temperature: 0.0
     verification_status: testing
     data_admission_status: pending
   arbitration:
-    provider: mock
-    model_id: mock-chief
+    provider: qwen
+    model_id: qwen3.8-max
     timeout: 120
     max_output_tokens: 4096
-    concurrency: 4
+    concurrency: 2
+    temperature: 0.0
     verification_status: testing
     data_admission_status: pending
   preprocess:
-    provider: mock
-    model_id: mock-preprocess
+    provider: deepseek
+    model_id: deepseek-flash
     timeout: 60
     max_output_tokens: 2048
     concurrency: 4
+    temperature: 0.0
     verification_status: testing
     data_admission_status: pending
 embedding:
-  provider: mock
-  model_id: mock-embedding
+  provider: qwen
+  model_id: qwen3.7-text-embedding-flash
   dimension: 1024
   timeout: 30
 rerank:
-  provider: mock
-  model_id: mock-rerank
+  provider: qwen
+  model_id: qwen3.7-text-rerank
   timeout: 20
 pricing:
-  version: price-2026-11
+  # 价格未经供应商账单核对；成本仅作估算（price_config_version 写入报告）
+  version: price-unverified-2026-11
   currency: CNY
-  mock-chief: { input_per_1k: 0.0, output_per_1k: 0.0 }
-  mock-jury-a: { input_per_1k: 0.0, output_per_1k: 0.0 }
-  mock-jury-b: { input_per_1k: 0.0, output_per_1k: 0.0 }
+  qwen3.8-max: { input_per_1k: 0.02, output_per_1k: 0.06 }
+  deepseek-flash: { input_per_1k: 0.001, output_per_1k: 0.002 }
+  kimi-k3.1-pro: { input_per_1k: 0.01, output_per_1k: 0.03 }
+

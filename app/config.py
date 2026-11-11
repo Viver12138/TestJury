@@ -116,6 +116,8 @@ class Settings(BaseSettings):
     min_participants: int = Field(default=2, ge=0, le=3)
     chief_required: bool = True
     review_topology: Literal["single", "dual", "multi"] = "multi"
+    # mock：确定性 Mock（单测/离线）；live：调用 config/models.yaml 注册的真实模型
+    review_model_mode: Literal["mock", "live"] = "mock"
 
     # ── 审批与业务边界 ──
     decision_require_separation: bool = True
@@ -153,6 +155,8 @@ class Settings(BaseSettings):
                 raise ValueError("生产环境禁止 STORAGE_BACKEND=memory")
             if self.bootstrap_api_keys.strip():
                 raise ValueError("生产环境禁止 BOOTSTRAP_API_KEYS")
+            if self.review_model_mode != "live":
+                raise ValueError("生产环境禁止 REVIEW_MODEL_MODE=mock")
         return self
 
     # ── 派生属性 ──

@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from app import __version__
@@ -26,8 +28,12 @@ from app.core.errors import install_exception_handlers
 from app.core.logging import configure_logging
 from app.core.observability import RequestContextMiddleware
 from app.core.versioning import compute_versions
+from app.llm.factory import build_chat_adapter
 from app.llm.mock import MockChatClient
+from app.llm.registry import ModelRegistry
+from app.llm.review import ChatReviewModel
 from app.pipeline.orchestrator import ReviewPipeline
+from app.rubric.loader import RubricRepository
 from app.services.attachments import AttachmentService
 from app.services.batches import BatchService
 from app.services.decisions import DecisionService
@@ -36,9 +42,28 @@ from app.services.tasks import ReviewTaskService
 from app.storage.memory import MemoryStorage
 from app.storage.port import Storage
 
+# 供应商 Key 通过环境变量传给 Adapter；本地开发从 .env 加载（已存在的环境变量优先）
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
 logger = logging.getLogger("testjury.app")
 
 _logging_configured = False
+
+
+def _build_review_model(settings: Settings):
+    """mock：离线确定性；live：按 models.yaml 构造真实三模型。"""
+
+    if settings.review_model_mode == "mock":
+        return MockChatClient()
+    registry = ModelRegistry.load(settings.model_registry_path)
+    adapters = {
+        role: build_chat_adapter(registry, role)
+        for role in ("chief_blind", "jury_a", "jury_b")
+    }
+    rubric = RubricRepository(
+        settings.rubric_path, settings.rubric_path.parent / "schema.json"
+    ).load_active()
+    return ChatReviewModel(registry, adapters, rubric=rubric)
 
 
 def _build_storage(settings: Settings) -> Storage:
@@ -79,7 +104,8 @@ def create_app(
     task_service = ReviewTaskService(storage)
     batch_service = BatchService(storage, settings, versions, review_service)
     attachment_service = AttachmentService(storage, settings)
-    pipeline = ReviewPipeline(storage, settings, mock_client=MockChatClient())
+    review_model = _build_review_model(settings)
+    pipeline = ReviewPipeline(storage, settings, model=review_model)
 
     from app.core.worker import Worker
 
@@ -94,6 +120,9 @@ def create_app(
             yield
         finally:
             await worker.stop()
+            close_model = getattr(review_model, "aclose", None)
+            if close_model is not None:
+                await close_model()
             close = getattr(storage, "close", None)
             if close is not None:
                 await close()
@@ -116,6 +145,7 @@ def create_app(
     app.state.batch_service = batch_service
     app.state.attachment_service = attachment_service
     app.state.pipeline = pipeline
+    app.state.review_model = review_model
     app.state.worker = worker
 
     app.add_middleware(RequestContextMiddleware)

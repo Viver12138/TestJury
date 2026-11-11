@@ -50,7 +50,19 @@ def repo_root() -> Path:
     return REPO_ROOT
 
 
-_COPY_ITEMS = ("docs", "design", "rubric", "schemas", "scripts", "evidence", ".github", "README.md")
+_COPY_ITEMS = (
+    "docs",
+    "design",
+    "rubric",
+    "schemas",
+    "scripts",
+    "evidence",
+    "config",
+    "data/projects",
+    "kb_content",
+    ".github",
+    "README.md",
+)
 
 
 @pytest.fixture()

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.llm.base import ReviewOpinion
+from app.llm.base import ReviewOpinion, VoteDecision
 
 MockOpinion = ReviewOpinion
 
@@ -68,7 +68,7 @@ class MockChatClient:
         self.force_blocker = force_blocker
         self.calls: list[dict[str, Any]] = []
 
-    def review(self, role: str, case: dict[str, Any]) -> MockOpinion:
+    async def review(self, role: str, case: dict[str, Any]) -> ReviewOpinion:
         self.calls.append({"role": role, "operation": "blind_review"})
         steps = case.get("steps") or []
         missing_expected = [step for step in steps if not step.get("expected")]
@@ -138,6 +138,23 @@ class MockChatClient:
             role=role,
             summary=f"{role} 盲评：发现 {len(issues)} 条问题",
             issues=issues,
+            model="mock",
+            model_version="mock-v1",
+            latency_ms=0,
+            input_tokens=0,
+            output_tokens=0,
+            cost_estimate=0.0,
+        )
+
+    async def vote(self, role: str, material: dict[str, Any]) -> VoteDecision:
+        payload = mock_vote(role, material, blind_issue=material.get("blind_issue"))
+        return VoteDecision(
+            validity=str(payload.get("validity", "not_assessed")),
+            severity=payload.get("severity"),
+            reason=payload.get("reason"),
+            model="mock",
+            latency_ms=0,
+            cost_estimate=0.0,
         )
 
 

@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.13 + M0 实现 + M1 前置**（投影、附件绑定、模型适配器契约；270 条测试通过；真实模型、知识库与生产部署未开始）· 2026-11-10
+> **状态**：**design-v1.13 + M0 实现 + M1 真实模型接入**（Qwen3.8-Max / DeepSeek-Flash / Kimi-K3.1-Pro 已跑通真实评审；274 条测试通过；知识库与生产部署未开始）· 2026-11-11
 
 ---
 
@@ -465,7 +465,8 @@ python scripts/check_m0_acceptance.py
 
 - 已回填 `design/m0_acceptance.yaml`：40 条用例 `result=passed`；本地执行环境与时间见文件头。
 - **M0 通过只代表工程正确**：不代表评审质量、业务有效性或生产可用（`docs/08` §5.3）。
-- 未实现：真实模型 Adapter、知识库加载/检索/Rerank、A–E 实验、性能压测、生产部署、恢复演练。
+- 未实现：知识库加载/检索/Rerank、A–E 实验、性能压测、生产部署、恢复演练。
+- 真实模型已接入：`REVIEW_MODEL_MODE=live` 时按 `config/models.yaml` 调用 Qwen3.8-Max、DeepSeek-Flash、Kimi-K3.1-Pro；仍为 `testing`，未完成 V-01 正式准入与数据准入。
 - `STORAGE_BACKEND=memory` 仅用于单测与本地演示；生产默认 `postgres` 且禁止 memory。
 - Rubric 仍为 `0.2.0 draft`：生产模式加载会被拒绝，待 V-03B 审核发布。
 
@@ -478,20 +479,44 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 | 差异 | 现状 | 后续动作 |
 |---|---|---|
 | 存储适配器实现 | docs/06 列 SQLAlchemy 2.0 ORM；当前实现使用 asyncpg 直连 + Alembic 管理 DDL，语义与约束已由测试覆盖 | M1 前确认：补 ORM 层，或回写 docs/06 的适配器实现口径 |
-| 真实模型 Adapter | **协议层已补齐**：Chat/Embedding/Rerank 协议、注册表校验、OpenAI 兼容适配器、错误分类与重试；仍只有 Mock 参与流水线 | V-01 实测后接入真实 Key 与 Adapter |
+| 真实模型 | **已接入并跑通**：`qwen3.8-max` / `deepseek-flash` / `kimi-k3.1-pro`（Kimi 指定 pro）；三路盲评与投票全部真实调用，Kimi 按约 3 RPM 限速；仍为 `testing` | V-01 实测报告与数据准入（Q-09）完成后再标 `verified` |
 | 知识库检索 | 阶段固定 `skipped`，报告记 `kb_module_missing` | M2/M3 接入 KB、向量、RRF、Rerank |
 | CI 远端执行 | `.github/workflows/contracts.yml` 已定义 contract/unit/migration/mock-e2e/ci-all；本地等价命令全部通过，未在 GitHub 远端实际运行 | 首次 push 后确认各 Job 通过 |
 
-### 6.5 M1 前置（不依赖供应商）
+### 6.5 M1 前置与真实模型联调
 
 | 能力 | 入口 | 验证 |
 |---|---|---|
+| 真实评审 | `.env` 设 `REVIEW_MODEL_MODE=live`；模型见 [config/models.yaml](config/models.yaml) | 三路盲评 + 投票真实调用；`TC-LIVE-006`：blind 3/3、vote 3/3、27 次调用 0 失败、成本约 ¥1.04、结论 `need_human`（模型间成立性分歧） |
+| 模型连通性 | `python scripts/check_model_connectivity.py` | [evidence/V-01/model-smoke-2026-11-11.json](evidence/V-01/model-smoke-2026-11-11.json) |
 | 报告投影 | Worker `finalize_report`：报告字段与 `issues` 同事务写入；ID 由 `uuid5(review_id, issue_no)` 生成 | `tests/m0/test_projection.py`、`tests/integration/test_postgres_e2e.py` |
 | 投影重建 | `python scripts/rebuild_projection.py --all [--check]` | `tests/migration/test_projection_rebuild.py` |
 | 一致性检查 | `python scripts/check_consistency.py [--review <id>]` | 同上；漂移退出码 1 |
 | 附件绑定 | 上传 → `case.attachments[]` 引用校验（存在/摘要/归属）→ 报告展示（`analyzed_by_ai=false`）→ 删除评审级联绑定 | `tests/m0/test_attachments.py` |
 | 模型适配器 | `app/llm/base.py` 协议；`registry.py` 注册表校验；`adapters/` OpenAI 兼容 Chat/Embedding + HTTP Rerank；`retry.py` 仅重试可重试错误 | `tests/unit/test_model_registry.py`、`tests/unit/test_llm_adapters.py`（MockTransport，无供应商调用） |
 
-> 电流水线仍使用 `MockChatClient`；真实 Adapter 只完成协议与工厂，接入真实供应商需 V-01 准入与密钥。
+> `.env` 的 `REVIEW_MODEL_MODE=live` 走真实模型；单测/CI 默认 `mock`，不调用供应商。
+
+## 7. 首个测试项目：TestLab Arcade 一期
+
+项目资料已接入仓库：
+
+| 资产 | 位置 |
+|---|---|
+| 一期策划案（需求/功能） | [kb_content/TestLab-Arcade/requirements.md](kb_content/TestLab-Arcade/requirements.md) · [原件](data/projects/testlab-arcade/source/requirements.md) |
+| UI 前端设计规范 V1.0 | [kb_content/TestLab-Arcade/ui_spec.md](kb_content/TestLab-Arcade/ui_spec.md) · [原件](data/projects/testlab-arcade/source/ui_spec.md) |
+| UI 测试案例 V1.0（55 条） | [data/projects/testlab-arcade/source/ui_test_cases_v1.0.xlsx](data/projects/testlab-arcade/source/ui_test_cases_v1.0.xlsx) |
+| 规范化用例（原始字段） | [data/projects/testlab-arcade/cases.json](data/projects/testlab-arcade/cases.json) |
+| 可直接提交的评审请求 | [data/projects/testlab-arcade/case_payloads.json](data/projects/testlab-arcade/case_payloads.json) |
+| 项目画像/模块统计 | [data/projects/testlab-arcade/project.yaml](data/projects/testlab-arcade/project.yaml) |
+| 人工裁决工作台（8 用例 / 19 条候选，当前 0 条已裁决） | [填写教程](data/projects/testlab-arcade/adjudication/填写教程.md) · [工作台说明](data/projects/testlab-arcade/adjudication/README.md) · [汇总 CSV](data/projects/testlab-arcade/adjudication/adjudication.csv) |
+| 静态体检记录（非模型结论） | [data/projects/testlab-arcade/static_review.md](data/projects/testlab-arcade/static_review.md) |
+
+- 共 **55 条 UI 用例**：P0 41 / P1 14；模块：全局规范 7、公共首页 6、登录 7、注册 6、登录后主界面 7、三维弹球 10、个人中心 6、响应式与可访问性 6。
+- **范围提醒**：这 55 条是 UI 布局/响应式/可访问性用例，不是功能验收用例；当前评审器 v1 只接受 `test_type=functional`，且 Rubric 面向功能用例质量，不能据此判断像素坐标是否符合 UI 规范。
+- 当前知识库装载/检索未实现（M2），送审时会降级为 `kb_module_missing`；UI 规范尚未作为检索证据注入。
+- AI 生成的 55 条用例**未经人工复核**：已标记 `human_reviewed: false`、`do_not_use_as_golden: true`，不能作为评测真值。
+- 裁决工作台：`python scripts/adjudicate.py list|show|stats|decide|case-verdict|export-csv`；只有人工填写 `final.adjudicator` 后才算标签。
+
 
 

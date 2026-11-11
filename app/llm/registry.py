@@ -39,6 +39,8 @@ class RoleConfig:
     concurrency: int
     verification_status: str
     data_admission_status: str = "pending"
+    temperature: float = 0.0
+    min_interval_seconds: float = 0.0
 
 
 @dataclass
@@ -119,6 +121,20 @@ class ModelRegistry:
                 raise ModelRegistryError(
                     f"role {role} 的 verification_status 非法: {status!r}"
                 )
+            try:
+                temperature = float(spec.get("temperature", 0.0))
+            except (TypeError, ValueError) as exc:
+                raise ModelRegistryError(f"role {role} 的 temperature 必须是数值") from exc
+            if not 0 <= temperature <= 2:
+                raise ModelRegistryError(f"role {role} 的 temperature 必须在 0..2")
+            try:
+                min_interval = float(spec.get("min_interval_seconds", 0.0))
+            except (TypeError, ValueError) as exc:
+                raise ModelRegistryError(
+                    f"role {role} 的 min_interval_seconds 必须是数值"
+                ) from exc
+            if min_interval < 0:
+                raise ModelRegistryError(f"role {role} 的 min_interval_seconds 不能为负")
             roles[role] = RoleConfig(
                 role=role,
                 provider=provider,
@@ -128,6 +144,8 @@ class ModelRegistry:
                 concurrency=concurrency,
                 verification_status=status,
                 data_admission_status=str(spec.get("data_admission_status") or "pending"),
+                temperature=temperature,
+                min_interval_seconds=min_interval,
             )
 
         pricing = payload.get("pricing") if isinstance(payload.get("pricing"), dict) else {}

@@ -241,6 +241,7 @@ class MemoryStorage:
         self, review_id: str, candidates: list[CandidateRecord]
     ) -> None:
         self._candidates[review_id] = list(candidates)
+        self._votes[review_id] = []
 
     async def list_candidates(self, review_id: str) -> list[CandidateRecord]:
         return list(self._candidates.get(review_id, []))
