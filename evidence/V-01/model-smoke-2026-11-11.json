@@ -1,0 +1,42 @@
+{
+  "checked_at": "2026-11-11T09:44:13+0800",
+  "registry_version": "models-2026-11-11",
+  "results": [
+    {
+      "role": "chief_blind",
+      "provider": "qwen",
+      "model_id": "qwen3.8-max",
+      "status": "ok",
+      "returned_model": "qwen3.8-max",
+      "latency_ms": 4074,
+      "input_tokens": 89,
+      "output_tokens": 70,
+      "json_ok": true,
+      "content_length": 36
+    },
+    {
+      "role": "jury_a",
+      "provider": "deepseek",
+      "model_id": "deepseek-flash",
+      "status": "ok",
+      "returned_model": "deepseek-flash",
+      "latency_ms": 1023,
+      "input_tokens": 87,
+      "output_tokens": 59,
+      "json_ok": true,
+      "content_length": 36
+    },
+    {
+      "role": "jury_b",
+      "provider": "kimi",
+      "model_id": "kimi-k3.1-pro",
+      "status": "ok",
+      "returned_model": "kimi-k3.1-pro",
+      "latency_ms": 4604,
+      "input_tokens": 177,
+      "output_tokens": 61,
+      "json_ok": true,
+      "content_length": 36
+    }
+  ]
+}

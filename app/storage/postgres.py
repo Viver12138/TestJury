@@ -651,6 +651,10 @@ class PostgresStorage(_PooledStorage):
         pool = await self._get_pool()
         async with pool.acquire() as conn:
             async with conn.transaction():
+                # 重试会重新融合：先清理旧投票，否则候选删除会触发 FK
+                await conn.execute(
+                    "DELETE FROM issue_votes WHERE review_id=$1::uuid", review_id
+                )
                 await conn.execute(
                     "DELETE FROM review_candidates WHERE review_id=$1::uuid", review_id
                 )

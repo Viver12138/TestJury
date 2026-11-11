@@ -33,6 +33,7 @@ python scripts/check_contracts.py --json     # 机器可读输出
 | `verdict_reference.py` | `docs/12` 真值表的**规范参考实现**（纯函数，非生产代码）；供用例一致性与属性测试使用 | 抛 `VerdictInputError` 时指示字段 |
 | `rebuild_projection.py` | 运维脚本：从 `report_json` 重建 `issues` 投影并校验；支持 `--review/--all/--check`（需要 `DATABASE_URL`） | 评审 ID + 不一致字段 |
 | `check_consistency.py` | 运维脚本：报告/投影、人工决定、候选映射、附件绑定一致性检查（需要 `DATABASE_URL`） | 评审 ID + 具体不一致项 |
+| `check_model_connectivity.py` | 模型连通性冒烟：按 models.yaml 对真实供应商发最小 JSON 请求，记录延迟/token/JSON 能力；不打印密钥（需要供应商 Key） | 角色 + 错误码/状态码 |
 
 ## 输出格式
 

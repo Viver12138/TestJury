@@ -41,6 +41,7 @@ def make_settings(**overrides: object) -> Settings:
         "database_url": "postgresql+asyncpg://testjury:testjury@localhost:5432/testjury_test",
         "storage_backend": "memory",
         "run_worker": False,
+        "review_model_mode": "mock",
         "bootstrap_api_keys": bootstrap_keys(),
         "decision_require_separation": True,
     }

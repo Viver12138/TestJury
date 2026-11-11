@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -23,7 +24,7 @@ from app.core.enums import (
     StageStatus,
 )
 from app.core.observability import observe_stage
-from app.llm.base import ReviewModel
+from app.llm.base import AdapterError, ReviewModel
 from app.llm.mock import MockChatClient
 from app.pipeline import arbitration as arbitration_mod
 from app.pipeline import fusion, render, vote
@@ -69,11 +70,11 @@ class ReviewPipeline:
         storage: Storage,
         settings: Settings,
         *,
-        mock_client: ReviewModel | None = None,
+        model: ReviewModel | None = None,
     ) -> None:
         self.storage = storage
         self.settings = settings
-        self.mock_client = mock_client or MockChatClient()
+        self.model = model or MockChatClient()
 
     # ── 阶段辅助 ──
 
@@ -168,43 +169,102 @@ class ReviewPipeline:
         case_for_review["automation_context_provided"] = bool(job.automation_context)
         roles = ["chief_blind", "jury_a", "jury_b"]
         opinions = []
-        for role in roles:
+        active_roles: list[str] = []
+        failed_roles: list[str] = []
+
+        async def _review_role(role: str):
             call_started = time.perf_counter()
-            opinion = self.mock_client.review(role, case_for_review)
+            try:
+                opinion = await self.model.review(role, case_for_review)
+                return role, opinion, None, int((time.perf_counter() - call_started) * 1000)
+            except AdapterError as exc:
+                return role, None, exc, int((time.perf_counter() - call_started) * 1000)
+
+        for role, opinion, error, elapsed_ms in await asyncio.gather(
+            *(_review_role(role) for role in roles)
+        ):
+            if error is not None or opinion is None:
+                failed_roles.append(role)
+                degraded.append(DegradedReason.MODEL_MISSING.value)
+                logger.warning(
+                    "blind_review_failed",
+                    review_id=job.id,
+                    role=role,
+                    code=getattr(error, "code", "UNKNOWN"),
+                    retryable=getattr(error, "retryable", False),
+                )
+                model_calls.append(
+                    {
+                        "role": role,
+                        "model": versions.models.get(role, "unknown"),
+                        "status": "failed",
+                        "error_code": getattr(error, "code", "UNKNOWN"),
+                        "latency_ms": elapsed_ms,
+                        "tokens": {"request": 0, "response": 0},
+                    }
+                )
+                continue
+            active_roles.append(role)
             opinions.append(opinion)
             model_calls.append(
                 {
                     "role": role,
-                    "model": versions.models.get(role, "mock"),
+                    "model": opinion.model or versions.models.get(role, "unknown"),
                     "status": "ok",
-                    "latency_ms": int((time.perf_counter() - call_started) * 1000),
-                    "tokens": {"request": 0, "response": 0},
+                    "latency_ms": opinion.latency_ms
+                    if opinion.latency_ms is not None
+                    else elapsed_ms,
+                    "tokens": {
+                        "request": opinion.input_tokens,
+                        "response": opinion.output_tokens,
+                    },
+                    "cost_estimate": opinion.cost_estimate,
+                    "parse_warnings": list(opinion.warnings),
                 }
             )
+        if not opinions:
+            states[Stage.BLIND_REVIEW.value] = StageStatus.FAILED.value
+            await self._stage(
+                job, Stage.BLIND_REVIEW, StageStatus.FAILED, error="all_models_failed"
+            )
+            return await self._finish_failed(job, degraded, states, started)
         states[Stage.BLIND_REVIEW.value] = StageStatus.SUCCEEDED.value
         await self._stage(job, Stage.BLIND_REVIEW, StageStatus.SUCCEEDED, output_ref="blind_opinions")
-        blind_ratio = "3/3"
+        blind_ratio = f"{len(active_roles)}/3"
 
         # 5. 融合
         await self._stage(job, Stage.FUSION, StageStatus.RUNNING, fencing_token=job.fencing_token)
         candidates = fusion.fuse(
             job.id, case, opinions, step_tolerance=self.settings.step_tolerance
         )
+        # 控制单次评审的问题数量：按严重级优先，最多 8 条候选（减少无效投票与成本）
+        severity_rank = {"blocker": 2, "major": 1, "suggestion": 0}
+        candidates.sort(
+            key=lambda item: (
+                -severity_rank.get(item.severity_proposal or "suggestion", 0),
+                item.candidate_no,
+            )
+        )
+        candidates = candidates[:8]
         await self.storage.replace_candidates(job.id, candidates)
         states[Stage.FUSION.value] = StageStatus.SUCCEEDED.value
         await self._stage(job, Stage.FUSION, StageStatus.SUCCEEDED, output_ref="review_candidates")
 
         # 6. 投票
         await self._stage(job, Stage.VOTE, StageStatus.RUNNING, fencing_token=job.fencing_token)
-        vote_records = vote.run_vote(job.id, candidates, opinions, roles)
+        vote_records, vote_calls = await vote.run_vote(
+            job.id, candidates, self.model, active_roles
+        )
+        model_calls.extend(vote_calls)
         await self.storage.add_votes(job.id, vote_records)
-        vote_ratio = _global_vote_ratio(vote_records, len(roles))
+        participants = len(active_roles)
+        vote_ratio = _global_vote_ratio(vote_records, participants, len(candidates))
         states[Stage.VOTE.value] = StageStatus.SUCCEEDED.value
         await self._stage(job, Stage.VOTE, StageStatus.SUCCEEDED, output_ref="issue_votes")
 
         # 7. 仲裁（条件触发）
         votes_by_candidate = _group_votes(vote_records)
-        verdict_input = _build_verdict_input(candidates, votes_by_candidate, len(roles))
+        verdict_input = _build_verdict_input(candidates, votes_by_candidate, participants)
         preliminary = compute_verdict(verdict_input)
         arbitration_required = preliminary.arbitration_required
         arbitration_decisions: dict[str, dict[str, Any]] = {}
@@ -227,7 +287,7 @@ class ReviewPipeline:
         # 8. 结论（唯一入口）
         await self._stage(job, Stage.VERDICT, StageStatus.RUNNING, fencing_token=job.fencing_token)
         result = compute_verdict(verdict_input)
-        violations = check_forbidden(result, len(roles))
+        violations = check_forbidden(result, participants)
         if violations:  # pragma: no cover - 实现缺陷应立即暴露
             raise RuntimeError("verdict 产生禁止组合: " + "; ".join(violations))
         states[Stage.VERDICT.value] = StageStatus.SUCCEEDED.value
@@ -256,6 +316,8 @@ class ReviewPipeline:
             opinions=opinions,
             model_calls=model_calls,
             input_quality=input_quality,
+            active_roles=active_roles,
+            failed_roles=failed_roles,
         )
         schema = load_report_schema(self.settings.report_schema_version)
         schema.validate(report)  # 失败直接抛出，不写半成品报告
@@ -282,7 +344,7 @@ class ReviewPipeline:
             if job.started_at
             else 0,
             "execution_ms": elapsed_ms,
-            "model_call_ms": sum(call["latency_ms"] for call in model_calls),
+            "model_call_ms": sum(int(call.get("latency_ms") or 0) for call in model_calls),
         }
         return PipelineResult(report=report, markdown=markdown)
 
@@ -380,14 +442,22 @@ def _build_verdict_input(
     return VerdictInput(participants=participants, issues=issues)
 
 
-def _global_vote_ratio(votes: list[VoteRecord], participants: int) -> str:
+def _global_vote_ratio(
+    votes: list[VoteRecord], participants: int, candidate_count: int
+) -> str:
     if participants == 0:
         return "0/3"
-    if not votes:
-        return "0/3"
-    valid = sum(1 for record in votes if record.validity != "not_assessed")
-    ratio = round(valid / len(votes) * participants)
-    return f"{max(0, min(participants, ratio))}/{participants}"
+    if candidate_count == 0 or not votes:
+        # 没有候选问题时没有投票对象，按全员参与处理
+        return f"{participants}/{participants}"
+    grouped: dict[str, int] = {}
+    for record in votes:
+        if record.validity != "not_assessed":
+            grouped[record.candidate_id] = grouped.get(record.candidate_id, 0) + 1
+    # 每条候选独立统计，取最差的一条作为全局投票完整度（docs/12 §6）
+    min_valid = min(grouped.get(record.candidate_id, 0) for record in votes)
+    effective = min(min_valid, participants) if candidate_count else participants
+    return f"{max(0, effective)}/{participants}"
 
 
 def _severity_summary(votes: list[VoteRecord]) -> dict[str, int]:
@@ -437,6 +507,8 @@ def _build_report(
     opinions: list[Any],
     model_calls: list[dict[str, Any]],
     input_quality: dict[str, Any],
+    active_roles: list[str],
+    failed_roles: list[str],
 ) -> dict[str, Any]:
     candidate_by_id = {candidate.id: candidate for candidate in candidates}
     included = [
@@ -534,17 +606,25 @@ def _build_report(
         "degraded": bool(degraded_list),
         "degraded_reasons": sorted(set(degraded_list)),
         "participants": [
-            f"{role}:{versions.models.get(role, 'mock')}"
-            for role in ("chief_blind", "jury_a", "jury_b")
+            f"{role}:{versions.models.get(role, 'unknown')}" for role in active_roles
         ],
         "topology": job.topology,
         "review_participants": [
             {
                 "participant_id": f"p-{index:02d}",
                 "role_id": role,
-                "status": "active",
-                "model": versions.models.get(role, "mock"),
-                "actual_model": versions.models.get(role, "mock"),
+                "status": "active"
+                if role in active_roles
+                else ("failed" if role in failed_roles else "absent"),
+                "model": versions.models.get(role, "unknown"),
+                "actual_model": next(
+                    (
+                        opinion.model
+                        for opinion in opinions
+                        if opinion.role == role
+                    ),
+                    None,
+                ),
             }
             for index, role in enumerate(("chief_blind", "jury_a", "jury_b"), start=1)
         ],

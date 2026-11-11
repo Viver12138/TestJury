@@ -50,7 +50,11 @@ def test_repository_config_loads() -> None:
     registry = ModelRegistry.load(MODELS_PATH)
     assert registry.version
     assert "chief_blind" in registry.roles
-    assert registry.provider_for("chief_blind").name == "mock"
+    assert registry.provider_for("chief_blind").name == "qwen"
+    assert registry.role("chief_blind").model_id == "qwen3.8-max"
+    assert registry.role("jury_a").model_id == "deepseek-flash"
+    assert registry.role("jury_b").model_id == "kimi-k3.1-pro"
+    assert registry.role("jury_b").temperature == 1.0
     assert set(registry.model_ids()) >= {"chief_blind", "jury_a", "jury_b"}
 
 
@@ -106,7 +110,7 @@ def test_factory_requires_key_and_builds_adapters() -> None:
     assert rerank.model_id == "vendor-rerank"
 
 
-def test_factory_rejects_mock_provider_for_real_calls() -> None:
+def test_factory_rejects_missing_key_for_real_provider() -> None:
     registry = ModelRegistry.load(MODELS_PATH)
     with pytest.raises(ModelAdapterConfigError):
         build_chat_adapter(registry, "chief_blind", environ={})
