@@ -118,14 +118,24 @@ def test_case_verdict_and_stats(workdir: Path) -> None:
         validity="invalid",
         adjudicator="reviewer-1",
     )
+    # 还有 pending 时不能填最终结论
+    with pytest.raises(AdjudicationError, match="未裁决"):
+        set_case_verdict(data, verdict="needs_fix", defect_count=1, adjudicator="reviewer-1")
+    for candidate in data["candidates"][2:]:
+        record_decision(
+            data,
+            candidate["candidate_id"],
+            validity="invalid",
+            adjudicator="reviewer-1",
+        )
     set_case_verdict(data, verdict="needs_fix", defect_count=1, adjudicator="reviewer-1")
     save_case(path, data)
 
     result = stats(target)
     assert result["cases"] == 1
-    assert result["decided"] == 2
+    assert result["decided"] == 6
     assert result["valid"] == 1
-    assert result["invalid"] == 1
+    assert result["invalid"] == 5
     assert result["cases_done"] == 1
 
 
@@ -160,13 +170,15 @@ def test_import_csv_merges_decisions(workdir: Path) -> None:
             "case_note": "拆分后重跑",
         }
     )
+    for row in rows[1:]:
+        row.update({"final_validity": "invalid", "adjudicator": "reviewer-1"})
     with csv_path.open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
         writer.writeheader()
         writer.writerows(rows)
 
     result = import_decisions_from_csv(target, csv_path)
-    assert result["decisions"] == 1
+    assert result["decisions"] == 6
     data = load_case(target / "UI-GAME-007.yaml")
     final = data["candidates"][0]["final"]
     assert final["validity"] == "valid"
@@ -237,6 +249,30 @@ def test_import_csv_is_all_or_nothing(workdir: Path) -> None:
     assert not (target / "history.jsonl").exists()
 
 
+def test_import_csv_is_idempotent(workdir: Path) -> None:
+    target = workdir / "adjudication"
+    target.mkdir()
+    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
+    csv_path = target / "adjudication.csv"
+    export_csv(target, csv_path)
+    with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    for row in rows:
+        row.update({"final_validity": "invalid", "adjudicator": "reviewer-1"})
+    with csv_path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+    first = import_decisions_from_csv(target, csv_path)
+    assert first["decisions"] == 6
+    history_lines = len((target / "history.jsonl").read_text(encoding="utf-8").splitlines())
+    second = import_decisions_from_csv(target, csv_path)
+    assert second["decisions"] == 0
+    assert second["already_applied"] == 6
+    assert len((target / "history.jsonl").read_text(encoding="utf-8").splitlines()) == history_lines
+
+
 def test_case_verdict_consistency_rules(workdir: Path) -> None:
     target = workdir / "UI-GAME-007.yaml"
     shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target)
@@ -249,6 +285,13 @@ def test_case_verdict_consistency_rules(workdir: Path) -> None:
         category="状态不自洽",
         adjudicator="reviewer-1",
     )
+    for candidate in data["candidates"][1:]:
+        record_decision(
+            data,
+            candidate["candidate_id"],
+            validity="invalid",
+            adjudicator="reviewer-1",
+        )
     with pytest.raises(AdjudicationError, match="pass"):
         set_case_verdict(data, verdict="pass", adjudicator="reviewer-1")
     with pytest.raises(AdjudicationError, match="blocked"):

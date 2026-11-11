@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from app.llm.attempts import attempt_log
 from app.llm.base import AdapterError, ChatResponse, TokenUsage
 from app.llm.registry import ModelRegistry
 from app.llm.retry import call_with_retry
@@ -144,6 +145,44 @@ async def test_attempt_hook_records_retry_and_success() -> None:
     assert result == "ok"
     assert attempts[0][0] == 1 and attempts[0][1] == "PROVIDER_UNAVAILABLE"
     assert attempts[1] == (2, None, 0.0)
+
+
+@pytest.mark.asyncio
+async def test_vote_timeout_keeps_started_attempt_audit() -> None:
+    class HangingModel:
+        async def vote(self, role, material):
+            audit = attempt_log.get()
+            assert audit is not None
+            audit.append(
+                {
+                    "attempt": 1,
+                    "status": "started",
+                    "error_code": None,
+                    "retryable": None,
+                    "delay_s": None,
+                    "latency_ms": None,
+                }
+            )
+            await asyncio.sleep(1)
+
+        async def review(self, role, case):  # pragma: no cover
+            raise AssertionError
+
+    candidate = CandidateRecord(
+        id="c-timeout",
+        review_id="r1",
+        candidate_no=1,
+        dimension="test_design",
+        standardized_text="第 1 步缺预期",
+        step_index=1,
+        category="预期不明确",
+    )
+    votes, calls = await run_vote(
+        "r1", [candidate], HangingModel(), ["jury_a"], timeout_seconds=0.01
+    )
+    assert votes[0].validity == "not_assessed"
+    assert calls[0]["error_code"] == "MODEL_TIMEOUT"
+    assert calls[0]["attempts"][0]["status"] == "started"
 
 
 @pytest.mark.asyncio

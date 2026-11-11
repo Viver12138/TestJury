@@ -1,0 +1,16 @@
+{
+  "review_id": "6784dd6a-af3d-4cee-aaac-14f3c6f22692",
+  "case_id": "UI-HOME-005",
+  "status": "done",
+  "ai_verdict": "need_human",
+  "blind": "3/3",
+  "vote": "3/3",
+  "model_calls": 27,
+  "ok": 27,
+  "failed": 0,
+  "total_cost_estimate": 1.3209,
+  "degraded_reasons": [
+    "kb_module_missing"
+  ],
+  "note": "显式 scope=step|case 契约后的真实运行；3/3 盲评 + 3/3 投票，无模型失败，问题仍保留。"
+}

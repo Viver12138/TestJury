@@ -13,3 +13,6 @@ pytest-of-*/
 
 # 附件本机持久化卷（不进 Git，见 docs/06 §1）
 data/attachments/
+
+# 人工裁决导入批次备份/恢复记录（本地审计）
+data/projects/*/adjudication/.imports/

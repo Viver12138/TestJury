@@ -258,7 +258,7 @@ class ReviewPipeline:
             versions=versions,
         )
         if call.get("status") != "ok":
-            if not attempts:
+            if not any(item.get("status") == "error" for item in attempts):
                 await self.storage.add_model_run(
                     ModelRunRecord(
                         review_id=job.id,
@@ -267,6 +267,7 @@ class ReviewPipeline:
                         model=model,
                         requested_model=versions.models.get(role),
                         prompt_version=prompt_version,
+                        attempt=max(1, len(attempts)),
                         status="error",
                         error_code=call.get("error_code") or "UNKNOWN",
                         error=call.get("error"),

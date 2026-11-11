@@ -8,6 +8,7 @@ from app.pipeline.fusion import fuse
 
 def _issue(role: str, refs: list[str]) -> dict:
     return {
+        "scope": "step",
         "step_index": 1,
         "dimension": "test_design",
         "severity": "major",

@@ -61,6 +61,26 @@ def test_mask_text_and_secret_fields() -> None:
     assert result.report["total"] >= 3
 
 
+def test_numeric_and_camel_case_sensitive_values_are_masked() -> None:
+    policy = MaskingPolicy()
+    result = policy.apply(
+        {
+            "phoneNumber": 13800138000,
+            "password": 123456,
+            "accessToken": "tok-123",
+            "nested": [{"id_card": 110101199001011234}],
+        }
+    )
+    text = json.dumps(result.data, ensure_ascii=False)
+    assert "13800138000" not in text
+    assert "123456" not in text
+    assert "tok-123" not in text
+    assert "110101199001011234" not in text
+    assert result.data["phoneNumber"].startswith("<PII_")
+    assert result.data["password"].startswith("<SECRET_")
+    assert result.data["accessToken"].startswith("<SECRET_")
+
+
 @pytest.mark.asyncio
 async def test_adapter_receives_masked_case() -> None:
     adapter = RecordingAdapter()

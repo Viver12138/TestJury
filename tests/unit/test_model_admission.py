@@ -19,6 +19,9 @@ def _admission(registry: ModelRegistry, tmp_path: Path, **overrides: object) -> 
     evidence = tmp_path / "model-evidence.json"
     evidence.write_text('{"ok": true}', encoding="utf-8")
     digest = hashlib.sha256(evidence.read_bytes()).hexdigest()
+    dpa = tmp_path / "dpa.txt"
+    dpa.write_text("signed dpa", encoding="utf-8")
+    dpa_digest = hashlib.sha256(dpa.read_bytes()).hexdigest()
     roles = []
     for role in ("chief_blind", "jury_a", "jury_b"):
         entry = {
@@ -28,6 +31,15 @@ def _admission(registry: ModelRegistry, tmp_path: Path, **overrides: object) -> 
             "data_admission_status": "approved",
             "reviewer": "reviewer-1",
             "dpa_signed": True,
+            "dpa": {
+                "document": str(dpa),
+                "sha256": dpa_digest,
+                "supplier": registry.role(role).provider,
+                "models": [registry.role(role).model_id],
+                "data_levels": ["public", "internal"],
+                "signed_at": "2026-01-01",
+                "expires_at": "2030-01-01",
+            },
             "allowed_data_level": ["public", "internal"],
             "allow_raw_case": True,
             "requires_masking": False,
@@ -98,6 +110,14 @@ def test_model_id_mismatch_rejected(tmp_path: Path) -> None:
     registry = ModelRegistry.load(MODELS)
     payload = _admission(registry, tmp_path, jury_a={"real_model_id": "wrong-model"})
     with pytest.raises(ModelAdmissionError, match="注册表"):
+        enforce_model_admission(registry, _write(tmp_path, payload))
+
+
+def test_expired_dpa_rejected(tmp_path: Path) -> None:
+    registry = ModelRegistry.load(MODELS)
+    payload = _admission(registry, tmp_path)
+    payload["roles"][0]["dpa"]["expires_at"] = "2020-01-01"
+    with pytest.raises(ModelAdmissionError, match="过期"):
         enforce_model_admission(registry, _write(tmp_path, payload))
 
 

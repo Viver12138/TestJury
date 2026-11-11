@@ -12,6 +12,7 @@ import asyncio
 from typing import Any
 
 from app.core.enums import VoteValidity
+from app.llm.attempts import attempt_log
 from app.llm.base import AdapterError, ReviewModel, VoteDecision
 from app.storage.models import CandidateRecord, VoteRecord
 
@@ -38,6 +39,8 @@ async def run_vote(
 
     async def _one(candidate: CandidateRecord, role: str):
         material = build_vote_material(candidate)
+        audit: list[dict[str, Any]] = []
+        token = attempt_log.set(audit)
         try:
             # Retry 的唯一所有者是 ChatReviewModel._complete；此处不再包一层，
             # 避免一次投票最多触发 3×3=9 次供应商调用（docs/18 §3）。
@@ -54,7 +57,7 @@ async def run_vote(
                 VoteDecision(
                     validity=VoteValidity.NOT_ASSESSED.value,
                     reason=f"vote_failed:{exc.code}",
-                    attempts=list(getattr(exc, "attempts", []) or []),
+                    attempts=list(getattr(exc, "attempts", []) or audit),
                 ),
                 "failed",
                 exc.code,
@@ -66,10 +69,13 @@ async def run_vote(
                 VoteDecision(
                     validity=VoteValidity.NOT_ASSESSED.value,
                     reason="vote_failed:MODEL_TIMEOUT",
+                    attempts=list(audit),
                 ),
                 "failed",
                 "MODEL_TIMEOUT",
             )
+        finally:
+            attempt_log.reset(token)
 
     results = await asyncio.gather(
         *(_one(candidate, role) for candidate in candidates for role in roles)

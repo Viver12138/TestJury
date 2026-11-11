@@ -9,9 +9,13 @@
 from __future__ import annotations
 
 import csv
+import hashlib
+import json
 import os
 import re
+import shutil
 import tempfile
+import uuid
 from copy import deepcopy
 from datetime import UTC, datetime
 from pathlib import Path
@@ -21,7 +25,7 @@ import yaml
 
 VALIDITY_VALUES = {"pending", "valid", "invalid", "uncertain", "needs_spec"}
 SEVERITY_VALUES = {"blocker", "major", "suggestion"}
-CASE_VERDICTS = {"pending", "pass", "needs_fix", "blocked", "uncertain"}
+CASE_VERDICTS = {"pending", "in_progress", "pass", "needs_fix", "blocked", "uncertain"}
 CASE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 
@@ -57,6 +61,27 @@ def save_case(path: Path, data: dict[str, Any]) -> None:
     try:
         with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
             yaml.safe_dump(data, handle, allow_unicode=True, sort_keys=False)
+        os.replace(temp_name, path)
+    finally:
+        if os.path.exists(temp_name):
+            os.unlink(temp_name)
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(65536), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+            json.dump(payload, handle, ensure_ascii=False, indent=2)
         os.replace(temp_name, path)
     finally:
         if os.path.exists(temp_name):
@@ -136,26 +161,45 @@ def set_case_verdict(
         raise AdjudicationError("adjudicator 必填")
     if defect_count is not None and (not isinstance(defect_count, int) or defect_count < 0):
         raise AdjudicationError("defect_count 必须是非负整数")
+    candidates_list = data.get("candidates", [])
     valid_count = sum(
         1
-        for candidate in data.get("candidates", [])
+        for candidate in candidates_list
         if candidate.get("final", {}).get("validity") == "valid"
     )
+    pending_count = sum(
+        1
+        for candidate in candidates_list
+        if candidate.get("final", {}).get("validity", "pending") == "pending"
+    )
+    final_verdicts = {"pass", "needs_fix", "blocked", "uncertain"}
+    if verdict in final_verdicts and pending_count:
+        raise AdjudicationError(
+            f"仍有 {pending_count} 条候选未裁决，不能填写最终结论 {verdict}"
+        )
     if defect_count is None:
         defect_count = valid_count
     elif defect_count != valid_count:
         raise AdjudicationError(
             f"defect_count={defect_count} 与 valid 候选数 {valid_count} 不一致"
         )
-    if verdict == "pass" and valid_count:
-        raise AdjudicationError("pass 不允许存在 valid 问题")
+    if verdict == "pass":
+        if valid_count:
+            raise AdjudicationError("pass 不允许存在 valid 问题")
+        unsettled = [
+            candidate
+            for candidate in candidates_list
+            if candidate.get("final", {}).get("validity") in ("uncertain", "needs_spec")
+        ]
+        if unsettled:
+            raise AdjudicationError("存在 uncertain/needs_spec 候选，不能判 pass")
     if verdict == "needs_fix" and not valid_count:
         raise AdjudicationError("needs_fix 至少需要一条 valid 问题")
     if verdict == "blocked":
         has_blocker = any(
             candidate.get("final", {}).get("validity") == "valid"
             and candidate.get("final", {}).get("severity") == "blocker"
-            for candidate in data.get("candidates", [])
+            for candidate in candidates_list
         )
         if not has_blocker:
             raise AdjudicationError("blocked 至少需要一条 valid blocker")
@@ -182,7 +226,7 @@ def append_history(path: Path, entry: dict[str, Any]) -> None:
 def stats(root: Path) -> dict[str, Any]:
     files = sorted(Path(root).glob("*.yaml"))
     total = decided = valid = invalid = needs_spec = pending = 0
-    cases_done = 0
+    cases_done = cases_in_progress = 0
     for path in files:
         data = load_case(path)
         case_candidates = data.get("candidates", [])
@@ -199,11 +243,15 @@ def stats(root: Path) -> dict[str, Any]:
                     invalid += 1
                 elif validity == "needs_spec":
                     needs_spec += 1
-        if data.get("case_level", {}).get("verdict", "pending") != "pending":
+        verdict = data.get("case_level", {}).get("verdict", "pending")
+        if verdict == "in_progress":
+            cases_in_progress += 1
+        elif verdict in {"pass", "needs_fix", "blocked", "uncertain"}:
             cases_done += 1
     return {
         "cases": len(files),
         "cases_done": cases_done,
+        "cases_in_progress": cases_in_progress,
         "candidates": total,
         "decided": decided,
         "pending": pending,
@@ -260,6 +308,31 @@ def export_csv(root: Path, destination: Path) -> int:
     return len(rows)
 
 
+def _decision_signature(data: dict[str, Any]) -> tuple[Any, ...]:
+    """忽略 adjudicated_at 的幂等签名。"""
+
+    candidates = tuple(
+        (
+            item.get("candidate_id"),
+            item.get("final", {}).get("validity"),
+            item.get("final", {}).get("severity"),
+            item.get("final", {}).get("category"),
+            item.get("final", {}).get("correction"),
+            item.get("final", {}).get("adjudicator"),
+            item.get("final", {}).get("note"),
+        )
+        for item in data.get("candidates", [])
+    )
+    level = data.get("case_level", {})
+    return (
+        candidates,
+        level.get("verdict"),
+        level.get("defect_count"),
+        level.get("adjudicator"),
+        level.get("note"),
+    )
+
+
 def import_decisions_from_csv(
     root: Path,
     csv_path: Path,
@@ -297,13 +370,15 @@ def import_decisions_from_csv(
             seen_candidates.add(key)
             grouped.setdefault(case_id, []).append(row)
 
-    prepared: list[tuple[Path, dict[str, Any], list[dict[str, Any]]]] = []
+    prepared: list[tuple[Path, dict[str, Any], list[dict[str, Any]], dict[str, Any], str]] = []
     decided = 0
     for case_id, rows in grouped.items():
         path = case_path(root, case_id)
         if not path.exists():
             raise AdjudicationError(f"CSV 引用了不存在的用例: {case_id}")
-        data = deepcopy(load_case(path))
+        original = load_case(path)
+        before_hash = _sha256_file(path)
+        data = deepcopy(original)
         case_verdicts: set[str] = set()
         case_verdict_row: dict[str, str] | None = None
         entries: list[dict[str, Any]] = []
@@ -351,16 +426,114 @@ def import_decisions_from_csv(
                     at=(case_verdict_row.get("adjudicated_at") or "").strip() or None,
                 )
             )
-        prepared.append((path, data, entries))
+        prepared.append((path, data, entries, original, before_hash))
 
     if dry_run:
         return {"cases": len(prepared), "decisions": decided, "dry_run": True}
 
-    # 全部校验通过后再落盘；YAML 原子写，最后追加 history
-    for path, data, _ in prepared:
-        save_case(path, data)
-    for _, _, entries in prepared:
-        for entry in entries:
-            append_history(Path(root) / "history.jsonl", entry)
-    return {"cases": len(prepared), "decisions": decided, "dry_run": False}
+    # 完整幂等：当前 YAML 的裁决内容已与目标一致，不重复写 history
+    if all(_decision_signature(load_case(path)) == _decision_signature(data) for path, data, _, _, _ in prepared):
+        return {
+            "cases": len(prepared),
+            "decisions": 0,
+            "already_applied": decided,
+            "dry_run": False,
+        }
+
+    batch_id = uuid.uuid4().hex
+    imports_dir = Path(root) / ".imports"
+    backup_dir = imports_dir / f"{batch_id}.backup"
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    history_path = Path(root) / "history.jsonl"
+    history_backup = imports_dir / f"{batch_id}.history"
+    if history_path.exists():
+        shutil.copy2(history_path, history_backup)
+    journal_path = imports_dir / f"{batch_id}.json"
+    journal: dict[str, Any] = {
+        "batch_id": batch_id,
+        "status": "applying",
+        "created_at": datetime.now(UTC).isoformat(),
+        "files": [
+            {
+                "case_id": path.stem,
+                "path": path.name,
+                "before_hash": before_hash,
+            }
+            for path, _, _, _, before_hash in prepared
+        ],
+        "history_existed": history_path.exists(),
+        "history_size": history_path.stat().st_size if history_path.exists() else 0,
+    }
+    _write_json(journal_path, journal)
+    written: list[tuple[Path, Path]] = []
+    try:
+        for path, data, _, _, before_hash in prepared:
+            # 写入前再次检查并发修改
+            if _sha256_file(path) != before_hash:
+                raise AdjudicationError(f"用例文件已被其他人修改: {path.name}")
+            backup = backup_dir / path.name
+            shutil.copy2(path, backup)
+            save_case(path, data)
+            written.append((path, backup))
+        for _, _, entries, _, _ in prepared:
+            for entry in entries:
+                entry["batch_id"] = batch_id
+                append_history(history_path, entry)
+        journal["status"] = "applied"
+        journal["applied_at"] = datetime.now(UTC).isoformat()
+        _write_json(journal_path, journal)
+    except Exception as exc:
+        # 失败恢复：还原已写 YAML 与 history，保留失败 journal
+        for path, backup in written:
+            shutil.copy2(backup, path)
+        if history_backup.exists():
+            shutil.copy2(history_backup, history_path)
+        elif not journal["history_existed"] and history_path.exists():
+            history_path.unlink()
+        journal["status"] = "failed"
+        journal["error"] = str(exc)[:1000]
+        _write_json(journal_path, journal)
+        if isinstance(exc, AdjudicationError):
+            raise
+        raise AdjudicationError(f"批次导入失败，已回滚: {exc}") from exc
+    return {
+        "cases": len(prepared),
+        "decisions": decided,
+        "dry_run": False,
+        "batch_id": batch_id,
+    }
+
+
+def recover_imports(root: Path) -> dict[str, Any]:
+    """恢复中断的批次导入：按 journal 的备份还原 YAML 与 history。"""
+
+    imports_dir = Path(root) / ".imports"
+    recovered = 0
+    failed = 0
+    for journal_path in sorted(imports_dir.glob("*.json")):
+        try:
+            journal = json.loads(journal_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            failed += 1
+            continue
+        if journal.get("status") != "applying":
+            continue
+        batch_id = journal.get("batch_id") or journal_path.stem
+        backup_dir = imports_dir / f"{batch_id}.backup"
+        for entry in journal.get("files", []):
+            path = Path(root) / entry["path"]
+            backup = backup_dir / entry["path"]
+            if backup.exists():
+                shutil.copy2(backup, path)
+        history_path = Path(root) / "history.jsonl"
+        history_backup = imports_dir / f"{batch_id}.history"
+        if history_backup.exists():
+            shutil.copy2(history_backup, history_path)
+        elif not journal.get("history_existed") and history_path.exists():
+            history_path.unlink()
+        journal["status"] = "recovered"
+        journal["recovered_at"] = datetime.now(UTC).isoformat()
+        _write_json(journal_path, journal)
+        recovered += 1
+    return {"recovered": recovered, "failed": failed}
 

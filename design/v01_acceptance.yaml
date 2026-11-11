@@ -50,8 +50,9 @@ subitems:
       - tests/unit/test_chat_review_model.py
       - tests/unit/test_evidence_validation.py
       - evidence/M1/strict-schema-live-2026-11-11.json
-    verified_at: "2026-11-11T13:15:00+08:00"
-    note: "缺 issues/null、字段错类型、category 非枚举、非法 JSON、截断 finish_reason、引用越界、step_index 越界均有测试；严格门禁后真实运行中 Kimi 一票 OUTPUT_INVALID 被记为失败。"
+      - evidence/M1/scope-contract-live-2026-11-11.json
+    verified_at: "2026-11-11T14:32:00+08:00"
+    note: "缺 issues/null、字段错类型、category 非枚举、scope 缺失/step 缺 quote、非法 JSON、截断 finish_reason、引用越界、step_index 越界均有测试；严格门禁后真实运行 3/3 盲评 + 3/3 投票，问题正常保留。"
 
   - id: V-01E
     title: 多次运行稳定性与成本记录
@@ -72,4 +73,4 @@ subitems:
     verified_at: null
     blockers:
       - Q-09
-    note: "MaskingPolicy 已在 Prompt 前真实脱敏（邮箱/手机/身份证/银行卡/IP/密钥字段），每次调用记录策略 ID/版本/命中数；生产 Gate 校验 reviewer、DPA、allowed_data_level、evidence 文件与哈希、requires_masking/allow_raw_case 与策略 ID。模型数据准入仍未完成，F 不通过。"
+    note: "MaskingPolicy 已在 Prompt 前真实脱敏（邮箱/手机/身份证/银行卡/IP/密钥字段；含数字值与 camelCase 变体）；每次调用记录策略 ID/版本/命中数；生产 Gate 校验 reviewer、DPA 文件/哈希/供应商/模型/数据级别/有效期、evidence 文件与哈希、requires_masking/allow_raw_case 与策略 ID。模型数据准入仍未完成，F 不通过。"

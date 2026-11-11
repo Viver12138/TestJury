@@ -20,8 +20,8 @@
 | `final.correction` | 文本 | 建议如何改写用例 |
 | `final.adjudicator` | 人名/身份 | 必须填写，不能用 AI 代替 |
 | `final.adjudicated_at` | ISO 时间 | 裁决时间 |
-| `case_level.verdict` | `pass` / `needs_fix` / `blocked` / `uncertain` | 用例级结论 |
-| `case_level.defect_count` | 整数 | 裁决为 valid 的问题数 |
+| `case_level.verdict` | `in_progress` / `pass` / `needs_fix` / `blocked` / `uncertain` | 用例级结论；最终结论要求无 pending 候选 |
+| `case_level.defect_count` | 整数 | 必须等于 valid 候选数；可留空自动计算 |
 
 ## 流程
 

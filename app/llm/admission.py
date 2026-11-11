@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import hashlib
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -55,6 +56,52 @@ def _allowed_levels(value: Any) -> set[str]:
     if isinstance(value, list):
         return {str(item).strip() for item in value if str(item).strip()}
     return set()
+
+
+def _check_dpa(
+    entry: dict[str, Any],
+    role: str,
+    config: Any,
+    base: Path,
+    request_data_level: str,
+    errors: list[str],
+) -> None:
+    dpa = entry.get("dpa")
+    if not isinstance(dpa, dict):
+        errors.append(f"{role}: 缺少 DPA 凭据对象")
+        return
+    document = dpa.get("document")
+    digest = dpa.get("sha256")
+    if not document or not digest:
+        errors.append(f"{role}: DPA 缺少 document/sha256")
+        return
+    path = Path(str(document))
+    resolved = path if path.is_absolute() else (base / path).resolve()
+    if not resolved.exists():
+        errors.append(f"{role}: DPA 文件不存在 {document}")
+    elif _sha256(resolved) != str(digest):
+        errors.append(f"{role}: DPA 文件 hash 不匹配")
+    if str(dpa.get("supplier") or "") != config.provider:
+        errors.append(f"{role}: DPA 供应商与注册表不一致")
+    models = dpa.get("models")
+    if not isinstance(models, list) or ("*" not in models and config.model_id not in models):
+        errors.append(f"{role}: DPA 未覆盖模型 {config.model_id}")
+    levels = _allowed_levels(dpa.get("data_levels"))
+    if request_data_level not in levels:
+        errors.append(f"{role}: DPA 未覆盖数据级别 {request_data_level}")
+    signed_at = dpa.get("signed_at")
+    expires_at = dpa.get("expires_at")
+    try:
+        signed = date.fromisoformat(str(signed_at))
+        expires = date.fromisoformat(str(expires_at))
+    except ValueError:
+        errors.append(f"{role}: DPA signed_at/expires_at 不是 ISO 日期")
+        return
+    today = datetime.now(UTC).date()
+    if signed > today:
+        errors.append(f"{role}: DPA 签署日期在未来")
+    if expires < today:
+        errors.append(f"{role}: DPA 已过期")
 
 
 def _check_evidence(
@@ -114,6 +161,7 @@ def enforce_model_admission(
             errors.append(f"{role}: reviewer 未填写")
         if entry.get("dpa_signed") is not True:
             errors.append(f"{role}: DPA 未签署")
+        _check_dpa(entry, role, config, base, request_data_level, errors)
         allowed = _allowed_levels(entry.get("allowed_data_level"))
         if not allowed:
             errors.append(f"{role}: allowed_data_level 未定义")
