@@ -187,7 +187,9 @@ class ChatReviewModel:
         payload = parse_json_object(response.text)
         sanitized = sanitize_model_output(payload)
         data = sanitized.data
-        issues = self._normalize_issues(data.get("issues"), role)
+        issues = self._normalize_issues(
+            data.get("issues"), role, step_count=len(case.get("steps") or [])
+        )
         warnings = list(sanitized.warnings)
         if len(issues) > 6:
             issues.sort(
@@ -211,7 +213,9 @@ class ChatReviewModel:
             warnings=warnings,
         )
 
-    def _normalize_issues(self, raw_issues: Any, role: str) -> list[dict[str, Any]]:
+    def _normalize_issues(
+        self, raw_issues: Any, role: str, *, step_count: int = 0
+    ) -> list[dict[str, Any]]:
         if raw_issues is None:
             return []
         if not isinstance(raw_issues, list):
@@ -244,7 +248,7 @@ class ChatReviewModel:
                 evidence_status = EvidenceStatus.UNGROUNDED.value
             kb_grounded = bool(raw.get("kb_grounded", False)) and evidence_type != EvidenceType.INFERENCE.value
             step_index = raw.get("step_index")
-            if not isinstance(step_index, int):
+            if not isinstance(step_index, int) or not (1 <= step_index <= step_count):
                 step_index = None
             issues.append(
                 {

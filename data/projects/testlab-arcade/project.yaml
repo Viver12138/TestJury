@@ -11,6 +11,15 @@ normalized:
   review_payloads: case_payloads.json
 case_count: 55
 modules: {"全局规范": 7, "公共首页": 6, "登录页": 7, "注册页": 6, "登录后主界面": 7, "三维弹球页": 10, "个人中心": 6, "响应式与可访问性": 6}
+provenance:
+  generator: ai
+  human_reviewed: false
+  review_status: pilot_done
+  model_review_status: pilot_done
+  pilot_case: UI-GAME-007
+  pilot_review_id: 6ee5e6f7-1d5a-40af-b897-ec5083eb169e
+  do_not_use_as_golden: true
+  note: 由 AI 生成、未经人工复核；只能作为待评审候选输入，不能作为验收真值或评测标签。
 notes:
   - UI 用例仅依据 UI 规范编写，不是功能验收用例。
   - 当前评审器 v1 只接受 test_type=functional；本批按 functional 送审，但 Rubric 是功能用例维度。
