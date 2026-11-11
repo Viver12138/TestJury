@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import csv
+import hashlib
+import json
 import shutil
 from pathlib import Path
 
@@ -16,6 +18,7 @@ from app.adjudication import (
     import_decisions_from_csv,
     load_case,
     record_decision,
+    recover_imports,
     save_case,
     set_case_verdict,
     stats,
@@ -97,6 +100,85 @@ def test_invalid_decisions_are_rejected(workdir: Path) -> None:
         )
     with pytest.raises(AdjudicationError):
         record_decision(data, "CAND-NOT-FOUND", validity="invalid", adjudicator="reviewer-1")
+
+
+def test_import_is_blocked_by_concurrent_lock(workdir: Path) -> None:
+    target = workdir / "adjudication"
+    target.mkdir()
+    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
+    csv_path = target / "adjudication.csv"
+    export_csv(target, csv_path)
+    (target / ".imports").mkdir()
+    (target / ".imports" / "import.lock").write_text("held", encoding="utf-8")
+    with pytest.raises(AdjudicationError, match="另一个裁决导入"):
+        import_decisions_from_csv(target, csv_path)
+
+
+def test_recover_imports_restores_backup(workdir: Path) -> None:
+    target = workdir / "adjudication"
+    target.mkdir()
+    path = target / "UI-GAME-007.yaml"
+    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", path)
+    original = path.read_bytes()
+    digest = hashlib.sha256(original).hexdigest()
+    imports = target / ".imports"
+    backup_dir = imports / "batch1.backup"
+    backup_dir.mkdir(parents=True)
+    shutil.copy2(path, backup_dir / path.name)
+    path.write_text("changed", encoding="utf-8")
+    (imports / "batch1.json").write_text(
+        json.dumps(
+            {
+                "batch_id": "batch1",
+                "status": "applying",
+                "files": [
+                    {
+                        "case_id": "UI-GAME-007",
+                        "path": path.name,
+                        "before_hash": digest,
+                        "backup_hash": digest,
+                    }
+                ],
+                "history_existed": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = recover_imports(target)
+    assert result["recovered"] == 1
+    assert path.read_bytes() == original
+    journal = json.loads((imports / "batch1.json").read_text(encoding="utf-8"))
+    assert journal["status"] == "recovered"
+
+
+def test_recover_imports_rejects_missing_backup(workdir: Path) -> None:
+    target = workdir / "adjudication"
+    target.mkdir()
+    imports = target / ".imports"
+    imports.mkdir()
+    (imports / "batch2.json").write_text(
+        json.dumps(
+            {
+                "batch_id": "batch2",
+                "status": "applying",
+                "files": [
+                    {
+                        "case_id": "UI-GAME-007",
+                        "path": "UI-GAME-007.yaml",
+                        "before_hash": "x",
+                        "backup_hash": "x",
+                    }
+                ],
+                "history_existed": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = recover_imports(target)
+    assert result["recovered"] == 0
+    assert result["failed"] == 1
+    journal = json.loads((imports / "batch2.json").read_text(encoding="utf-8"))
+    assert journal["status"] == "recovery_failed"
 
 
 def test_case_snapshot_formats_functional_steps() -> None:

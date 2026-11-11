@@ -16,6 +16,7 @@ import re
 import shutil
 import tempfile
 import uuid
+from contextlib import contextmanager
 from copy import deepcopy
 from datetime import UTC, datetime
 from pathlib import Path
@@ -86,6 +87,27 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     finally:
         if os.path.exists(temp_name):
             os.unlink(temp_name)
+
+
+@contextmanager
+def _import_lock(root: Path, *, force: bool = False):
+    """同一 adjudication root 的批次导入互斥锁（跨进程文件锁）。"""
+
+    lock_path = Path(root) / ".imports" / "import.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    if force and lock_path.exists():
+        lock_path.unlink()
+    try:
+        fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError as exc:
+        raise AdjudicationError("另一个裁决导入正在进行（锁文件已存在）") from exc
+    try:
+        os.write(fd, f"pid={os.getpid()} at={datetime.now(UTC).isoformat()}".encode())
+        os.close(fd)
+        yield
+    finally:
+        if lock_path.exists():
+            lock_path.unlink()
 
 
 def _find_candidate(data: dict[str, Any], candidate_id: str) -> dict[str, Any]:
@@ -390,6 +412,22 @@ def import_decisions_from_csv(
     default_adjudicator: str | None = None,
     dry_run: bool = False,
 ) -> dict[str, Any]:
+    with _import_lock(Path(root)):
+        return _import_decisions_from_csv_unlocked(
+            root,
+            csv_path,
+            default_adjudicator=default_adjudicator,
+            dry_run=dry_run,
+        )
+
+
+def _import_decisions_from_csv_unlocked(
+    root: Path,
+    csv_path: Path,
+    *,
+    default_adjudicator: str | None = None,
+    dry_run: bool = False,
+) -> dict[str, Any]:
     """把填写好的 CSV 合并回 YAML；只合并 final_validity 非空的行走。
 
     安全与一致性：
@@ -496,8 +534,15 @@ def import_decisions_from_csv(
     backup_dir.mkdir(parents=True, exist_ok=True)
     history_path = Path(root) / "history.jsonl"
     history_backup = imports_dir / f"{batch_id}.history"
+    history_backup_hash: str | None = None
     if history_path.exists():
         shutil.copy2(history_path, history_backup)
+        history_backup_hash = _sha256_file(history_backup)
+    backups: list[tuple[Path, Path, str]] = []
+    for path, _, _, _, _ in prepared:
+        backup = backup_dir / path.name
+        shutil.copy2(path, backup)
+        backups.append((path, backup, _sha256_file(backup)))
     journal_path = imports_dir / f"{batch_id}.json"
     journal: dict[str, Any] = {
         "batch_id": batch_id,
@@ -508,21 +553,25 @@ def import_decisions_from_csv(
                 "case_id": path.stem,
                 "path": path.name,
                 "before_hash": before_hash,
+                "backup_hash": backup_hash,
             }
-            for path, _, _, _, before_hash in prepared
+            for (path, _, _, _, before_hash), (_, _, backup_hash) in zip(
+                prepared, backups, strict=True
+            )
         ],
         "history_existed": history_path.exists(),
         "history_size": history_path.stat().st_size if history_path.exists() else 0,
+        "history_backup_hash": history_backup_hash,
     }
     _write_json(journal_path, journal)
     written: list[tuple[Path, Path]] = []
     try:
-        for path, data, _, _, before_hash in prepared:
+        for (path, data, _, _, before_hash), (_, backup, _) in zip(
+            prepared, backups, strict=True
+        ):
             # 写入前再次检查并发修改
             if _sha256_file(path) != before_hash:
                 raise AdjudicationError(f"用例文件已被其他人修改: {path.name}")
-            backup = backup_dir / path.name
-            shutil.copy2(path, backup)
             save_case(path, data)
             written.append((path, backup))
         for _, _, entries, _, _ in prepared:
@@ -555,35 +604,55 @@ def import_decisions_from_csv(
 
 
 def recover_imports(root: Path) -> dict[str, Any]:
-    """恢复中断的批次导入：按 journal 的备份还原 YAML 与 history。"""
+    """恢复中断的批次导入；备份缺失或哈希不符时标记失败，不谎报 recovered。"""
 
     imports_dir = Path(root) / ".imports"
     recovered = 0
     failed = 0
-    for journal_path in sorted(imports_dir.glob("*.json")):
-        try:
-            journal = json.loads(journal_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            failed += 1
-            continue
-        if journal.get("status") != "applying":
-            continue
-        batch_id = journal.get("batch_id") or journal_path.stem
-        backup_dir = imports_dir / f"{batch_id}.backup"
-        for entry in journal.get("files", []):
-            path = Path(root) / entry["path"]
-            backup = backup_dir / entry["path"]
-            if backup.exists():
+    with _import_lock(Path(root), force=True):
+        for journal_path in sorted(imports_dir.glob("*.json")):
+            try:
+                journal = json.loads(journal_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                failed += 1
+                continue
+            if journal.get("status") != "applying":
+                continue
+            batch_id = journal.get("batch_id") or journal_path.stem
+            backup_dir = imports_dir / f"{batch_id}.backup"
+            problems: list[str] = []
+            for entry in journal.get("files", []):
+                backup = backup_dir / entry["path"]
+                if not backup.exists():
+                    problems.append(f"缺少备份 {entry['path']}")
+                elif entry.get("backup_hash") and _sha256_file(backup) != entry["backup_hash"]:
+                    problems.append(f"备份 hash 不匹配 {entry['path']}")
+            history_path = Path(root) / "history.jsonl"
+            history_backup = imports_dir / f"{batch_id}.history"
+            if journal.get("history_existed"):
+                if not history_backup.exists():
+                    problems.append("缺少 history 备份")
+                elif journal.get("history_backup_hash") and _sha256_file(
+                    history_backup
+                ) != journal["history_backup_hash"]:
+                    problems.append("history 备份 hash 不匹配")
+            if problems:
+                journal["status"] = "recovery_failed"
+                journal["error"] = "; ".join(problems)[:1000]
+                _write_json(journal_path, journal)
+                failed += 1
+                continue
+            for entry in journal.get("files", []):
+                path = Path(root) / entry["path"]
+                backup = backup_dir / entry["path"]
                 shutil.copy2(backup, path)
-        history_path = Path(root) / "history.jsonl"
-        history_backup = imports_dir / f"{batch_id}.history"
-        if history_backup.exists():
-            shutil.copy2(history_backup, history_path)
-        elif not journal.get("history_existed") and history_path.exists():
-            history_path.unlink()
-        journal["status"] = "recovered"
-        journal["recovered_at"] = datetime.now(UTC).isoformat()
-        _write_json(journal_path, journal)
-        recovered += 1
+            if history_backup.exists():
+                shutil.copy2(history_backup, history_path)
+            elif not journal.get("history_existed") and history_path.exists():
+                history_path.unlink()
+            journal["status"] = "recovered"
+            journal["recovered_at"] = datetime.now(UTC).isoformat()
+            _write_json(journal_path, journal)
+            recovered += 1
     return {"recovered": recovered, "failed": failed}
 

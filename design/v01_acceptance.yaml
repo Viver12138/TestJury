@@ -12,6 +12,18 @@ parent: V-01
 parent_status: designed
 parent_note: "A–E 已实现并有测试/运行证据；F 数据准入未完成，父项不标记 verified/accepted。"
 
+evidence_scopes:
+  functional_scope_evidence:
+    - evidence/V-01/functional-live-REG-001.json
+    - evidence/V-01/live-review-REG-001.json
+  page_scope_historical_evidence:
+    - evidence/V-01/live-review-UI-HOME-005.json
+    - evidence/M1/scope-contract-live-2026-11-11.json
+  generic_pipeline_smoke_evidence:
+    - evidence/V-01/model-smoke-2026-11-11.json
+    - evidence/M1/strict-schema-live-2026-11-11.json
+  note: "UI-HOME-005 属于页面/UI 用例；其运行记录只作为通用链路/页面历史证据，不作为 functional 专项证据。"
+
 subitems:
   - id: V-01A
     title: Chat Adapter 基础调用与响应解析
@@ -28,9 +40,9 @@ subitems:
     evidence:
       - tests/unit/test_chat_review_model.py
       - evidence/V-01/live-review-TC-LIVE-006.json
-      - evidence/V-01/live-review-UI-HOME-005.json
-    verified_at: "2026-11-11T12:20:00+08:00"
-    note: "严格解析、决策字段丢弃、role 契约、evidence 转换有单测；真实报告已产出。"
+      - evidence/V-01/functional-live-REG-001.json
+    verified_at: "2026-11-11T15:45:00+08:00"
+    note: "严格解析、决策字段丢弃、role 契约、evidence 转换有单测；真实报告已产出；REG-001 为 functional 专项运行。"
 
   - id: V-01C
     title: Retry、限流、超时与取消
@@ -59,9 +71,9 @@ subitems:
     status: verified
     evidence:
       - evidence/V-01/stability-summary-2026-11-11.json
-      - evidence/V-01/live-review-UI-HOME-005.json
-    verified_at: "2026-11-11T12:20:00+08:00"
-    note: "3 次真实运行有状态/调用/成本记录；770b 在修复后 3/3 盲评 + 3/3 投票、27 次调用 0 失败、成本 ¥1.2035；另保留 2 次 Kimi 超时降级样本作为可用性证据。"
+      - evidence/V-01/functional-live-REG-001.json
+    verified_at: "2026-11-11T15:45:00+08:00"
+    note: "3 次真实运行有状态/调用/成本记录；770b 3/3+3/3、REG-001 functional 3/3+3/3（27 次 0 失败、¥1.4209）；另保留降级样本。"
 
   - id: V-01F
     title: 数据准入、脱敏与生产模型准入

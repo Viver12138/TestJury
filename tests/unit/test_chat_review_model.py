@@ -137,7 +137,7 @@ async def test_vote_rejects_severity_on_non_accept_and_invalid_severity() -> Non
     with pytest.raises(AdapterError):
         await model.vote("jury_a", {"description": "第 3 步缺预期"})
 
-    model, _ = _model(json.dumps({"validity": "accept", "severity": "major"}))
+    model, _ = _model(json.dumps({"validity": "accept", "severity": "major", "reason": "成立"}))
     decision = await model.vote("jury_a", {"description": "x"})
     assert decision.validity == "accept" and decision.severity == "major"
 

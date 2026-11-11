@@ -10,7 +10,9 @@ documents:
   functional_test_cases: source/functional_test_cases_v1.1.xlsx
 normalized:
   cases_json: cases.json
-  review_payloads: case_payloads.json
+  review_payloads: functional_case_payloads.json
+  legacy_unclassified_review_payloads: case_payloads.json
+  ui_review_payloads: case_payloads.json
   functional_review_payloads: functional_case_payloads.json
   functional_cases_v1_1: functional_cases_v1.1.json
   excluded_nonfunctional_v1_1: excluded_nonfunctional_v1.1.json
@@ -20,7 +22,9 @@ functional_case_count: 62
 functional_case_count_in_scope: 57
 nonfunctional_case_count: 5
 classification: {ui_page: 55, functional: 57, nonfunctional_excluded: 5}
-modules: {"全局规范": 7, "公共首页": 6, "登录页": 7, "注册页": 6, "登录后主界面": 7, "三维弹球页": 10, "个人中心": 6, "响应式与可访问性": 6}
+ui_modules: {"全局规范": 7, "公共首页": 6, "登录页": 7, "注册页": 6, "登录后主界面": 7, "三维弹球页": 10, "个人中心": 6, "响应式与可访问性": 6}
+functional_modules: {"公共首页与导航": 5, "注册": 8, "登录、会话与退出": 9, "登录后主界面": 6, "三维弹球": 15, "成绩与个人中心": 8, "权限、安全与非功能": 11}
+review_payloads_count: 57
 provenance:
   generator: ai
   human_reviewed: false

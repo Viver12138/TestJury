@@ -64,8 +64,11 @@ A1 步骤可自动化、A2 状态可获取、A3 定位可维护、A4 数据可�
 可以对业务维度提出问题，但严重级不超过 major。""",
 }
 
-_DEFAULT_CATEGORIES = {
-    "覆盖缺失",
+OVERALL_COMMENT_MAX = 80
+VOTE_REASON_MAX = 60
+
+
+_DEFAULT_CATEGORIES = {    "覆盖缺失",
     "规则冲突",
     "意图不符",
     "前置不足",
@@ -326,8 +329,12 @@ class ChatReviewModel:
         if not isinstance(summary, str):
             raise AdapterError("OUTPUT_INVALID", "overall.comment 必须是字符串", retryable=False)
         summary = summary.strip()
-        if len(summary) > 1000:
-            raise AdapterError("OUTPUT_INVALID", "overall.comment 超过 1000 字", retryable=False)
+        if len(summary) > OVERALL_COMMENT_MAX:
+            raise AdapterError(
+                "OUTPUT_INVALID",
+                f"overall.comment 超过 {OVERALL_COMMENT_MAX} 字",
+                retryable=False,
+            )
         request_snapshot = _request_snapshot(request, config)
         response_snapshot = _response_snapshot(response)
         return ReviewOpinion(
@@ -572,16 +579,23 @@ class ChatReviewModel:
                 "OUTPUT_INVALID", f"accept 票 severity 非法: {severity!r}", retryable=False
             )
         raw_reason = payload.get("reason")
-        if raw_reason is not None and not isinstance(raw_reason, str):
+        if not isinstance(raw_reason, str):
             raise AdapterError("OUTPUT_INVALID", "vote.reason 必须是字符串", retryable=False)
-        if isinstance(raw_reason, str) and len(raw_reason) > 1000:
-            raise AdapterError("OUTPUT_INVALID", "vote.reason 超过 1000 字", retryable=False)
+        raw_reason = raw_reason.strip()
+        if not raw_reason:
+            raise AdapterError("OUTPUT_INVALID", "vote.reason 不能为空", retryable=False)
+        if len(raw_reason) > VOTE_REASON_MAX:
+            raise AdapterError(
+                "OUTPUT_INVALID",
+                f"vote.reason 超过 {VOTE_REASON_MAX} 字",
+                retryable=False,
+            )
         request_snapshot = _request_snapshot(request, config)
         response_snapshot = _response_snapshot(response)
         return VoteDecision(
             validity=validity,
             severity=severity,
-            reason=(raw_reason.strip() or None) if raw_reason is not None else None,
+            reason=raw_reason,
             model=response.model,
             latency_ms=response.latency_ms,
             input_tokens=response.usage.input_tokens,

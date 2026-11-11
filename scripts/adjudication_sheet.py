@@ -86,24 +86,24 @@ class Column:
 
 
 COLUMNS: list[Column] = [
-    Column("case_id", "用例编号\n(case_id)", 12, "case", "read"),
-    Column("case_title", "用例标题\n(case_title)", 18, "case", "read"),
-    Column("module", "所属模块\n(module)", 14, "case", "read"),
-    Column("priority", "优先级\n(priority)", 9, "case", "read"),
-    Column("source", "用例来源\n(source)", 14, "case", "read"),
-    Column("ui_spec_ref", "规范引用\n(ui_spec_ref)", 12, "case", "read"),
-    Column("preconditions", "前置条件\n(preconditions)", 24, "case", "read"),
-    Column("steps", "测试步骤\n(steps)", 32, "case", "read"),
-    Column("expected", "预期结果\n(expected)", 32, "case", "read"),
-    Column("candidate_id", "候选编号\n(candidate_id)", 21, "candidate", "read"),
-    Column("title", "AI 问题标题\n(title)", 26, "candidate", "read"),
-    Column("claim", "AI 问题描述\n(claim)", 40, "candidate", "read"),
-    Column("evidence_case", "证据·用例位置\n(evidence_case)", 15, "candidate", "read"),
-    Column("evidence_spec", "证据·规范\n(evidence_spec)", 20, "candidate", "read"),
+    Column("case_id", "用例编号\n(case_id)", 15, "case", "read"),
+    Column("case_title", "用例标题\n(case_title)", 18.0, "case", "read"),
+    Column("module", "所属模块\n(module)", 14.0, "case", "read"),
+    Column("priority", "优先级\n(priority)", 12.0, "case", "read"),
+    Column("source", "用例来源\n(source)", 24.0, "case", "read"),
+    Column("ui_spec_ref", "规范引用\n(ui_spec_ref)", 15.0, "case", "read"),
+    Column("preconditions", "前置条件\n(preconditions)", 24.0, "case", "read"),
+    Column("steps", "测试步骤\n(steps)", 33.0, "case", "read"),
+    Column("expected", "预期结果\n(expected)", 33.0, "case", "read"),
+    Column("candidate_id", "候选编号\n(candidate_id)", 21.0, "candidate", "read"),
+    Column("title", "AI 问题标题\n(title)", 26.0, "candidate", "read"),
+    Column("claim", "AI 问题描述\n(claim)", 40.0, "candidate", "read"),
+    Column("evidence_case", "证据·用例位置\n(evidence_case)", 17.0, "candidate", "read"),
+    Column("evidence_spec", "证据·规范\n(evidence_spec)", 22.0, "candidate", "read"),
     Column(
         "final_validity",
         "裁决结论\n(final_validity)",
-        13,
+        18.0,
         "manual",
         "select",
         hint="必填。valid=问题成立需改用例；invalid=不成立；uncertain=信息不足；needs_spec=规范未定义需产品确认。",
@@ -111,7 +111,7 @@ COLUMNS: list[Column] = [
     Column(
         "final_severity",
         "严重级\n(final_severity)",
-        11,
+        18.0,
         "manual",
         "select",
         hint="仅 valid 填写：blocker / major / suggestion。invalid、uncertain、needs_spec 必须留空。",
@@ -119,7 +119,7 @@ COLUMNS: list[Column] = [
     Column(
         "final_category",
         "问题分类\n(final_category)",
-        14,
+        18.0,
         "manual",
         "select",
         hint="仅 valid 填写，从 Rubric 的 18 个分类里选一个。",
@@ -127,21 +127,21 @@ COLUMNS: list[Column] = [
     Column(
         "correction",
         "改写建议\n(correction)",
-        34,
+        34.0,
         "manual",
         "text",
         hint="valid 建议必填：写具体怎么改，不要写“建议补充”。",
     ),
-    Column("adjudicator", "裁决人\n(adjudicator)", 11, "manual", "text", hint="真实姓名/工号，不能写 AI、agent、system。"),
-    Column("adjudicated_at", "裁决时间\n(adjudicated_at)", 18, "manual", "text", hint="可留空，导入时自动补当前时间（ISO 8601）。"),
-    Column("note", "备注\n(note)", 24, "manual", "text", hint="裁决理由、合并关系、待确认事项。"),
-    Column("ai_recommendation", "AI 建议\n(ai_recommendation)", 13, "hint", "hint", hint="AI 的建议只是线索，likely_valid ≠ valid；建议先自己判完再看这一组。"),
-    Column("ai_reason", "AI 理由\n(ai_reason)", 28, "hint", "hint"),
-    Column("ai_suggested_severity", "AI 建议严重级\n(ai_suggested_severity)", 11, "hint", "hint"),
+    Column("adjudicator", "裁决人\n(adjudicator)", 16.0, "manual", "text", hint="真实姓名/工号，不能写 AI、agent、system。"),
+    Column("adjudicated_at", "裁决时间\n(adjudicated_at)", 20.0, "manual", "text", hint="可留空，导入时自动补当前时间（ISO 8601）。"),
+    Column("note", "备注\n(note)", 24.0, "manual", "text", hint="裁决理由、合并关系、待确认事项。"),
+    Column("ai_recommendation", "AI 建议\n(ai_recommendation)", 21.0, "hint", "hint", hint="AI 的建议只是线索，likely_valid ≠ valid；建议先自己判完再看这一组。"),
+    Column("ai_reason", "AI 理由\n(ai_reason)", 30.0, "hint", "hint"),
+    Column("ai_suggested_severity", "AI 建议严重级\n(ai_suggested_severity)", 25.0, "hint", "hint"),
     Column(
         "case_verdict",
         "用例结论\n(case_verdict)",
-        13,
+        16.0,
         "level",
         "select",
         hint="每个用例只在首行填一次：还有 pending 用 in_progress；最终结论要求该用例全部候选已裁决。",
@@ -149,12 +149,12 @@ COLUMNS: list[Column] = [
     Column(
         "case_defect_count",
         "缺陷数\n(case_defect_count)",
-        9,
+        21.0,
         "level",
         "select",
         hint="留空自动按 valid 条数计算；手填必须等于 valid 条数。",
     ),
-    Column("case_note", "用例备注\n(case_note)", 22, "level", "text", hint="拆分/重跑/待确认说明。"),
+    Column("case_note", "用例备注\n(case_note)", 24.0, "level", "text", hint="拆分/重跑/待确认说明。"),
 ]
 
 GROUP_TITLES = {
@@ -251,6 +251,8 @@ def case_rows(cases: list[dict[str, Any]]) -> list[dict[str, Any]]:
         for candidate in case.get("candidates", []):
             final = candidate.get("final", {}) or {}
             defect = level.get("defect_count")
+            validity = final.get("validity") or "pending"
+            verdict = level.get("verdict") or "pending"
             rows.append(
                 {
                     "case_id": case.get("case_id"),
@@ -264,14 +266,14 @@ def case_rows(cases: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     "ai_recommendation": candidate.get("ai_recommendation"),
                     "ai_reason": candidate.get("ai_reason"),
                     "ai_suggested_severity": candidate.get("ai_suggested_severity"),
-                    "final_validity": final.get("validity") or "pending",
+                    "final_validity": "" if validity == "pending" else validity,
                     "final_severity": final.get("severity") or "",
                     "final_category": final.get("category") or "",
                     "correction": final.get("correction") or "",
                     "adjudicator": final.get("adjudicator") or "",
                     "adjudicated_at": final.get("adjudicated_at") or "",
                     "note": final.get("note") or "",
-                    "case_verdict": (level.get("verdict") or "pending") if first else "",
+                    "case_verdict": ("" if verdict == "pending" else verdict) if first else "",
                     "case_defect_count": (defect if defect is not None else "") if first else "",
                     "case_note": (level.get("note") or "") if first else "",
                 }
@@ -517,7 +519,7 @@ def _build_main_sheet(ws, rows, cases, validations, data_start, data_end, Commen
             comment.height = 150
             cell.comment = comment
         ws.column_dimensions[get_column_letter(index)].width = column.width
-    ws.row_dimensions[3].height = 46
+    ws.row_dimensions[3].height = 74
 
     previous_case = None
     band = 0
@@ -597,7 +599,7 @@ def _build_cases_sheet(ws, cases) -> None:
     ws.row_dimensions[1].height = 26
 
     headers = [
-        ("用例编号", 13),
+        ("用例编号", 15),
         ("用例标题", 22),
         ("所属模块", 16),
         ("优先级", 9),
@@ -644,7 +646,12 @@ def _build_cases_sheet(ws, cases) -> None:
             )
             cell.border = Border(left=side(), right=side(), top=side(), bottom=side())
             cell.fill = fill(READ_FILL if offset % 2 else WHITE)
-        ws.row_dimensions[row_index].height = 92
+        lines = max(
+            _wrapped_lines(snapshot["preconditions"], 34),
+            _wrapped_lines(snapshot["steps"], 46),
+            _wrapped_lines(snapshot["expected"], 46),
+        )
+        ws.row_dimensions[row_index].height = max(50.0, min(150.0, lines * 13.5 + 10))
     ws.freeze_panes = "B3"
 
 
@@ -672,7 +679,7 @@ def _build_intro_sheet(ws, cases, total_candidates) -> None:
         value_cell = ws.cell(row=row, column=3, value=text)
         value_cell.font = Font(name=FONT_NAME, size=10)
         value_cell.alignment = Alignment(vertical="top", wrap_text=True)
-        ws.row_dimensions[row].height = max(18, 15 * ceil(_visual_len(text) / 100) + 4)
+        ws.row_dimensions[row].height = max(18, 15 * ceil(_visual_len(text) / 104) + 4)
         return row + 1
 
     row = 2
@@ -827,11 +834,30 @@ def write_csv(records: list[dict[str, str]], destination: Path) -> int:
 
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
+
+    # 用例级字段只在首行填；导出时按用例补齐，保证 CSV 与 export-csv 的形状一致
+    case_level: dict[str, dict[str, str]] = {}
+    for record in records:
+        case_id = record.get("case_id", "")
+        bucket = case_level.setdefault(case_id, {})
+        for key in ("case_verdict", "case_defect_count", "case_note"):
+            if not bucket.get(key) and record.get(key):
+                bucket[key] = record[key]
+
     with destination.open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=CSV_ORDER, extrasaction="ignore")
         writer.writeheader()
         for record in records:
-            writer.writerow({key: record.get(key, "") for key in CSV_ORDER})
+            row = {key: record.get(key, "") for key in CSV_ORDER}
+            if not row["final_validity"]:
+                row["final_validity"] = "pending"
+            bucket = case_level.get(record.get("case_id", ""), {})
+            for key in ("case_verdict", "case_defect_count", "case_note"):
+                if not row[key] and bucket.get(key):
+                    row[key] = bucket[key]
+            if not row["case_verdict"]:
+                row["case_verdict"] = "pending"
+            writer.writerow(row)
     return len(records)
 
 

@@ -85,19 +85,47 @@ SECRET_KEY_PREFIXES = (
     "cookie",
     "session",
 )
+PII_KEY_SUFFIXES = (
+    "email",
+    "phone",
+    "mobile",
+    "tel",
+    "name",
+    "address",
+    "idcard",
+    "idnumber",
+    "bankcard",
+    "account",
+    "username",
+)
+SECRET_KEY_SUFFIXES = (
+    "password",
+    "passwd",
+    "secret",
+    "token",
+    "apikey",
+    "privatekey",
+    "authorization",
+    "cookie",
+    "session",
+)
 
 
 def is_secret_key(key: str | None) -> bool:
     normalized = normalize_key(key)
-    return normalized in SECRET_KEYS_NORMALIZED or any(
-        normalized.startswith(prefix) for prefix in SECRET_KEY_PREFIXES
+    return (
+        normalized in SECRET_KEYS_NORMALIZED
+        or any(normalized.startswith(prefix) for prefix in SECRET_KEY_PREFIXES)
+        or any(normalized.endswith(suffix) for suffix in SECRET_KEY_SUFFIXES)
     )
 
 
 def is_pii_key(key: str | None) -> bool:
     normalized = normalize_key(key)
-    return normalized in PII_KEYS_NORMALIZED or any(
-        normalized.startswith(prefix) for prefix in PII_KEY_PREFIXES
+    return (
+        normalized in PII_KEYS_NORMALIZED
+        or any(normalized.startswith(prefix) for prefix in PII_KEY_PREFIXES)
+        or any(normalized.endswith(suffix) for suffix in PII_KEY_SUFFIXES)
     )
 
 

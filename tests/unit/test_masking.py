@@ -81,6 +81,35 @@ def test_numeric_and_camel_case_sensitive_values_are_masked() -> None:
     assert result.data["accessToken"].startswith("<SECRET_")
 
 
+def test_prefixed_and_suffixed_sensitive_field_names() -> None:
+    policy = MaskingPolicy()
+    result = policy.apply(
+        {
+            "userEmail": "alice@example.com",
+            "contactPhone": "13800138000",
+            "fullName": "张三",
+            "customerName": "李四",
+            "billingAddress": "北京市朝阳区某路 1 号",
+            "authToken": "tok-abc",
+            "clientSecret": "sec-xyz",
+            "dbPassword": "db-pass",
+        }
+    )
+    text = json.dumps(result.data, ensure_ascii=False)
+    for raw in (
+        "alice@example.com",
+        "13800138000",
+        "张三",
+        "李四",
+        "北京市朝阳区某路 1 号",
+        "tok-abc",
+        "sec-xyz",
+        "db-pass",
+    ):
+        assert raw not in text
+    assert all(str(value).startswith("<") for value in result.data.values())
+
+
 @pytest.mark.asyncio
 async def test_adapter_receives_masked_case() -> None:
     adapter = RecordingAdapter()
