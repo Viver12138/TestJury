@@ -109,6 +109,14 @@ def fuse(
         evidence_status = (
             _aggregate_status(claims) if claims else _issue_evidence_status(strongest[1])
         )
+        evidence_refs: dict[str, dict[str, Any]] = {}
+        for _, issue in members:
+            for ref in issue.get("evidence_refs") or []:
+                if isinstance(ref, str):
+                    evidence_refs.setdefault(ref, {"ref_id": ref, "verified": True})
+                elif isinstance(ref, dict):
+                    key = str(ref.get("ref_id") or ref.get("id") or len(evidence_refs))
+                    evidence_refs.setdefault(key, ref)
         candidates.append(
             CandidateRecord(
                 id=str(uuid4()),
@@ -122,7 +130,18 @@ def fuse(
                 severity_proposal=severity_proposal,
                 claims=claims,
                 evidence_status=evidence_status,
-                evidence_refs=[],
+                evidence_refs=list(evidence_refs.values()),
+                kb_grounded=bool(strongest[1].get("kb_grounded", False)),
+                kb_refs=list(strongest[1].get("kb_refs") or []),
+                evidence_type=strongest[1].get("evidence_type"),
+                evidence_strength=strongest[1].get("evidence_strength"),
+                evidence_quote=strongest[1].get("evidence_quote"),
+                model_evidence_status=strongest[1].get("model_evidence_status"),
+                evidence_support_status=strongest[1].get("evidence_support_status"),
+                validation_status=str(strongest[1].get("validation_status") or "passed"),
+                parse_warnings=list(strongest[1].get("parse_warnings") or []),
+                model_confidence=strongest[1].get("model_confidence"),
+                suggestion=strongest[1].get("suggestion"),
                 proposed_by=sorted({role for role, _ in members}),
                 merged_from=[
                     {

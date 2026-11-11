@@ -242,7 +242,9 @@ async def test_retry_only_retries_retryable_errors() -> None:
     async def fake_sleep(delay: float) -> None:
         sleeps.append(delay)
 
-    assert await call_with_retry(flaky_then_ok, base_delay=0.1, sleep=fake_sleep) == "ok"
+    assert await call_with_retry(
+        flaky_then_ok, base_delay=0.1, jitter=0, sleep=fake_sleep
+    ) == "ok"
     assert calls["retryable"] == 3
     assert sleeps == [0.1, 0.2]
 

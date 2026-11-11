@@ -35,7 +35,7 @@ roles:
   jury_b:
     provider: kimi
     model_id: kimi-k3.1-pro
-    timeout: 300
+    timeout: 420
     max_output_tokens: 16384
     concurrency: 1
     # 实测约 3 RPM；投票/评审调用需限速，避免 429
@@ -86,4 +86,5 @@ pricing:
   qwen3.8-max: { input_per_1k: 0.02, output_per_1k: 0.06 }
   deepseek-flash: { input_per_1k: 0.001, output_per_1k: 0.002 }
   kimi-k3.1-pro: { input_per_1k: 0.01, output_per_1k: 0.03 }
+
 

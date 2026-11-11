@@ -31,6 +31,7 @@ PLAN = lib.DESIGN_DIR / "execution_plan.yaml"
 PROTOCOL = lib.DESIGN_DIR / "experiment_protocol.yaml"
 ADMISSION = lib.DESIGN_DIR / "model_admission.yaml"
 VERSIONS_LOCK = lib.DESIGN_DIR / "versions.lock.yaml"
+EVIDENCE_DIR = lib.ROOT / "evidence"
 SHA_RE = __import__("re").compile(r"^[0-9a-f]{64}$")
 
 RANK = {"designed": 0, "implemented": 1, "verified": 2, "accepted": 3}

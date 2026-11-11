@@ -85,6 +85,7 @@ class AdapterError(Exception):
         self.retryable = retryable
         self.status_code = status_code
         self.raw = raw
+        self.attempts: list[dict[str, Any]] = []
         super().__init__(f"{code}: {message}")
 
 
@@ -113,11 +114,20 @@ class ReviewOpinion:
     issues: list[dict[str, Any]] = field(default_factory=list)
     model: str | None = None
     model_version: str | None = None
+    provider: str | None = None
     latency_ms: int | None = None
     input_tokens: int = 0
     output_tokens: int = 0
     cost_estimate: float | None = None
     warnings: list[str] = field(default_factory=list)
+    attempts: list[dict[str, Any]] = field(default_factory=list)
+    request_hash: str | None = None
+    response_hash: str | None = None
+    raw_request: dict[str, Any] | None = None
+    raw_response: dict[str, Any] | None = None
+    masking_policy_id: str | None = None
+    masking_policy_version: str | None = None
+    masking_report: dict[str, Any] | None = None
 
 
 @dataclass
@@ -131,6 +141,14 @@ class VoteDecision:
     output_tokens: int = 0
     cost_estimate: float | None = None
     warnings: list[str] = field(default_factory=list)
+    attempts: list[dict[str, Any]] = field(default_factory=list)
+    request_hash: str | None = None
+    response_hash: str | None = None
+    raw_request: dict[str, Any] | None = None
+    raw_response: dict[str, Any] | None = None
+    masking_policy_id: str | None = None
+    masking_policy_version: str | None = None
+    masking_report: dict[str, Any] | None = None
 
 
 class ReviewModel(Protocol):

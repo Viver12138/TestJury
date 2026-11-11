@@ -41,6 +41,15 @@ async def test_mock_pipeline_produces_valid_report(async_client, app) -> None:
     assert report["issues"]
     assert report["summary"]["total_issues"] == len(report["issues"])
 
+    runs = await app.state.storage.list_model_runs(review_id)
+    assert runs
+    assert {run.operation for run in runs} == {"blind_review", "vote"}
+    assert all(run.status == "ok" for run in runs)
+    assert all(run.raw_request is None for run in runs)  # 默认不落原始 IO
+    job = await app.state.storage.get_job(review_id)
+    assert job is not None
+    assert job.total_cost_estimate in (None, 0.0)
+
     markdown = await async_client.get(
         f"/v1/reviews/{review_id}/report", headers=auth_headers()
     )

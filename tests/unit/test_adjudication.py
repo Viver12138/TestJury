@@ -156,7 +156,7 @@ def test_import_csv_merges_decisions(workdir: Path) -> None:
             "adjudicator": "reviewer-1",
             "adjudicated_at": "2026-11-11T12:00:00+08:00",
             "case_verdict": "needs_fix",
-            "case_defect_count": "5",
+            "case_defect_count": "1",
             "case_note": "拆分后重跑",
         }
     )
@@ -172,7 +172,7 @@ def test_import_csv_merges_decisions(workdir: Path) -> None:
     assert final["validity"] == "valid"
     assert final["adjudicator"] == "reviewer-1"
     assert data["case_level"]["verdict"] == "needs_fix"
-    assert data["case_level"]["defect_count"] == 5
+    assert data["case_level"]["defect_count"] == 1
     assert (target / "history.jsonl").exists()
 
 
@@ -195,3 +195,65 @@ def test_import_csv_dry_run_does_not_write(workdir: Path) -> None:
     result = import_decisions_from_csv(target, csv_path, dry_run=True)
     assert result["dry_run"] is True
     assert load_case(target / "UI-GAME-007.yaml")["candidates"][0]["final"]["validity"] == "pending"
+
+
+def test_import_csv_rejects_path_traversal(workdir: Path) -> None:
+    target = workdir / "adjudication"
+    target.mkdir()
+    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
+    csv_path = target / "adjudication.csv"
+    export_csv(target, csv_path)
+    with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    rows[0].update({"case_id": "../evil", "final_validity": "invalid", "adjudicator": "reviewer-1"})
+    with csv_path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+    with pytest.raises(AdjudicationError, match="case_id"):
+        import_decisions_from_csv(target, csv_path)
+
+
+def test_import_csv_is_all_or_nothing(workdir: Path) -> None:
+    target = workdir / "adjudication"
+    target.mkdir()
+    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
+    csv_path = target / "adjudication.csv"
+    export_csv(target, csv_path)
+    with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    rows[0].update({"final_validity": "invalid", "adjudicator": "reviewer-1"})
+    rows[1].update({"final_validity": "invalid", "final_severity": "blocker", "adjudicator": "reviewer-1"})
+    with csv_path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+    with pytest.raises(AdjudicationError):
+        import_decisions_from_csv(target, csv_path)
+    data = load_case(target / "UI-GAME-007.yaml")
+    assert all(item["final"]["validity"] == "pending" for item in data["candidates"])
+    assert not (target / "history.jsonl").exists()
+
+
+def test_case_verdict_consistency_rules(workdir: Path) -> None:
+    target = workdir / "UI-GAME-007.yaml"
+    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target)
+    data = load_case(target)
+    record_decision(
+        data,
+        "CAND-UI-GAME-007-01",
+        validity="valid",
+        severity="major",
+        category="状态不自洽",
+        adjudicator="reviewer-1",
+    )
+    with pytest.raises(AdjudicationError, match="pass"):
+        set_case_verdict(data, verdict="pass", adjudicator="reviewer-1")
+    with pytest.raises(AdjudicationError, match="blocked"):
+        set_case_verdict(data, verdict="blocked", adjudicator="reviewer-1")
+    with pytest.raises(AdjudicationError, match="defect_count"):
+        set_case_verdict(data, verdict="needs_fix", defect_count=3, adjudicator="reviewer-1")
+    set_case_verdict(data, verdict="needs_fix", defect_count=1, adjudicator="reviewer-1")
+    assert data["case_level"]["verdict"] == "needs_fix"

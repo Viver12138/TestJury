@@ -1,0 +1,75 @@
+# V-01 真实模型验收子项
+#
+# 版本：v1.0 · 2026-11-11
+# 父项：V-01（design/execution_plan.yaml）
+# 原则：子项独立验证；父项仍以整体门禁为准，未全部 verified 前不得标记 accepted。
+# 状态：implemented / verified / pending / blocked；verified 只表示有对应证据，不等于业务验收。
+
+version: "1.0"
+baseline: design-v1.13
+last_updated: "2026-11-11"
+parent: V-01
+parent_status: designed
+parent_note: "A–E 已实现并有测试/运行证据；F 数据准入未完成，父项不标记 verified/accepted。"
+
+subitems:
+  - id: V-01A
+    title: Chat Adapter 基础调用与响应解析
+    status: verified
+    evidence:
+      - evidence/V-01/model-smoke-2026-11-11.json
+      - tests/unit/test_llm_adapters.py
+    verified_at: "2026-11-11T10:05:00+08:00"
+    note: "三供应商最小 JSON 调用通过；HTTP 429/5xx/超时/截断分类有单测。"
+
+  - id: V-01B
+    title: ChatReviewModel 与业务对象转换
+    status: verified
+    evidence:
+      - tests/unit/test_chat_review_model.py
+      - evidence/V-01/live-review-TC-LIVE-006.json
+      - evidence/V-01/live-review-UI-HOME-005.json
+    verified_at: "2026-11-11T12:20:00+08:00"
+    note: "严格解析、决策字段丢弃、role 契约、evidence 转换有单测；真实报告已产出。"
+
+  - id: V-01C
+    title: Retry、限流、超时与取消
+    status: verified
+    evidence:
+      - tests/unit/test_retry_and_rate_limit.py
+      - app/llm/retry.py
+      - app/llm/review.py
+    verified_at: "2026-11-11T13:15:00+08:00"
+    note: "call_with_retry 只由 _complete 持有；run_vote 不再包第二层，单次调用最多 3 次；指数退避+抖动、取消传播、限流 semaphore 竞态、失败 attempts 有测试。"
+
+  - id: V-01D
+    title: 长输出、非法 JSON、截断输出和异常结构
+    status: verified
+    evidence:
+      - tests/unit/test_llm_adapters.py
+      - tests/unit/test_chat_review_model.py
+      - tests/unit/test_evidence_validation.py
+      - evidence/M1/strict-schema-live-2026-11-11.json
+    verified_at: "2026-11-11T13:15:00+08:00"
+    note: "缺 issues/null、字段错类型、category 非枚举、非法 JSON、截断 finish_reason、引用越界、step_index 越界均有测试；严格门禁后真实运行中 Kimi 一票 OUTPUT_INVALID 被记为失败。"
+
+  - id: V-01E
+    title: 多次运行稳定性与成本记录
+    status: verified
+    evidence:
+      - evidence/V-01/stability-summary-2026-11-11.json
+      - evidence/V-01/live-review-UI-HOME-005.json
+    verified_at: "2026-11-11T12:20:00+08:00"
+    note: "3 次真实运行有状态/调用/成本记录；770b 在修复后 3/3 盲评 + 3/3 投票、27 次调用 0 失败、成本 ¥1.2035；另保留 2 次 Kimi 超时降级样本作为可用性证据。"
+
+  - id: V-01F
+    title: 数据准入、脱敏与生产模型准入
+    status: pending
+    evidence:
+      - design/model_admission.yaml
+      - tests/unit/test_model_admission.py
+      - tests/unit/test_masking.py
+    verified_at: null
+    blockers:
+      - Q-09
+    note: "MaskingPolicy 已在 Prompt 前真实脱敏（邮箱/手机/身份证/银行卡/IP/密钥字段），每次调用记录策略 ID/版本/命中数；生产 Gate 校验 reviewer、DPA、allowed_data_level、evidence 文件与哈希、requires_masking/allow_raw_case 与策略 ID。模型数据准入仍未完成，F 不通过。"

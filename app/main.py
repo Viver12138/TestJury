@@ -29,6 +29,7 @@ from app.core.logging import configure_logging
 from app.core.observability import RequestContextMiddleware
 from app.core.versioning import compute_versions
 from app.llm.factory import build_chat_adapter
+from app.llm.masking import MaskingPolicy
 from app.llm.mock import MockChatClient
 from app.llm.registry import ModelRegistry
 from app.llm.review import ChatReviewModel
@@ -56,14 +57,34 @@ def _build_review_model(settings: Settings):
     if settings.review_model_mode == "mock":
         return MockChatClient()
     registry = ModelRegistry.load(settings.model_registry_path)
+    roles = ("chief_blind", "jury_a", "jury_b")
+    if settings.is_production and settings.enforce_model_admission:
+        from app.llm.admission import enforce_model_admission
+
+        enforce_model_admission(
+            registry,
+            Path(settings.model_admission_path),
+            roles=roles,
+            masking_enabled=settings.masking_policy_enabled,
+            masking_policy_id=settings.masking_policy_id if settings.masking_policy_enabled else None,
+            request_data_level=settings.data_level,
+        )
     adapters = {
         role: build_chat_adapter(registry, role)
-        for role in ("chief_blind", "jury_a", "jury_b")
+        for role in roles
     }
     rubric = RubricRepository(
         settings.rubric_path, settings.rubric_path.parent / "schema.json"
     ).load_active()
-    return ChatReviewModel(registry, adapters, rubric=rubric)
+    masking = (
+        MaskingPolicy(
+            policy_id=settings.masking_policy_id,
+            version=settings.masking_policy_version,
+        )
+        if settings.masking_policy_enabled
+        else None
+    )
+    return ChatReviewModel(registry, adapters, rubric=rubric, masking_policy=masking)
 
 
 def _build_storage(settings: Settings) -> Storage:

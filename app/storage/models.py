@@ -62,6 +62,8 @@ class ReviewJob:
     report_summary: dict[str, Any] | None = None
     report_json: dict[str, Any] | None = None
     report_locked_at: datetime | None = None
+    total_cost_estimate: float | None = None
+    cost_currency: str = "CNY"
     error: str | None = None
     attempt_count: int = 0
     max_attempts: int = 3
@@ -126,6 +128,17 @@ class CandidateRecord:
     claims: list[dict[str, Any]] = field(default_factory=list)
     evidence_status: str = "insufficient"
     evidence_refs: list[dict[str, Any]] = field(default_factory=list)
+    kb_grounded: bool = False
+    kb_refs: list[str] = field(default_factory=list)
+    evidence_type: str | None = None
+    evidence_strength: str | None = None
+    evidence_quote: str | None = None
+    model_evidence_status: str | None = None
+    evidence_support_status: str | None = None
+    validation_status: str = "passed"
+    parse_warnings: list[str] = field(default_factory=list)
+    model_confidence: float | None = None
+    suggestion: str | None = None
     proposed_by: list[str] = field(default_factory=list)
     merged_from: list[dict[str, Any]] = field(default_factory=list)
     fusion_basis: dict[str, Any] = field(default_factory=dict)
@@ -133,6 +146,39 @@ class CandidateRecord:
     vote_valid_count: int = 0
     vote_completeness: str | None = None
     category: str | None = None
+
+
+@dataclass
+class ModelRunRecord:
+    review_id: str
+    role: str
+    model: str
+    operation: str = "blind_review"
+    provider: str | None = None
+    requested_model: str | None = None
+    model_version: str | None = None
+    prompt_version: str | None = None
+    attempt: int = 1
+    status: str = "ok"
+    request_tokens: int | None = None
+    response_tokens: int | None = None
+    latency_ms: int | None = None
+    request_hash: str | None = None
+    response_hash: str | None = None
+    raw_request: dict[str, Any] | None = None
+    raw_response: dict[str, Any] | None = None
+    parsed_output: dict[str, Any] | None = None
+    parse_warnings: list[str] = field(default_factory=list)
+    cost_estimate: float | None = None
+    cost_currency: str = "CNY"
+    price_config_version: str | None = None
+    error_code: str | None = None
+    error: str | None = None
+    masking_policy_id: str | None = None
+    masking_policy_version: str | None = None
+    masking_report: dict[str, Any] | None = None
+    id: str = field(default_factory=new_id)
+    created_at: datetime = field(default_factory=now)
 
 
 @dataclass
