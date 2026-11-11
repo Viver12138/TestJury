@@ -2,11 +2,12 @@
 
 > 目的：把 AI 评审/静态审计产生的候选问题，转成**人工裁决**的 issue 级标签。
 > 状态：所有 `final.validity` 当前为 `pending`；在人工填写并签名前，不得作为 ground truth、训练标签或验收依据。
+> **填写教程：[填写教程.md](填写教程.md)**（含 Excel/CSV 与 YAML/CLI 两条路线、判定树、示例、常见错误）。
 
 ## 文件
 
 - 每个用例一个 YAML：`<case_id>.yaml`
-- 汇总表：`adjudication.csv`（可直接用 Excel 打开填写）
+- 汇总表：`adjudication.csv`（可直接用 Excel 打开填写；若缺少 `case_verdict` 等列，先关闭 Excel 再执行 `python scripts/adjudicate.py export-csv` 重新生成）
 - 用例快照：`cases.json` / `case_payloads.json`
 
 ## 裁决字段

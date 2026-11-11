@@ -166,6 +166,7 @@ def export_csv(root: Path, destination: Path) -> int:
     rows: list[dict[str, Any]] = []
     for path in sorted(Path(root).glob("*.yaml")):
         data = load_case(path)
+        level = data.get("case_level", {})
         for candidate in data.get("candidates", []):
             final = candidate.get("final", {})
             rows.append(
@@ -187,12 +188,97 @@ def export_csv(root: Path, destination: Path) -> int:
                     "adjudicator": final.get("adjudicator") or "",
                     "adjudicated_at": final.get("adjudicated_at") or "",
                     "note": final.get("note") or "",
+                    "case_verdict": level.get("verdict", "pending"),
+                    "case_defect_count": level.get("defect_count")
+                    if level.get("defect_count") is not None
+                    else "",
+                    "case_note": level.get("note") or "",
                 }
             )
     if not rows:
         raise AdjudicationError("没有可导出的用例")
-    with Path(destination).open("w", encoding="utf-8-sig", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
-        writer.writeheader()
-        writer.writerows(rows)
+    try:
+        with Path(destination).open("w", encoding="utf-8-sig", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+            writer.writeheader()
+            writer.writerows(rows)
+    except PermissionError as exc:
+        raise AdjudicationError(
+            f"CSV 被占用（Excel/WPS 打开中），请关闭后重试: {destination}"
+        ) from exc
     return len(rows)
+
+
+def import_decisions_from_csv(
+    root: Path,
+    csv_path: Path,
+    *,
+    default_adjudicator: str | None = None,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """把填写好的 CSV 合并回 YAML；只合并 final_validity 非空的行走。
+
+    CSV 以 `candidate_id` 为键；同一 case 的 case_verdict/case_defect_count 取第一行非空值。
+    每合并一条候选写一条 history，不覆盖已有裁决以外的历史。
+    """
+
+    if not Path(csv_path).exists():
+        raise AdjudicationError(f"CSV 不存在: {csv_path}")
+    grouped: dict[str, list[dict[str, str]]] = {}
+    with Path(csv_path).open("r", encoding="utf-8-sig", newline="") as handle:
+        for row in csv.DictReader(handle):
+            validity = (row.get("final_validity") or "").strip()
+            if not validity or validity == "pending":
+                continue
+            case_id = (row.get("case_id") or "").strip()
+            if not case_id:
+                raise AdjudicationError("CSV 存在缺 case_id 的已裁决行")
+            grouped.setdefault(case_id, []).append(row)
+
+    decided = 0
+    cases = 0
+    for case_id, rows in grouped.items():
+        path = Path(root) / f"{case_id}.yaml"
+        if not path.exists():
+            raise AdjudicationError(f"CSV 引用了不存在的用例: {case_id}")
+        data = load_case(path)
+        case_verdict_row = next(
+            (row for row in rows if (row.get("case_verdict") or "").strip() not in ("", "pending")),
+            None,
+        )
+        for row in rows:
+            adjudicator = (row.get("adjudicator") or default_adjudicator or "").strip()
+            if not adjudicator:
+                raise AdjudicationError(f"{case_id}/{row.get('candidate_id')} 缺少 adjudicator")
+            entry = record_decision(
+                data,
+                (row.get("candidate_id") or "").strip(),
+                validity=(row.get("final_validity") or "").strip(),
+                severity=(row.get("final_severity") or "").strip() or None,
+                category=(row.get("final_category") or "").strip() or None,
+                correction=(row.get("correction") or "").strip() or None,
+                adjudicator=adjudicator,
+                note=(row.get("note") or "").strip() or None,
+                at=(row.get("adjudicated_at") or "").strip() or None,
+            )
+            if not dry_run:
+                append_history(Path(root) / "history.jsonl", entry)
+            decided += 1
+        if case_verdict_row is not None:
+            verdict = (case_verdict_row.get("case_verdict") or "").strip()
+            defect_raw = (case_verdict_row.get("case_defect_count") or "").strip()
+            set_case_verdict(
+                data,
+                verdict=verdict,
+                defect_count=int(defect_raw) if defect_raw else None,
+                adjudicator=(
+                    (case_verdict_row.get("adjudicator") or default_adjudicator or "").strip()
+                ),
+                note=(case_verdict_row.get("case_note") or "").strip() or None,
+                at=(case_verdict_row.get("adjudicated_at") or "").strip() or None,
+            )
+        if not dry_run:
+            save_case(path, data)
+        cases += 1
+    return {"cases": cases, "decisions": decided, "dry_run": dry_run}
+

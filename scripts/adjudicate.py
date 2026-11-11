@@ -24,6 +24,7 @@ from app.adjudication import (  # noqa: E402
     AdjudicationError,
     append_history,
     export_csv,
+    import_decisions_from_csv,
     load_case,
     record_decision,
     save_case,
@@ -69,6 +70,10 @@ def main() -> int:
 
     sub.add_parser("stats", help="统计裁决进度")
     sub.add_parser("export-csv", help="导出 adjudication.csv")
+    import_csv = sub.add_parser("import-csv", help="把填写好的 CSV 合并回 YAML")
+    import_csv.add_argument("--csv", default=str(DEFAULT_ROOT / "adjudication.csv"))
+    import_csv.add_argument("--adjudicator", help="CSV 未填 adjudicator 时的默认裁决人")
+    import_csv.add_argument("--dry-run", action="store_true", help="只校验，不写库")
 
     args = parser.parse_args()
     root = Path(args.root)
@@ -127,6 +132,18 @@ def main() -> int:
         if args.command == "export-csv":
             count = export_csv(root, root / "adjudication.csv")
             print(f"已导出 {count} 条候选问题到 {root / 'adjudication.csv'}")
+            return 0
+        if args.command == "import-csv":
+            result = import_decisions_from_csv(
+                root,
+                Path(args.csv),
+                default_adjudicator=args.adjudicator,
+                dry_run=args.dry_run,
+            )
+            print(
+                f"import-csv: cases={result['cases']} decisions={result['decisions']} "
+                f"dry_run={result['dry_run']}"
+            )
             return 0
     except AdjudicationError as exc:
         print(f"[ERROR] {exc}")

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import shutil
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from app.adjudication import (
     AdjudicationError,
     append_history,
     export_csv,
+    import_decisions_from_csv,
     load_case,
     record_decision,
     save_case,
@@ -134,3 +136,62 @@ def test_export_csv(workdir: Path) -> None:
     rows = export_csv(target, target / "out.csv")
     assert rows == 6
     assert (target / "out.csv").read_text(encoding="utf-8-sig").startswith("case_id,case_title,candidate_id")
+
+
+def test_import_csv_merges_decisions(workdir: Path) -> None:
+    target = workdir / "adjudication"
+    target.mkdir()
+    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
+    csv_path = target / "adjudication.csv"
+    export_csv(target, csv_path)
+
+    with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    rows[0].update(
+        {
+            "final_validity": "valid",
+            "final_severity": "blocker",
+            "final_category": "状态不自洽",
+            "correction": "拆分为启动中/保存中两条用例",
+            "adjudicator": "reviewer-1",
+            "adjudicated_at": "2026-11-11T12:00:00+08:00",
+            "case_verdict": "needs_fix",
+            "case_defect_count": "5",
+            "case_note": "拆分后重跑",
+        }
+    )
+    with csv_path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+    result = import_decisions_from_csv(target, csv_path)
+    assert result["decisions"] == 1
+    data = load_case(target / "UI-GAME-007.yaml")
+    final = data["candidates"][0]["final"]
+    assert final["validity"] == "valid"
+    assert final["adjudicator"] == "reviewer-1"
+    assert data["case_level"]["verdict"] == "needs_fix"
+    assert data["case_level"]["defect_count"] == 5
+    assert (target / "history.jsonl").exists()
+
+
+def test_import_csv_dry_run_does_not_write(workdir: Path) -> None:
+    target = workdir / "adjudication"
+    target.mkdir()
+    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
+    csv_path = target / "adjudication.csv"
+    export_csv(target, csv_path)
+    with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    rows[0].update(
+        {"final_validity": "valid", "final_severity": "major", "final_category": "预期不明确", "adjudicator": "reviewer-1"}
+    )
+    with csv_path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+    result = import_decisions_from_csv(target, csv_path, dry_run=True)
+    assert result["dry_run"] is True
+    assert load_case(target / "UI-GAME-007.yaml")["candidates"][0]["final"]["validity"] == "pending"

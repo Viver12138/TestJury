@@ -508,7 +508,7 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 | 规范化用例（原始字段） | [data/projects/testlab-arcade/cases.json](data/projects/testlab-arcade/cases.json) |
 | 可直接提交的评审请求 | [data/projects/testlab-arcade/case_payloads.json](data/projects/testlab-arcade/case_payloads.json) |
 | 项目画像/模块统计 | [data/projects/testlab-arcade/project.yaml](data/projects/testlab-arcade/project.yaml) |
-| 人工裁决工作台（8 用例 / 19 条候选，当前 0 条已裁决） | [data/projects/testlab-arcade/adjudication/README.md](data/projects/testlab-arcade/adjudication/README.md) · [汇总 CSV](data/projects/testlab-arcade/adjudication/adjudication.csv) |
+| 人工裁决工作台（8 用例 / 19 条候选，当前 0 条已裁决） | [填写教程](data/projects/testlab-arcade/adjudication/填写教程.md) · [工作台说明](data/projects/testlab-arcade/adjudication/README.md) · [汇总 CSV](data/projects/testlab-arcade/adjudication/adjudication.csv) |
 | 静态体检记录（非模型结论） | [data/projects/testlab-arcade/static_review.md](data/projects/testlab-arcade/static_review.md) |
 
 - 共 **55 条 UI 用例**：P0 41 / P1 14；模块：全局规范 7、公共首页 6、登录 7、注册 6、登录后主界面 7、三维弹球 10、个人中心 6、响应式与可访问性 6。
