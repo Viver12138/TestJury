@@ -13,16 +13,10 @@ parent_status: designed
 parent_note: "A–E 已实现并有测试/运行证据；F 数据准入未完成，父项不标记 verified/accepted。"
 
 evidence_scopes:
-  functional_scope_evidence:
-    - evidence/V-01/functional-live-REG-001.json
-    - evidence/V-01/live-review-REG-001.json
-  page_scope_historical_evidence:
-    - evidence/V-01/live-review-UI-HOME-005.json
-    - evidence/M1/scope-contract-live-2026-11-11.json
   generic_pipeline_smoke_evidence:
     - evidence/V-01/model-smoke-2026-11-11.json
-    - evidence/M1/strict-schema-live-2026-11-11.json
-  note: "UI-HOME-005 属于页面/UI 用例；其运行记录只作为通用链路/页面历史证据，不作为 functional 专项证据。"
+    - evidence/V-01/live-review-TC-LIVE-006.json
+  note: "旧 TestLab Arcade 项目专用证据已按用户要求删除；当前只保留与具体测试项目无关的通用链路证据。"
 
 subitems:
   - id: V-01A
@@ -40,9 +34,8 @@ subitems:
     evidence:
       - tests/unit/test_chat_review_model.py
       - evidence/V-01/live-review-TC-LIVE-006.json
-      - evidence/V-01/functional-live-REG-001.json
     verified_at: "2026-11-11T15:45:00+08:00"
-    note: "严格解析、决策字段丢弃、role 契约、evidence 转换有单测；真实报告已产出；REG-001 为 functional 专项运行。"
+    note: "严格解析、决策字段丢弃、role 契约、evidence 转换有单测；已产出通用链路真实报告。"
 
   - id: V-01C
     title: Retry、限流、超时与取消
@@ -61,19 +54,16 @@ subitems:
       - tests/unit/test_llm_adapters.py
       - tests/unit/test_chat_review_model.py
       - tests/unit/test_evidence_validation.py
-      - evidence/M1/strict-schema-live-2026-11-11.json
-      - evidence/M1/scope-contract-live-2026-11-11.json
     verified_at: "2026-11-11T14:32:00+08:00"
-    note: "缺 issues/null、字段错类型、category 非枚举、scope 缺失/step 缺 quote、非法 JSON、截断 finish_reason、引用越界、step_index 越界均有测试；严格门禁后真实运行 3/3 盲评 + 3/3 投票，问题正常保留。"
+    note: "缺 issues/null、字段错类型、category 非枚举、scope 缺失/step 缺 quote、非法 JSON、截断 finish_reason、引用越界、step_index 越界均有测试。"
 
   - id: V-01E
     title: 多次运行稳定性与成本记录
     status: verified
     evidence:
-      - evidence/V-01/stability-summary-2026-11-11.json
-      - evidence/V-01/functional-live-REG-001.json
+      - evidence/V-01/live-review-TC-LIVE-006.json
     verified_at: "2026-11-11T15:45:00+08:00"
-    note: "3 次真实运行有状态/调用/成本记录；770b 3/3+3/3、REG-001 functional 3/3+3/3（27 次 0 失败、¥1.4209）；另保留降级样本。"
+    note: "保留通用链路真实运行证据；旧 TestLab 项目运行证据已按用户要求删除，稳定性证据需在新测试项目接入后补。"
 
   - id: V-01F
     title: 数据准入、脱敏与生产模型准入

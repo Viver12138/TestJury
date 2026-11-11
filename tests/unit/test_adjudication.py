@@ -25,13 +25,12 @@ from app.adjudication import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-ADJ_ROOT = REPO_ROOT / "data" / "projects" / "testlab-arcade" / "adjudication"
-FUNC_ADJ_ROOT = REPO_ROOT / "data" / "projects" / "testlab-arcade" / "adjudication-functional"
+ADJ_ROOT = REPO_ROOT / "tests" / "fixtures" / "adjudication"
 
 
 def test_all_candidates_start_pending() -> None:
     files = sorted(ADJ_ROOT.glob("*.yaml"))
-    assert len(files) >= 8
+    assert len(files) >= 1
     for path in files:
         data = load_case(path)
         assert data["candidates"]
@@ -44,13 +43,13 @@ def test_all_candidates_start_pending() -> None:
 def test_record_decision_and_history(workdir: Path) -> None:
     target = workdir / "adjudication"
     target.mkdir()
-    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
-    path = target / "UI-GAME-007.yaml"
+    shutil.copy2(ADJ_ROOT / "SAMPLE-001.yaml", target / "SAMPLE-001.yaml")
+    path = target / "SAMPLE-001.yaml"
     data = load_case(path)
 
     entry = record_decision(
         data,
-        "CAND-UI-GAME-007-01",
+        "CAND-SAMPLE-001-01",
         validity="valid",
         severity="blocker",
         category="状态不自洽",
@@ -70,14 +69,14 @@ def test_record_decision_and_history(workdir: Path) -> None:
 
 
 def test_invalid_decisions_are_rejected(workdir: Path) -> None:
-    target = workdir / "UI-GAME-007.yaml"
-    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target)
+    target = workdir / "SAMPLE-001.yaml"
+    shutil.copy2(ADJ_ROOT / "SAMPLE-001.yaml", target)
     data = load_case(target)
 
     with pytest.raises(AdjudicationError):
         record_decision(
             data,
-            "CAND-UI-GAME-007-01",
+            "CAND-SAMPLE-001-01",
             validity="valid",
             severity=None,
             category="状态不自洽",
@@ -86,7 +85,7 @@ def test_invalid_decisions_are_rejected(workdir: Path) -> None:
     with pytest.raises(AdjudicationError):
         record_decision(
             data,
-            "CAND-UI-GAME-007-01",
+            "CAND-SAMPLE-001-01",
             validity="invalid",
             severity="blocker",
             category=None,
@@ -95,7 +94,7 @@ def test_invalid_decisions_are_rejected(workdir: Path) -> None:
     with pytest.raises(AdjudicationError):
         record_decision(
             data,
-            "CAND-UI-GAME-007-01",
+            "CAND-SAMPLE-001-01",
             validity="invalid",
             adjudicator="",
         )
@@ -106,7 +105,7 @@ def test_invalid_decisions_are_rejected(workdir: Path) -> None:
 def test_import_is_blocked_by_concurrent_lock(workdir: Path) -> None:
     target = workdir / "adjudication"
     target.mkdir()
-    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
+    shutil.copy2(ADJ_ROOT / "SAMPLE-001.yaml", target / "SAMPLE-001.yaml")
     csv_path = target / "adjudication.csv"
     export_csv(target, csv_path)
     (target / ".imports").mkdir()
@@ -118,8 +117,8 @@ def test_import_is_blocked_by_concurrent_lock(workdir: Path) -> None:
 def test_recover_imports_restores_backup(workdir: Path) -> None:
     target = workdir / "adjudication"
     target.mkdir()
-    path = target / "UI-GAME-007.yaml"
-    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", path)
+    path = target / "SAMPLE-001.yaml"
+    shutil.copy2(ADJ_ROOT / "SAMPLE-001.yaml", path)
     original = path.read_bytes()
     digest = hashlib.sha256(original).hexdigest()
     imports = target / ".imports"
@@ -134,7 +133,7 @@ def test_recover_imports_restores_backup(workdir: Path) -> None:
                 "status": "applying",
                 "files": [
                     {
-                        "case_id": "UI-GAME-007",
+                        "case_id": "SAMPLE-001",
                         "path": path.name,
                         "before_hash": digest,
                         "backup_hash": digest,
@@ -164,8 +163,8 @@ def test_recover_imports_rejects_missing_backup(workdir: Path) -> None:
                 "status": "applying",
                 "files": [
                     {
-                        "case_id": "UI-GAME-007",
-                        "path": "UI-GAME-007.yaml",
+                        "case_id": "SAMPLE-001",
+                        "path": "SAMPLE-001.yaml",
                         "before_hash": "x",
                         "backup_hash": "x",
                     }
@@ -182,8 +181,8 @@ def test_recover_imports_rejects_missing_backup(workdir: Path) -> None:
     assert journal["status"] == "recovery_failed"
 
 
-def test_functional_workbench_has_ai_suggestions_but_human_pending() -> None:
-    data = load_case(FUNC_ADJ_ROOT / "GAME-001.yaml")
+def test_workbench_has_ai_suggestions_but_human_pending() -> None:
+    data = load_case(ADJ_ROOT / "SAMPLE-001.yaml")
     first = data["candidates"][0]
     assert first["final"]["validity"] == "pending"
     assert first["ai_suggested_validity"] == "valid"
@@ -191,7 +190,7 @@ def test_functional_workbench_has_ai_suggestions_but_human_pending() -> None:
     assert first["ai_suggested_category"] == "预期不明确"
     assert first["ai_suggested_correction"]
     assert data["case_level"]["ai_suggested_verdict"] == "needs_fix"
-    assert data["case_level"]["ai_suggested_defect_count"] == 2
+    assert data["case_level"]["ai_suggested_defect_count"] == 6
     assert data["case_level"]["verdict"] == "pending"
 
 
@@ -216,12 +215,12 @@ def test_case_snapshot_formats_functional_steps() -> None:
 def test_case_verdict_and_stats(workdir: Path) -> None:
     target = workdir / "adjudication"
     target.mkdir()
-    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
-    path = target / "UI-GAME-007.yaml"
+    shutil.copy2(ADJ_ROOT / "SAMPLE-001.yaml", target / "SAMPLE-001.yaml")
+    path = target / "SAMPLE-001.yaml"
     data = load_case(path)
     record_decision(
         data,
-        "CAND-UI-GAME-007-01",
+        "CAND-SAMPLE-001-01",
         validity="valid",
         severity="blocker",
         category="状态不自洽",
@@ -229,7 +228,7 @@ def test_case_verdict_and_stats(workdir: Path) -> None:
     )
     record_decision(
         data,
-        "CAND-UI-GAME-007-02",
+        "CAND-SAMPLE-001-02",
         validity="invalid",
         adjudicator="reviewer-1",
     )
@@ -257,7 +256,7 @@ def test_case_verdict_and_stats(workdir: Path) -> None:
 def test_export_csv(workdir: Path) -> None:
     target = workdir / "adjudication"
     target.mkdir()
-    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
+    shutil.copy2(ADJ_ROOT / "SAMPLE-001.yaml", target / "SAMPLE-001.yaml")
     rows = export_csv(target, target / "out.csv")
     assert rows == 6
     assert (target / "out.csv").read_text(encoding="utf-8-sig").startswith("case_id,case_title,candidate_id")
@@ -266,7 +265,7 @@ def test_export_csv(workdir: Path) -> None:
 def test_import_csv_merges_decisions(workdir: Path) -> None:
     target = workdir / "adjudication"
     target.mkdir()
-    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
+    shutil.copy2(ADJ_ROOT / "SAMPLE-001.yaml", target / "SAMPLE-001.yaml")
     csv_path = target / "adjudication.csv"
     export_csv(target, csv_path)
 
@@ -294,7 +293,7 @@ def test_import_csv_merges_decisions(workdir: Path) -> None:
 
     result = import_decisions_from_csv(target, csv_path)
     assert result["decisions"] == 6
-    data = load_case(target / "UI-GAME-007.yaml")
+    data = load_case(target / "SAMPLE-001.yaml")
     final = data["candidates"][0]["final"]
     assert final["validity"] == "valid"
     assert final["adjudicator"] == "reviewer-1"
@@ -306,7 +305,7 @@ def test_import_csv_merges_decisions(workdir: Path) -> None:
 def test_import_csv_dry_run_does_not_write(workdir: Path) -> None:
     target = workdir / "adjudication"
     target.mkdir()
-    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
+    shutil.copy2(ADJ_ROOT / "SAMPLE-001.yaml", target / "SAMPLE-001.yaml")
     csv_path = target / "adjudication.csv"
     export_csv(target, csv_path)
     with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
@@ -321,13 +320,13 @@ def test_import_csv_dry_run_does_not_write(workdir: Path) -> None:
 
     result = import_decisions_from_csv(target, csv_path, dry_run=True)
     assert result["dry_run"] is True
-    assert load_case(target / "UI-GAME-007.yaml")["candidates"][0]["final"]["validity"] == "pending"
+    assert load_case(target / "SAMPLE-001.yaml")["candidates"][0]["final"]["validity"] == "pending"
 
 
 def test_import_csv_rejects_path_traversal(workdir: Path) -> None:
     target = workdir / "adjudication"
     target.mkdir()
-    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
+    shutil.copy2(ADJ_ROOT / "SAMPLE-001.yaml", target / "SAMPLE-001.yaml")
     csv_path = target / "adjudication.csv"
     export_csv(target, csv_path)
     with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
@@ -345,7 +344,7 @@ def test_import_csv_rejects_path_traversal(workdir: Path) -> None:
 def test_import_csv_is_all_or_nothing(workdir: Path) -> None:
     target = workdir / "adjudication"
     target.mkdir()
-    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
+    shutil.copy2(ADJ_ROOT / "SAMPLE-001.yaml", target / "SAMPLE-001.yaml")
     csv_path = target / "adjudication.csv"
     export_csv(target, csv_path)
     with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
@@ -359,7 +358,7 @@ def test_import_csv_is_all_or_nothing(workdir: Path) -> None:
 
     with pytest.raises(AdjudicationError):
         import_decisions_from_csv(target, csv_path)
-    data = load_case(target / "UI-GAME-007.yaml")
+    data = load_case(target / "SAMPLE-001.yaml")
     assert all(item["final"]["validity"] == "pending" for item in data["candidates"])
     assert not (target / "history.jsonl").exists()
 
@@ -367,7 +366,7 @@ def test_import_csv_is_all_or_nothing(workdir: Path) -> None:
 def test_import_csv_is_idempotent(workdir: Path) -> None:
     target = workdir / "adjudication"
     target.mkdir()
-    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target / "UI-GAME-007.yaml")
+    shutil.copy2(ADJ_ROOT / "SAMPLE-001.yaml", target / "SAMPLE-001.yaml")
     csv_path = target / "adjudication.csv"
     export_csv(target, csv_path)
     with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
@@ -389,12 +388,12 @@ def test_import_csv_is_idempotent(workdir: Path) -> None:
 
 
 def test_case_verdict_consistency_rules(workdir: Path) -> None:
-    target = workdir / "UI-GAME-007.yaml"
-    shutil.copy2(ADJ_ROOT / "UI-GAME-007.yaml", target)
+    target = workdir / "SAMPLE-001.yaml"
+    shutil.copy2(ADJ_ROOT / "SAMPLE-001.yaml", target)
     data = load_case(target)
     record_decision(
         data,
-        "CAND-UI-GAME-007-01",
+        "CAND-SAMPLE-001-01",
         validity="valid",
         severity="major",
         category="状态不自洽",

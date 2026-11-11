@@ -35,7 +35,7 @@ from app.adjudication import (  # noqa: E402
     load_case,
 )
 
-DEFAULT_ROOT = ROOT / "data" / "projects" / "testlab-arcade" / "adjudication"
+DEFAULT_ROOT = ROOT / "data" / "adjudication"
 WORKBOOK_NAME = "adjudication.xlsx"
 CSV_NAME = "adjudication.csv"
 
@@ -302,7 +302,7 @@ def build_workbook(root: Path, destination: Path) -> dict[str, Any]:
     _build_intro_sheet(ws_intro, cases, len(rows))
     _add_conditional_formats(ws_main, data_start, data_end)
 
-    wb.properties.title = "TestLab Arcade 人工裁决表"
+    wb.properties.title = "测试项目人工裁决表"
     wb.properties.creator = "评审团 adjudication workbench"
     wb.properties.description = "带下拉选项的人工裁决表；CSV 由 to-csv 命令回收。"
     ws_main.sheet_view.zoomScale = 85
@@ -472,7 +472,7 @@ def _build_main_sheet(ws, rows, cases, validations, data_start, data_end, Commen
     ws.merge_cells(f"A1:{last_col}1")
     title = ws["A1"]
     title.value = (
-        f"TestLab Arcade · 人工裁决表（{len(cases)} 个用例 / {len(rows)} 条候选）"
+        f"测试项目 · 人工裁决表（{len(cases)} 个用例 / {len(rows)} 条候选）"
         "　灰=只读原文　黄=下拉选择　白=手写　红=填写冲突　※ 先自己判，再看④ AI 提示"
     )
     title.font = Font(name=FONT_NAME, bold=True, size=13, color=WHITE)
@@ -671,7 +671,7 @@ def _build_intro_sheet(ws, cases, total_candidates) -> None:
     row = banner("人工裁决表 · 使用说明", row, size=14, color=NAVY)
     row = line(
         "批次",
-        f"TestLab Arcade UI 用例 · {len(cases)} 个用例 / {total_candidates} 条候选 · 生成于 {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+        f"测试项目用例 · {len(cases)} 个用例 / {total_candidates} 条候选 · 生成于 {datetime.now().strftime('%Y-%m-%d %H:%M')}",
         row,
     )
     row = line("数据源", "adjudication/<case_id>.yaml（唯一事实源）。本表只负责填写，不直接改 YAML；填完用 to-csv + import-csv 入库。", row)

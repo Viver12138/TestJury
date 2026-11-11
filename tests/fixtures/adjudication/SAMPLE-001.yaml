@@ -1,0 +1,104 @@
+case_id: SAMPLE-001
+case_title: 示例用例
+module: 示例模块
+priority: P0
+test_type: functional
+case_type: functional
+source: ai_generated_unreviewed
+requirement_ref: 示例需求
+preconditions:
+- 已登录
+test_data: 无
+steps:
+- index: 1
+  action: 执行示例步骤
+  expected: 出现示例结果
+cleanup: 无
+candidates:
+- candidate_id: CAND-SAMPLE-001-01
+  title: 示例候选一
+  claim: 示例候选一的静态问题描述。
+  evidence_case: 预期结果
+  evidence_spec: 示例需求
+  ai_recommendation: likely_valid
+  ai_reason: 示例理由一
+  ai_suggested_severity: major
+  ai_suggested_category: 预期不明确
+  ai_suggested_validity: valid
+  ai_suggested_correction: 示例改写建议一
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
+  final: {validity: pending, severity: null, category: null, correction: null, adjudicator: null, adjudicated_at: null, note: null}
+- candidate_id: CAND-SAMPLE-001-02
+  title: 示例候选二
+  claim: 示例候选二的静态问题描述。
+  evidence_case: 步骤 1
+  evidence_spec: 示例需求
+  ai_recommendation: likely_valid
+  ai_reason: 示例理由二
+  ai_suggested_severity: major
+  ai_suggested_category: 前置不足
+  ai_suggested_validity: valid
+  ai_suggested_correction: 示例改写建议二
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
+  final: {validity: pending, severity: null, category: null, correction: null, adjudicator: null, adjudicated_at: null, note: null}
+- candidate_id: CAND-SAMPLE-001-03
+  title: 示例候选三
+  claim: 示例候选三的静态问题描述。
+  evidence_case: 预期结果
+  evidence_spec: 示例需求
+  ai_recommendation: likely_valid
+  ai_reason: 示例理由三
+  ai_suggested_severity: major
+  ai_suggested_category: 数据缺失
+  ai_suggested_validity: valid
+  ai_suggested_correction: 示例改写建议三
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
+  final: {validity: pending, severity: null, category: null, correction: null, adjudicator: null, adjudicated_at: null, note: null}
+- candidate_id: CAND-SAMPLE-001-04
+  title: 示例候选四
+  claim: 示例候选四的静态问题描述。
+  evidence_case: 步骤 1
+  evidence_spec: 示例需求
+  ai_recommendation: likely_valid
+  ai_reason: 示例理由四
+  ai_suggested_severity: major
+  ai_suggested_category: 状态不可读
+  ai_suggested_validity: valid
+  ai_suggested_correction: 示例改写建议四
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
+  final: {validity: pending, severity: null, category: null, correction: null, adjudicator: null, adjudicated_at: null, note: null}
+- candidate_id: CAND-SAMPLE-001-05
+  title: 示例候选五
+  claim: 示例候选五的静态问题描述。
+  evidence_case: 预期结果
+  evidence_spec: 示例需求
+  ai_recommendation: likely_valid
+  ai_reason: 示例理由五
+  ai_suggested_severity: major
+  ai_suggested_category: 覆盖缺失
+  ai_suggested_validity: valid
+  ai_suggested_correction: 示例改写建议五
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
+  final: {validity: pending, severity: null, category: null, correction: null, adjudicator: null, adjudicated_at: null, note: null}
+- candidate_id: CAND-SAMPLE-001-06
+  title: 示例候选六
+  claim: 示例候选六的静态问题描述。
+  evidence_case: 步骤 1
+  evidence_spec: 示例需求
+  ai_recommendation: likely_valid
+  ai_reason: 示例理由六
+  ai_suggested_severity: major
+  ai_suggested_category: 不可重复
+  ai_suggested_validity: valid
+  ai_suggested_correction: 示例改写建议六
+  ai_suggestion_note: 静态预审建议，仅供参考；采不采纳由人工决定。
+  final: {validity: pending, severity: null, category: null, correction: null, adjudicator: null, adjudicated_at: null, note: null}
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null
+  ai_suggested_verdict: needs_fix
+  ai_suggested_defect_count: 6
+  ai_suggested_note: AI 静态建议：6 条 valid；请人工独立判断。

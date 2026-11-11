@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.13 + M0 实现 + M1 工程收口**（真实三模型 3/3 盲评 + 3/3 投票；330 条测试通过；V-01F 数据准入与 M2 知识库未完成）· 2026-11-11
+> **状态**：**design-v1.13 + M0 实现 + M1 工程收口**（真实三模型 3/3 盲评 + 3/3 投票；327 条测试通过；V-01F 数据准入与 M2 知识库未完成）· 2026-11-11
 
 ---
 
@@ -486,9 +486,8 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 
 | 能力 | 入口 | 验证 |
 |---|---|---|
-| M1 工程收口 | [evidence/M1/closure-2026-11-11.md](evidence/M1/closure-2026-11-11.md) | P0/P1 审查项关闭；330 passed；远端 CI 全绿（run 42982761632）；V-01F 仍 pending |
+| M1 工程收口 | [evidence/M1/closure-2026-11-11.md](evidence/M1/closure-2026-11-11.md) | P0/P1 审查项关闭；327 passed；远端 CI 全绿（run 42982761632）；V-01F 仍 pending |
 | V-01 子项 | [design/v01_acceptance.yaml](design/v01_acceptance.yaml) | A–E verified、F pending（数据准入） |
-| functional 专项证据 | [functional-live-REG-001.json](evidence/V-01/functional-live-REG-001.json) | REG-001：3/3 盲评、3/3 投票、27 次调用 0 失败、¥1.4209；UI-HOME-005 仅作页面历史证据 |
 | 真实评审 | `.env` 设 `REVIEW_MODEL_MODE=live`；模型见 [config/models.yaml](config/models.yaml) | 三路盲评 + 投票真实调用；`TC-LIVE-006`：blind 3/3、vote 3/3、27 次调用 0 失败、成本约 ¥1.04、结论 `need_human`（模型间成立性分歧） |
 | 模型连通性 | `python scripts/check_model_connectivity.py` | [evidence/V-01/model-smoke-2026-11-11.json](evidence/V-01/model-smoke-2026-11-11.json) |
 | 报告投影 | Worker `finalize_report`：报告字段与 `issues` 同事务写入；ID 由 `uuid5(review_id, issue_no)` 生成 | `tests/m0/test_projection.py`、`tests/integration/test_postgres_e2e.py` |
@@ -499,38 +498,10 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 
 > `.env` 的 `REVIEW_MODEL_MODE=live` 走真实模型；单测/CI 默认 `mock`，不调用供应商。
 
-## 7. 首个测试项目：TestLab Arcade 一期
+## 7. 测试项目
 
-项目资料已接入仓库：
-
-| 资产 | 位置 |
-|---|---|
-| 一期策划案（需求/功能） | [kb_content/TestLab-Arcade/requirements.md](kb_content/TestLab-Arcade/requirements.md) · [原件](data/projects/testlab-arcade/source/requirements.md) |
-| UI 前端设计规范 V1.0 | [kb_content/TestLab-Arcade/ui_spec.md](kb_content/TestLab-Arcade/ui_spec.md) · [原件](data/projects/testlab-arcade/source/ui_spec.md) |
-| UI 测试案例 V1.0（55 条） | [data/projects/testlab-arcade/source/ui_test_cases_v1.0.xlsx](data/projects/testlab-arcade/source/ui_test_cases_v1.0.xlsx) |
-| 旧分类版（已废弃：把 12 条 UI 用例误标为功能） | [data/projects/testlab-arcade/source/ui_test_cases_v1.1_classified.xlsx](data/projects/testlab-arcade/source/ui_test_cases_v1.1_classified.xlsx) |
-| **功能测试案例 V1.1（62 条，权威）** | [data/projects/testlab-arcade/source/functional_test_cases_v1.1.xlsx](data/projects/testlab-arcade/source/functional_test_cases_v1.1.xlsx) · [分类说明](data/projects/testlab-arcade/classification.md) |
-| 功能用例规范化 / 送审请求 | [functional_cases_v1.1.json](data/projects/testlab-arcade/functional_cases_v1.1.json) · [functional_case_payloads.json（57 条）](data/projects/testlab-arcade/functional_case_payloads.json) |
-| NFR 非功能用例（5 条，暂不送 functional） | [excluded_nonfunctional_v1.1.json](data/projects/testlab-arcade/excluded_nonfunctional_v1.1.json) |
-| 规范化 UI 用例（原始字段） | [data/projects/testlab-arcade/cases.json](data/projects/testlab-arcade/cases.json) |
-| 可直接提交的旧版 UI 评审请求（55 条） | [data/projects/testlab-arcade/case_payloads.json](data/projects/testlab-arcade/case_payloads.json) |
-| 项目画像/模块统计 | [data/projects/testlab-arcade/project.yaml](data/projects/testlab-arcade/project.yaml) |
-| 人工裁决工作台（UI 线：8 用例 / 19 条候选，当前 0 条已裁决） | [填写教程](data/projects/testlab-arcade/adjudication/填写教程.md) · [工作台说明](data/projects/testlab-arcade/adjudication/README.md) · [汇总 CSV](data/projects/testlab-arcade/adjudication/adjudication.csv)；xlsx 由 `scripts/adjudication_sheet.py` 本地生成，不提交 Git |
-| **功能线人工裁决工作台（15 用例 / 24 条静态候选，0 条已裁决）** | [functional 工作台](data/projects/testlab-arcade/adjudication-functional/README.md) · [汇总 CSV](data/projects/testlab-arcade/adjudication-functional/adjudication.csv) |
-| 静态体检记录（非模型结论） | [data/projects/testlab-arcade/static_review.md](data/projects/testlab-arcade/static_review.md) |
-
-- **两套用例分开**：55 条 UI 用例全部是页面/UI 用例；62 条功能/安全/非功能用例以 V1.1 为准，其中 **57 条 functional 可送审**、5 条 NFR 非功能不进入当前 functional。
-- 早先分类版把 12 条 UI 用例标为“功能测试”是错误口径，已废弃；功能评测不得使用那 12 条标签。
-- 当前人工裁决分两条独立线：UI 线 8 用例 / 19 候选（`adjudication/`）；功能线 15 用例 / 24 条静态候选（`adjudication-functional/`），两者标签不能混用。
-- 功能线本轮是**静态预审候选**，未调用真实模型；覆盖 HOME/REG/LOGIN/DASH/GAME/SCORE/SEC，重点包括服务条款冲突、步骤-预期错位、数据缺失、状态不可读。
-- 当前评审器 v1 只接受 `test_type=functional`，页面/UI 用例需要页面/UI 专用 Rubric。
-- 当前知识库装载/检索未实现（M2），送审时会降级为 `kb_module_missing`；UI 规范尚未作为检索证据注入。
-- AI 生成的 55 条用例**未经人工复核**：已标记 `human_reviewed: false`、`do_not_use_as_golden: true`，不能作为评测真值。
-- 裁决工作台：人工填写入口是 `adjudication/adjudication.xlsx`（黄列下拉选择，左侧带原始用例），填完 `python scripts/adjudication_sheet.py to-csv` + `python scripts/adjudicate.py import-csv` 入库；也可直接 `python scripts/adjudicate.py list|show|stats|decide|case-verdict|export-csv`。只有人工填写 `final.adjudicator` 后才算标签。
-
-
-
-
-
+> 旧 **TestLab Arcade** 项目资料已按用户要求从当前仓库删除（2026-11-11），不再作为测试项目或评测数据使用。
+>
+> 新测试项目待接入；接入后在本节登记项目文档、用例、知识库来源和裁决工作台路径。
 
 

@@ -58,8 +58,6 @@ _COPY_ITEMS = (
     "scripts",
     "evidence",
     "config",
-    "data/projects",
-    "kb_content",
     ".github",
     "README.md",
 )

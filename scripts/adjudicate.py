@@ -33,7 +33,7 @@ from app.adjudication import (  # noqa: E402
     stats,
 )
 
-DEFAULT_ROOT = ROOT / "data" / "projects" / "testlab-arcade" / "adjudication"
+DEFAULT_ROOT = ROOT / "data" / "adjudication"
 
 
 def _case_path(root: Path, case_id: str) -> Path:
