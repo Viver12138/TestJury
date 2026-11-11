@@ -1,0 +1,71 @@
+case_id: REG-001
+case_title: 使用有效信息注册
+module: 注册
+priority: P0
+test_type: functional
+case_type: functional
+source: ai_generated_unreviewed
+requirement_ref: 策划案5.1、5.3、17.3。
+preconditions:
+- 测试邮箱从未注册；用户未登录。
+test_data: 显示名称“测试用户A”；有效邮箱；满足强度要求的密码；相同确认密码。
+steps:
+- index: 1
+  action: 进入注册页。
+  expected: 字段输入被正常接受，密码以掩码显示。
+- index: 2
+  action: 依次填写全部字段。
+  expected: 提交期间显示加载状态且不能重复有效提交。
+- index: 3
+  action: 勾选服务条款。
+  expected: 只创建一个账号。
+- index: 4
+  action: 点击注册，并在提交期间再次点击按钮。
+  expected: 注册成功后自动登录或按产品流程进入登录页。；持久化数据中不保存明文密码。
+cleanup: 记录新用户ID，测试结束后按环境规则清理。
+model_review:
+  status: not_run
+  note: 本轮为静态预审候选；未调用真实模型，避免 15 条×6–8 分钟成本。
+candidates:
+- candidate_id: CAND-REG-001-01
+  title: 步骤要求勾选服务条款，但本期不实现该控件
+  claim: 步骤 3 要求“勾选服务条款”；策划案 4.2 明确“服务条款复选框本期不实现，不作为验收项”，UI 规范 §13 同样列为不实现项。
+  evidence_case: 步骤 3
+  evidence_spec: 策划案 §4.2；UI 规范 §13
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 测试依赖不存在的控件，执行会失败或被误判。
+  ai_suggested_severity: blocker
+  ai_suggested_category: 规则冲突
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+- candidate_id: CAND-REG-001-02
+  title: 注册成功去向有两个可接受结果
+  claim: 预期写“自动登录或按产品流程进入登录页”，同一用例允许两种不同结果，无法确定唯一断言。
+  evidence_case: 预期结果第 2 条
+  evidence_spec: 策划案 §5.1
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 需明确产品唯一流程，否则无法判定通过。
+  ai_suggested_severity: major
+  ai_suggested_category: 预期不明确
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null

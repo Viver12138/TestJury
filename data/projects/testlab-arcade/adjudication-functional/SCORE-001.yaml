@@ -1,0 +1,62 @@
+case_id: SCORE-001
+case_title: 正常保存最终成绩
+module: 成绩与个人中心
+priority: P0
+test_type: functional
+case_type: functional
+source: ai_generated_unreviewed
+requirement_ref: 策划案6.7、7、10.3。
+preconditions:
+- 用户A已登录且有一条本局未完成记录。
+test_data: 已知分数、时长、使用球数和最高倍率。
+steps:
+- index: 1
+  action: 正常用完三颗球；等待saving结束；进入个人中心查询。
+  expected: 原未完成记录被更新而非新增重复记录；用户、最终分数、服务端时间和结束状态正确；个人中心可查询。
+cleanup: 记录游戏ID供后续用例使用。
+model_review:
+  status: not_run
+  note: 本轮为静态预审候选；未调用真实模型，避免 15 条×6–8 分钟成本。
+candidates:
+- candidate_id: CAND-SCORE-001-01
+  title: 已知分数/时长/球数/倍率没有具体值
+  claim: 测试数据只写“已知分数、时长、使用球数和最高倍率”，未给出具体数值，预期却要求最终分数、时间正确。
+  evidence_case: 测试数据 / 预期结果
+  evidence_spec: 策划案 §6.7
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 无基准值无法断言保存结果正确。
+  ai_suggested_severity: major
+  ai_suggested_category: 数据缺失
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+- candidate_id: CAND-SCORE-001-02
+  title: “服务端时间”缺少读取方式
+  claim: 预期要求服务端时间正确，但步骤只进入个人中心，未说明如何读取服务端时间。
+  evidence_case: 预期结果
+  evidence_spec: 策划案 §6.7
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 应给出记录字段或接口查询方式。
+  ai_suggested_severity: major
+  ai_suggested_category: 状态不可读
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null

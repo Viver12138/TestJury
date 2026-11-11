@@ -16,3 +16,8 @@ data/attachments/
 
 # 人工裁决导入批次备份/恢复记录（本地审计）
 data/projects/*/adjudication/.imports/
+# 人工裁决 Excel 是本地填写入口（可由 scripts/adjudication_sheet.py 重建）
+data/projects/*/adjudication*/adjudication.xlsx
+
+# 文档工具临时目录
+.dsh-office-*/

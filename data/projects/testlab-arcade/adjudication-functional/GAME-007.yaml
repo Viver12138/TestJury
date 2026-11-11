@@ -1,0 +1,62 @@
+case_id: GAME-007
+case_title: 普通碰撞器计分
+module: 三维弹球
+priority: P0
+test_type: functional
+case_type: functional
+source: ai_generated_unreviewed
+requirement_ref: 策划案6.5、12。
+preconditions:
+- playing，记录当前分数。
+test_data: 普通碰撞器，单次有效碰撞。
+steps:
+- index: 1
+  action: 让球碰撞一个普通碰撞器一次；等待球完全离开后再次碰撞。
+  expected: 每次独立有效碰撞增加100分；持续接触不会在极短时间内无限重复计分；当前分数及时更新。
+cleanup: 无。
+model_review:
+  status: not_run
+  note: 本轮为静态预审候选；未调用真实模型，避免 15 条×6–8 分钟成本。
+candidates:
+- candidate_id: CAND-GAME-007-01
+  title: “极短时间内无限重复计分”没有量化阈值
+  claim: 预期要求持续接触不在极短时间内无限重复计分，但未定义冷却时间、碰撞间隔或允许的重复次数。
+  evidence_case: 预期结果
+  evidence_spec: 策划案 §6.5、§12
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 不同物理帧率下无法稳定判定。
+  ai_suggested_severity: major
+  ai_suggested_category: 预期不明确
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+- candidate_id: CAND-GAME-007-02
+  title: “及时更新”没有时间上限
+  claim: 当前分数及时更新，未给出可接受的 UI 刷新延迟。
+  evidence_case: 预期结果
+  evidence_spec: 策划案 §6.5
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 需要明确延迟上限或下一帧内更新。
+  ai_suggested_severity: suggestion
+  ai_suggested_category: 预期不明确
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null

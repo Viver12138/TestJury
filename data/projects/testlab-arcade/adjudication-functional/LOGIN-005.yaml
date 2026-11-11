@@ -1,0 +1,44 @@
+case_id: LOGIN-005
+case_title: 刷新页面保持会话
+module: 登录、会话与退出
+priority: P0
+test_type: functional
+case_type: functional
+source: ai_generated_unreviewed
+requirement_ref: 策划案2、5.1会话。
+preconditions:
+- 用户A已登录，会话未过期。
+test_data: 用户A。
+steps:
+- index: 1
+  action: 在用户主界面刷新；直接输入个人中心地址；再刷新个人中心。
+  expected: 三次操作均保持用户A登录状态；受保护数据正常加载；不要求重复登录。
+cleanup: 退出登录。
+model_review:
+  status: not_run
+  note: 本轮为静态预审候选；未调用真实模型，避免 15 条×6–8 分钟成本。
+candidates:
+- candidate_id: CAND-LOGIN-005-01
+  title: “会话未过期”前置不可控，未说明过期时间
+  claim: 前置只写“会话未过期”，未给出会话 TTL、Cookie 属性或如何确认未过期，执行环境无法准备。
+  evidence_case: 前置条件
+  evidence_spec: 策划案 §5.1 会话
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 应给出会话有效期或读取方式。
+  ai_suggested_severity: major
+  ai_suggested_category: 前置不足
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null

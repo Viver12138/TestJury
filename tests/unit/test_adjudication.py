@@ -11,6 +11,7 @@ import pytest
 from app.adjudication import (
     AdjudicationError,
     append_history,
+    case_snapshot,
     export_csv,
     import_decisions_from_csv,
     load_case,
@@ -96,6 +97,24 @@ def test_invalid_decisions_are_rejected(workdir: Path) -> None:
         )
     with pytest.raises(AdjudicationError):
         record_decision(data, "CAND-NOT-FOUND", validity="invalid", adjudicator="reviewer-1")
+
+
+def test_case_snapshot_formats_functional_steps() -> None:
+    snapshot = case_snapshot(
+        {
+            "module": "登录",
+            "priority": "P0",
+            "requirement_ref": "策划案5.1",
+            "preconditions": ["未登录"],
+            "steps": [
+                {"index": 1, "action": "点击登录", "expected": "进入主界面"},
+                {"index": 2, "action": "刷新", "expected": "保持登录"},
+            ],
+        }
+    )
+    assert snapshot["ui_spec_ref"] == "策划案5.1"
+    assert "1. 点击登录 => 进入主界面" in snapshot["steps"]
+    assert "进入主界面" in snapshot["expected"]
 
 
 def test_case_verdict_and_stats(workdir: Path) -> None:

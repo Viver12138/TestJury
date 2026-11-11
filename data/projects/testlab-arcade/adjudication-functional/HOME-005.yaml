@@ -1,0 +1,44 @@
+case_id: HOME-005
+case_title: 未开放知识库入口
+module: 公共首页与导航
+priority: P1
+test_type: functional
+case_type: functional
+source: ai_generated_unreviewed
+requirement_ref: 策划案4.4、17.5。
+preconditions:
+- 用户已登录并进入登录后主界面。
+test_data: 有效普通用户。
+steps:
+- index: 1
+  action: 查看并操作“进入测试知识库”入口。
+  expected: 入口明确显示“尚未开放”或等价状态；不会进入不存在的知识库、报错页或空白页。
+cleanup: 退出测试账号。
+model_review:
+  status: not_run
+  note: 本轮为静态预审候选；未调用真实模型，避免 15 条×6–8 分钟成本。
+candidates:
+- candidate_id: CAND-HOME-005-01
+  title: “等价状态”缺少可判定文本或元素
+  claim: 预期只写“尚未开放”或“等价状态”，未给出具体文案、禁用态或可访问性属性，执行者无法判定“等价”。
+  evidence_case: 预期结果
+  evidence_spec: 策划案 §4.4、§17.5
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 需要固定文案或可测量状态，否则不同执行者结论不同。
+  ai_suggested_severity: major
+  ai_suggested_category: 预期不明确
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null

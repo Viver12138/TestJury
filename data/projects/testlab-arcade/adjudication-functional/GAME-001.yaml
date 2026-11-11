@@ -1,0 +1,62 @@
+case_id: GAME-001
+case_title: 游戏场景加载
+module: 三维弹球
+priority: P0
+test_type: functional
+case_type: functional
+source: ai_generated_unreviewed
+requirement_ref: 策划案6.3、6.6、6.9、17.6。
+preconditions:
+- 用户已登录，网络和浏览器可用。
+test_data: 无。
+steps:
+- index: 1
+  action: 进入游戏页，记录从进入页面到可开始游戏的状态变化。
+  expected: 先出现加载状态；随后出现球台、弹球、左右挡板、发射槽、边界、碰撞器、灯光和固定或轻微跟随摄像机；不依赖远程HDR而永久黑屏。
+cleanup: 离开游戏页。
+model_review:
+  status: not_run
+  note: 本轮为静态预审候选；未调用真实模型，避免 15 条×6–8 分钟成本。
+candidates:
+- candidate_id: CAND-GAME-001-01
+  title: “永久黑屏”不是可判定结果
+  claim: 预期写“不依赖远程HDR而永久黑屏”，缺少加载超时、可开始状态或错误提示的判定标准。
+  evidence_case: 预期结果
+  evidence_spec: 策划案 §6.3、§6.6
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: “永久”无法在有限测试时间内判定。
+  ai_suggested_severity: major
+  ai_suggested_category: 预期不明确
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+- candidate_id: CAND-GAME-001-02
+  title: 未给出浏览器/GPU/网络条件
+  claim: 3D 场景加载结果受浏览器、GPU、网络影响，前置只写“网络和浏览器可用”。
+  evidence_case: 前置条件
+  evidence_spec: 策划案 §6.3
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 至少应固定浏览器与网络条件，否则结果不可重复。
+  ai_suggested_severity: major
+  ai_suggested_category: 前置不足
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null

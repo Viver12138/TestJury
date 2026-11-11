@@ -1,0 +1,44 @@
+case_id: DASH-003
+case_title: 从主界面开始游戏
+module: 登录后主界面
+priority: P0
+test_type: functional
+case_type: functional
+source: ai_generated_unreviewed
+requirement_ref: 策划案4.4、7。
+preconditions:
+- 用户A已登录。
+test_data: 用户A。
+steps:
+- index: 1
+  action: 点击“开始游戏”。
+  expected: 进入受保护的游戏页面；开始前不错误扣减球数或保存一条完成成绩。
+cleanup: 按环境规则结束或取消测试局。
+model_review:
+  status: not_run
+  note: 本轮为静态预审候选；未调用真实模型，避免 15 条×6–8 分钟成本。
+candidates:
+- candidate_id: CAND-DASH-003-01
+  title: “不错误扣减球数/不保存完成成绩”缺少读取方式
+  claim: 预期要求开始前不扣球数、不保存完成成绩，但步骤没有读取游戏记录或球数状态的接口/页面方法。
+  evidence_case: 预期结果
+  evidence_spec: 策划案 §4.4、§7
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 只能看界面，无法确认服务端记录。
+  ai_suggested_severity: major
+  ai_suggested_category: 状态不可读
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null

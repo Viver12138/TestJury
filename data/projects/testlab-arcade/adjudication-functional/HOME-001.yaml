@@ -1,0 +1,50 @@
+case_id: HOME-001
+case_title: 访客正常打开公共首页
+module: 公共首页与导航
+priority: P1
+test_type: functional
+case_type: functional
+source: ai_generated_unreviewed
+requirement_ref: 策划案4.1、3.1。
+preconditions:
+- 浏览器中不存在有效登录会话。
+test_data: 网站公开访问地址。
+steps:
+- index: 1
+  action: 新建无痕窗口。
+  expected: 页面无需登录即可访问，不发生登录循环。
+- index: 2
+  action: 输入网站根地址并访问。
+  expected: 展示网站名称和一句话介绍。
+- index: 3
+  action: 等待页面加载完成。
+  expected: 展示“登录”和“创建账号”入口。；展示三维弹球介绍、知识库后续预告、版本号或运行状态。；页面无空白区域、崩溃提示和无法关闭的加载遮罩。
+cleanup: 关闭无痕窗口。
+model_review:
+  status: not_run
+  note: 本轮为静态预审候选；未调用真实模型，避免 15 条×6–8 分钟成本。
+candidates:
+- candidate_id: CAND-HOME-001-01
+  title: 期望展示版本号/运行状态与需求冲突
+  claim: 预期要求展示“版本号或运行状态”，但策划案 4.1 明确“网站运行状态或版本号（本期未展示）”。
+  evidence_case: 预期结果第 3 条
+  evidence_spec: 策划案 §4.1
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 需求明确说本期未展示，测试期望与之直接冲突。
+  ai_suggested_severity: major
+  ai_suggested_category: 规则冲突
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null

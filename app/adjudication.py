@@ -261,11 +261,54 @@ def stats(root: Path) -> dict[str, Any]:
     }
 
 
+def _case_lines(value: Any) -> str:
+    """把 YAML 里的列表型快照字段拼成多行文本（CSV/Excel 复用）。"""
+
+    if value is None:
+        return ""
+    if isinstance(value, (list, tuple)):
+        lines: list[str] = []
+        for index, item in enumerate(value, start=1):
+            if isinstance(item, dict):
+                action = str(item.get("action") or "").strip()
+                expected = str(item.get("expected") or "").strip()
+                text = f"{index}. {action}"
+                if expected:
+                    text += f" => {expected}"
+                lines.append(text)
+            elif str(item).strip():
+                lines.append(str(item).strip())
+        return "\n".join(lines)
+    return str(value).strip()
+
+
+def case_snapshot(data: dict[str, Any]) -> dict[str, str]:
+    """原始用例快照：让裁决人不必回看 YAML 就能判断 claim 是否成立。"""
+
+    expected = data.get("expected")
+    if not expected:
+        expected = [
+            item.get("expected")
+            for item in data.get("steps", [])
+            if isinstance(item, dict) and item.get("expected")
+        ]
+    return {
+        "module": _case_lines(data.get("module")),
+        "priority": _case_lines(data.get("priority")),
+        "source": _case_lines(data.get("source")),
+        "ui_spec_ref": _case_lines(data.get("ui_spec_ref") or data.get("requirement_ref")),
+        "preconditions": _case_lines(data.get("preconditions")),
+        "steps": _case_lines(data.get("steps")),
+        "expected": _case_lines(expected),
+    }
+
+
 def export_csv(root: Path, destination: Path) -> int:
     rows: list[dict[str, Any]] = []
     for path in sorted(Path(root).glob("*.yaml")):
         data = load_case(path)
         level = data.get("case_level", {})
+        snapshot = case_snapshot(data)
         for candidate in data.get("candidates", []):
             final = candidate.get("final", {})
             rows.append(
@@ -280,6 +323,13 @@ def export_csv(root: Path, destination: Path) -> int:
                     "ai_recommendation": candidate.get("ai_recommendation"),
                     "ai_reason": candidate.get("ai_reason"),
                     "ai_suggested_severity": candidate.get("ai_suggested_severity"),
+                    "module": snapshot["module"],
+                    "priority": snapshot["priority"],
+                    "source": snapshot["source"],
+                    "ui_spec_ref": snapshot["ui_spec_ref"],
+                    "preconditions": snapshot["preconditions"],
+                    "steps": snapshot["steps"],
+                    "expected": snapshot["expected"],
                     "final_validity": final.get("validity", "pending"),
                     "final_severity": final.get("severity") or "",
                     "final_category": final.get("category") or "",

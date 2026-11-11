@@ -35,6 +35,7 @@ python scripts/check_contracts.py --json     # 机器可读输出
 | `check_consistency.py` | 运维脚本：报告/投影、人工决定、候选映射、附件绑定一致性检查（需要 `DATABASE_URL`） | 评审 ID + 具体不一致项 |
 | `check_model_connectivity.py` | 模型连通性冒烟：按 models.yaml 对真实供应商发最小 JSON 请求，记录延迟/token/JSON 能力；不打印密钥（需要供应商 Key） | 角色 + 错误码/状态码 |
 | `adjudicate.py` | 人工裁决工作台：录入 issue 级 validity/severity/correction 与用例结论，追加 history；不代替人工签名 | 用例/候选 ID + 非法字段 |
+| `adjudication_sheet.py` | 生成带下拉选项的 `adjudication.xlsx`（含原始用例快照），回收为 CSV；支持 `--root` 分别处理 UI/功能工作台 | 已填/未填、非法下拉值、重复导入 |
 
 ## 输出格式
 

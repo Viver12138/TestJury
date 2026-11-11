@@ -1,0 +1,44 @@
+case_id: REG-007
+case_title: 未同意服务条款
+module: 注册
+priority: P1
+test_type: functional
+case_type: functional
+source: ai_generated_unreviewed
+requirement_ref: 策划案4.2。
+preconditions:
+- 未登录。
+test_data: 其他字段均有效。
+steps:
+- index: 1
+  action: 不勾选条款并提交；随后勾选再提交。
+  expected: 首次提交被阻止并提示必须同意；勾选后可正常提交。
+cleanup: 清理新建账号。
+model_review:
+  status: not_run
+  note: 本轮为静态预审候选；未调用真实模型，避免 15 条×6–8 分钟成本。
+candidates:
+- candidate_id: CAND-REG-007-01
+  title: 整条用例验证未实现的服务条款复选框
+  claim: 用例以“未同意服务条款”为唯一校验对象，但策划案 4.2 明确本期不实现、不作为验收项。
+  evidence_case: 整条用例
+  evidence_spec: 策划案 §4.2；UI 规范 §13
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 该用例没有有效被测对象，应删除或改为后续版本需求。
+  ai_suggested_severity: blocker
+  ai_suggested_category: 规则冲突
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null

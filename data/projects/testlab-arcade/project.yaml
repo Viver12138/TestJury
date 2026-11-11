@@ -14,6 +14,7 @@ normalized:
   functional_review_payloads: functional_case_payloads.json
   functional_cases_v1_1: functional_cases_v1.1.json
   excluded_nonfunctional_v1_1: excluded_nonfunctional_v1.1.json
+  functional_adjudication: adjudication-functional/
 ui_case_count: 55
 functional_case_count: 62
 functional_case_count_in_scope: 57

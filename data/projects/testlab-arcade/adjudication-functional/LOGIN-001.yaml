@@ -1,0 +1,71 @@
+case_id: LOGIN-001
+case_title: 正确邮箱密码登录
+module: 登录、会话与退出
+priority: P0
+test_type: functional
+case_type: functional
+source: ai_generated_unreviewed
+requirement_ref: 策划案5.1、17.3。
+preconditions:
+- 正常状态账号已存在；当前未登录。
+test_data: 用户A邮箱和正确密码。
+steps:
+- index: 1
+  action: 进入登录页。
+  expected: 出现提交中状态；只产生一次有效登录；创建服务端会话；进入登录后主界面并显示用户A身份。
+- index: 2
+  action: 输入邮箱和密码。
+  expected: null
+- index: 3
+  action: 点击登录。
+  expected: null
+- index: 4
+  action: 提交期间再次点击登录。
+  expected: null
+cleanup: 退出登录。
+model_review:
+  status: not_run
+  note: 本轮为静态预审候选；未调用真实模型，避免 15 条×6–8 分钟成本。
+candidates:
+- candidate_id: CAND-LOGIN-001-01
+  title: 步骤与预期数量/对象错位
+  claim: 4 个步骤只有第 1 步有预期，且第 1 步“进入登录页”的预期却包含提交中、创建会话、进入主界面等后续动作结果；步骤 2-4 无预期。
+  evidence_case: 步骤 1-4 / 预期 1
+  evidence_spec: 策划案 §5.1
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 执行者无法判断每步应验证什么，失败时无法定位。
+  ai_suggested_severity: major
+  ai_suggested_category: 预期不明确
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+- candidate_id: CAND-LOGIN-001-02
+  title: “提交中状态”缺少观察方法和时序
+  claim: 预期要求出现提交中状态并防止重复登录，但未说明如何延迟请求、何时再次点击、观察哪个控件。
+  evidence_case: 预期结果第 1 条 / 步骤 4
+  evidence_spec: 策划案 §5.1
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 瞬时状态不可稳定复现。
+  ai_suggested_severity: major
+  ai_suggested_category: 不可重复
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null

@@ -514,12 +514,14 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 | 规范化 UI 用例（原始字段） | [data/projects/testlab-arcade/cases.json](data/projects/testlab-arcade/cases.json) |
 | 可直接提交的旧版 UI 评审请求（55 条） | [data/projects/testlab-arcade/case_payloads.json](data/projects/testlab-arcade/case_payloads.json) |
 | 项目画像/模块统计 | [data/projects/testlab-arcade/project.yaml](data/projects/testlab-arcade/project.yaml) |
-| 人工裁决工作台（8 用例 / 19 条候选，当前 0 条已裁决） | [填写教程](data/projects/testlab-arcade/adjudication/填写教程.md) · [工作台说明](data/projects/testlab-arcade/adjudication/README.md) · [汇总 CSV](data/projects/testlab-arcade/adjudication/adjudication.csv) |
+| 人工裁决工作台（UI 线：8 用例 / 19 条候选，当前 0 条已裁决） | [填写教程](data/projects/testlab-arcade/adjudication/填写教程.md) · [工作台说明](data/projects/testlab-arcade/adjudication/README.md) · [汇总 CSV](data/projects/testlab-arcade/adjudication/adjudication.csv) |
+| **功能线人工裁决工作台（15 用例 / 24 条静态候选，0 条已裁决）** | [functional 工作台](data/projects/testlab-arcade/adjudication-functional/README.md) · [汇总 CSV](data/projects/testlab-arcade/adjudication-functional/adjudication.csv) |
 | 静态体检记录（非模型结论） | [data/projects/testlab-arcade/static_review.md](data/projects/testlab-arcade/static_review.md) |
 
 - **两套用例分开**：55 条 UI 用例全部是页面/UI 用例；62 条功能/安全/非功能用例以 V1.1 为准，其中 **57 条 functional 可送审**、5 条 NFR 非功能不进入当前 functional。
 - 早先分类版把 12 条 UI 用例标为“功能测试”是错误口径，已废弃；功能评测不得使用那 12 条标签。
-- 当前人工裁决工作台 8 个用例 / 19 条候选，全部属于 UI/页面用例，**不应计入 functional 评测标签**；功能用例尚未建立候选/裁决。
+- 当前人工裁决分两条独立线：UI 线 8 用例 / 19 候选（`adjudication/`）；功能线 15 用例 / 24 条静态候选（`adjudication-functional/`），两者标签不能混用。
+- 功能线本轮是**静态预审候选**，未调用真实模型；覆盖 HOME/REG/LOGIN/DASH/GAME/SCORE/SEC，重点包括服务条款冲突、步骤-预期错位、数据缺失、状态不可读。
 - 当前评审器 v1 只接受 `test_type=functional`，页面/UI 用例需要页面/UI 专用 Rubric。
 - 当前知识库装载/检索未实现（M2），送审时会降级为 `kb_module_missing`；UI 规范尚未作为检索证据注入。
 - AI 生成的 55 条用例**未经人工复核**：已标记 `human_reviewed: false`、`do_not_use_as_golden: true`，不能作为评测真值。

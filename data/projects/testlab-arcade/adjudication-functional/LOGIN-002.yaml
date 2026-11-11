@@ -1,0 +1,44 @@
+case_id: LOGIN-002
+case_title: 错误密码登录
+module: 登录、会话与退出
+priority: P0
+test_type: functional
+case_type: functional
+source: ai_generated_unreviewed
+requirement_ref: 策划案5.1、5.3。
+preconditions:
+- 用户A存在。
+test_data: 用户A邮箱、错误密码。
+steps:
+- index: 1
+  action: 提交错误凭据。
+  expected: 登录失败；不创建有效会话；提示采用通用措辞，不确认该邮箱是否存在；密码不被回显。
+cleanup: 无。
+model_review:
+  status: not_run
+  note: 本轮为静态预审候选；未调用真实模型，避免 15 条×6–8 分钟成本。
+candidates:
+- candidate_id: CAND-LOGIN-002-01
+  title: “通用措辞”缺少可断言文本或对比方法
+  claim: 预期要求提示采用通用措辞、不确认邮箱是否存在，但未给出固定文案，也未要求与 LOGIN-003 不存在邮箱场景对比。
+  evidence_case: 预期结果
+  evidence_spec: 策划案 §5.1、§5.3
+  source_issue_ids: []
+  ai_recommendation: likely_valid
+  ai_reason: 无法客观判断提示是否泄露账号存在性。
+  ai_suggested_severity: major
+  ai_suggested_category: 预期不明确
+  final:
+    validity: pending
+    severity: null
+    category: null
+    correction: null
+    adjudicator: null
+    adjudicated_at: null
+    note: null
+case_level:
+  verdict: pending
+  defect_count: null
+  adjudicator: null
+  adjudicated_at: null
+  note: null
