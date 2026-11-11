@@ -13,6 +13,7 @@ from app.storage.models import (
     CandidateRecord,
     DecisionRecord,
     IssueRecord,
+    ModelRunRecord,
     ReviewJob,
     ReviewTaskRecord,
     StageAttempt,
@@ -82,6 +83,10 @@ class Storage(Protocol):
     async def add_votes(self, review_id: str, votes: list[VoteRecord]) -> None: ...
 
     async def list_votes(self, review_id: str) -> list[VoteRecord]: ...
+
+    async def add_model_run(self, run: ModelRunRecord) -> None: ...
+
+    async def list_model_runs(self, review_id: str) -> list[ModelRunRecord]: ...
 
     async def finalize_report(
         self,

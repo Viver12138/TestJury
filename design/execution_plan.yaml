@@ -199,7 +199,7 @@ verification_items:
     owner: null
     phase: M1
     blocking: [M1, production]
-    evidence: [model_admission_record, adapter_contract_test]
+    evidence: [model_admission_record, adapter_contract_test, v01_subitems, model_run_audit, quality_gate_tests]
     acceptance_evidence: null
     acceptance_by: null
     acceptance_at: null

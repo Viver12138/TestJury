@@ -56,9 +56,19 @@ def _build_review_model(settings: Settings):
     if settings.review_model_mode == "mock":
         return MockChatClient()
     registry = ModelRegistry.load(settings.model_registry_path)
+    roles = ("chief_blind", "jury_a", "jury_b")
+    if settings.is_production and settings.enforce_model_admission:
+        from app.llm.admission import enforce_model_admission
+
+        enforce_model_admission(
+            registry,
+            Path(settings.model_admission_path),
+            roles=roles,
+            masking_enabled=settings.masking_policy_enabled,
+        )
     adapters = {
         role: build_chat_adapter(registry, role)
-        for role in ("chief_blind", "jury_a", "jury_b")
+        for role in roles
     }
     rubric = RubricRepository(
         settings.rubric_path, settings.rubric_path.parent / "schema.json"

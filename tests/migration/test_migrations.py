@@ -54,18 +54,26 @@ def test_empty_database_migrates_and_rolls_back(clean_database: str) -> None:
     tables = asyncio.run(_tables())
     assert CORE_TABLES <= tables
     assert "review_attachments" in tables
+    assert asyncio.run(_alembic_version()) == "0003_m1_audit_evidence"
+
+    # 回滚 0003：只撤销审计/证据列，不破坏附件表与 M0 核心表
+    downgrade_0003 = run_alembic("downgrade", "0002_m1_review_attachments")
+    assert downgrade_0003.returncode == 0, downgrade_0003.stdout + downgrade_0003.stderr
+    after_0003 = asyncio.run(_tables())
+    assert "review_attachments" in after_0003
+    assert CORE_TABLES <= after_0003
     assert asyncio.run(_alembic_version()) == "0002_m1_review_attachments"
 
-    # 回滚一个 revision：只撤销附件绑定表，不破坏 M0 核心表
-    downgrade_one = run_alembic("downgrade", "-1")
-    assert downgrade_one.returncode == 0, downgrade_one.stdout + downgrade_one.stderr
-    after_one = asyncio.run(_tables())
-    assert "review_attachments" not in after_one
-    assert CORE_TABLES <= after_one
+    # 再回滚一个 revision：只撤销附件绑定表
+    downgrade_0002 = run_alembic("downgrade", "0001_m0_initial")
+    assert downgrade_0002.returncode == 0, downgrade_0002.stdout + downgrade_0002.stderr
+    after_0002 = asyncio.run(_tables())
+    assert "review_attachments" not in after_0002
+    assert CORE_TABLES <= after_0002
     assert asyncio.run(_alembic_version()) == "0001_m0_initial"
 
     # 再回滚到 base：核心表被撤销
-    downgrade_all = run_alembic("downgrade", "-1")
+    downgrade_all = run_alembic("downgrade", "base")
     assert downgrade_all.returncode == 0, downgrade_all.stdout + downgrade_all.stderr
     remaining = asyncio.run(_tables())
     assert CORE_TABLES.isdisjoint(remaining), remaining
@@ -76,7 +84,7 @@ def test_empty_database_migrates_and_rolls_back(clean_database: str) -> None:
     rebuilt = asyncio.run(_tables())
     assert CORE_TABLES <= rebuilt
     assert "review_attachments" in rebuilt
-    assert asyncio.run(_alembic_version()) == "0002_m1_review_attachments"
+    assert asyncio.run(_alembic_version()) == "0003_m1_audit_evidence"
 
 
 def test_repeated_upgrade_is_noop(clean_database: str) -> None:
@@ -84,4 +92,5 @@ def test_repeated_upgrade_is_noop(clean_database: str) -> None:
     assert first.returncode == 0, first.stdout + first.stderr
     second = run_alembic("upgrade", "head")
     assert second.returncode == 0, second.stdout + second.stderr
+
 

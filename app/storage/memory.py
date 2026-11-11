@@ -21,6 +21,7 @@ from app.storage.models import (
     CandidateRecord,
     DecisionRecord,
     IssueRecord,
+    ModelRunRecord,
     ReviewJob,
     ReviewTaskRecord,
     StageAttempt,
@@ -40,6 +41,7 @@ class MemoryStorage:
         self._attempts: dict[str, list[StageAttempt]] = {}
         self._candidates: dict[str, list[CandidateRecord]] = {}
         self._votes: dict[str, list[VoteRecord]] = {}
+        self._model_runs: dict[str, list[ModelRunRecord]] = {}
         self._issues: dict[str, list[IssueRecord]] = {}
         self._review_attachments: dict[str, dict[str, AttachmentRecord]] = {}
         self._decisions: dict[str, list[DecisionRecord]] = {}
@@ -259,6 +261,12 @@ class MemoryStorage:
 
     async def list_votes(self, review_id: str) -> list[VoteRecord]:
         return list(self._votes.get(review_id, []))
+
+    async def add_model_run(self, run: ModelRunRecord) -> None:
+        self._model_runs.setdefault(run.review_id, []).append(run)
+
+    async def list_model_runs(self, review_id: str) -> list[ModelRunRecord]:
+        return list(self._model_runs.get(review_id, []))
 
     async def finalize_report(
         self,

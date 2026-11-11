@@ -98,6 +98,12 @@ class Worker:
         }
         summary = report.get("summary") or {}
         issue_records = records_from_report(job.id, report)
+        model_runs = (report.get("appendix") or {}).get("model_runs") or []
+        costs = [
+            float(run["cost_estimate"])
+            for run in model_runs
+            if run.get("cost_estimate") is not None
+        ]
 
         await self.storage.finalize_report(
             job.id,
@@ -114,6 +120,8 @@ class Worker:
                 "input_quality": report.get("input_quality"),
                 "normalized_case": report.get("appendix", {}).get("normalized_case"),
                 "report_locked_at": now(),
+                "total_cost_estimate": round(sum(costs), 4) if costs else None,
+                "cost_currency": "CNY",
                 "finished_at": now(),
             },
             issues=issue_records,

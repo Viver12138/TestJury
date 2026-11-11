@@ -76,17 +76,28 @@ async def test_review_parses_issues_and_drops_decision_fields() -> None:
     )
     model, adapter = _model(content)
     opinion = await model.review(
-        "chief_blind", {"case_id": "TC-1", "steps": [{"index": 1, "action": "a"}]}
+        "chief_blind",
+        {
+            "case_id": "TC-1",
+            "steps": [
+                {"index": 1, "action": "a", "expected": "x"},
+                {"index": 2, "action": "b", "expected": "y"},
+                {"index": 3, "action": "点击【发现】按钮", "expected": "z"},
+            ],
+        },
     )
 
     assert opinion.summary.startswith("整体可执行")
     assert len(opinion.issues) == 1
     assert opinion.issues[0]["severity"] == "major"
     assert opinion.issues[0]["kb_grounded"] is False
+    assert opinion.issues[0]["evidence_status"] == "partially_grounded"
+    assert opinion.issues[0]["model_evidence_status"] == "grounded"
     assert opinion.model == "fake-model-2026-11"
     assert opinion.input_tokens == 120
     assert opinion.cost_estimate is not None
     assert any("ai_verdict" in warning for warning in opinion.warnings)
+    assert any("model_grounded_downgraded" in warning for warning in opinion.warnings)
 
     request = adapter.requests[0]
     assert "评审标准" in request.messages[1].content
@@ -121,17 +132,88 @@ async def test_invalid_model_output_is_rejected() -> None:
 
 
 @pytest.mark.asyncio
-async def test_vote_parses_and_enforces_validity_rules() -> None:
+async def test_vote_rejects_severity_on_non_accept_and_invalid_severity() -> None:
     model, _ = _model(json.dumps({"validity": "reject", "severity": "blocker", "reason": "不成立"}))
-    decision = await model.vote("jury_a", {"description": "第 3 步缺预期"})
-    assert decision.validity == "reject"
-    assert decision.severity is None
-    assert decision.reason == "不成立"
+    with pytest.raises(AdapterError):
+        await model.vote("jury_a", {"description": "第 3 步缺预期"})
 
     model, _ = _model(json.dumps({"validity": "accept", "severity": "major"}))
     decision = await model.vote("jury_a", {"description": "x"})
     assert decision.validity == "accept" and decision.severity == "major"
 
+    model, _ = _model(json.dumps({"validity": "accept", "severity": "严重"}))
+    with pytest.raises(AdapterError):
+        await model.vote("jury_a", {"description": "x"})
+
     model, _ = _model(json.dumps({"validity": "maybe"}))
     with pytest.raises(AdapterError):
         await model.vote("jury_a", {"description": "x"})
+
+
+@pytest.mark.asyncio
+async def test_invalid_issue_enum_drops_issue_instead_of_downgrading() -> None:
+    base = {
+        "step_index": 1,
+        "dimension": "test_design",
+        "severity": "major",
+        "category": "预期不明确",
+        "evidence_quote": "a",
+        "rationale": "缺预期",
+        "suggestion": "补预期",
+        "kb_grounded": False,
+        "evidence_type": "testing_standard",
+        "evidence_strength": "medium",
+        "evidence_status": "partially_grounded",
+    }
+    bad = dict(base, severity="严重")
+    good = dict(base, category="前置不足")
+    content = json.dumps({"overall": {"comment": "ok"}, "issues": [bad, good]}, ensure_ascii=False)
+    model, _ = _model(content)
+    opinion = await model.review(
+        "chief_blind", {"case_id": "TC-ENUM", "steps": [{"index": 1, "action": "a"}]}
+    )
+    assert len(opinion.issues) == 1
+    assert opinion.issues[0]["category"] == "前置不足"
+    assert any("issue_dropped:0:severity_invalid" in warning for warning in opinion.warnings)
+
+    all_bad = json.dumps({"overall": {"comment": "x"}, "issues": [bad]}, ensure_ascii=False)
+    model, _ = _model(all_bad)
+    with pytest.raises(AdapterError):
+        await model.review(
+            "chief_blind", {"case_id": "TC-ENUM2", "steps": [{"index": 1, "action": "a"}]}
+        )
+
+
+@pytest.mark.asyncio
+async def test_evidence_quote_must_exist_and_grounded_is_not_trusted() -> None:
+    issue = {
+        "step_index": 1,
+        "dimension": "test_design",
+        "severity": "blocker",
+        "category": "预期不明确",
+        "evidence_quote": "原文中不存在的句子",
+        "rationale": "缺预期",
+        "suggestion": "补预期",
+        "kb_grounded": True,
+        "kb_refs": ["kb-fake-1"],
+        "evidence_type": "business_rule",
+        "evidence_strength": "strong",
+        "evidence_status": "grounded",
+    }
+    content = json.dumps({"overall": {"comment": "x"}, "issues": [issue]}, ensure_ascii=False)
+    model, _ = _model(content)
+    opinion = await model.review(
+        "chief_blind", {"case_id": "TC-EVID", "steps": [{"index": 1, "action": "a"}]}
+    )
+    result = opinion.issues[0]
+    assert result["evidence_status"] == "insufficient"
+    assert result["validation_status"] == "needs_review"
+    assert result["kb_grounded"] is False
+    assert any("evidence_quote_not_found" in warning for warning in opinion.warnings)
+    assert any("kb_refs_not_in_pack" in warning for warning in opinion.warnings)
+
+
+def test_output_schema_has_no_role_field() -> None:
+    from app.llm.review import _OUTPUT_SCHEMA
+
+    assert '"role"' not in _OUTPUT_SCHEMA

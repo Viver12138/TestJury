@@ -123,6 +123,17 @@ def fuse(
                 claims=claims,
                 evidence_status=evidence_status,
                 evidence_refs=[],
+                kb_grounded=bool(strongest[1].get("kb_grounded", False)),
+                kb_refs=list(strongest[1].get("kb_refs") or []),
+                evidence_type=strongest[1].get("evidence_type"),
+                evidence_strength=strongest[1].get("evidence_strength"),
+                evidence_quote=strongest[1].get("evidence_quote"),
+                model_evidence_status=strongest[1].get("model_evidence_status"),
+                evidence_support_status=strongest[1].get("evidence_support_status"),
+                validation_status=str(strongest[1].get("validation_status") or "passed"),
+                parse_warnings=list(strongest[1].get("parse_warnings") or []),
+                model_confidence=strongest[1].get("model_confidence"),
+                suggestion=strongest[1].get("suggestion"),
                 proposed_by=sorted({role for role, _ in members}),
                 merged_from=[
                     {

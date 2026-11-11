@@ -32,13 +32,21 @@ async def run_vote(
     candidates: list[CandidateRecord],
     model: ReviewModel,
     roles: list[str],
+    *,
+    timeout_seconds: int | None = None,
 ) -> tuple[list[VoteRecord], list[dict[str, Any]]]:
+    """并行投票；每个候选 × 角色是一次独立调用，超时按该票 failed 处理。"""
+
     async def _one(candidate: CandidateRecord, role: str):
         material = build_vote_material(candidate)
         try:
-            decision = await call_with_retry(
+            vote_call = call_with_retry(
                 lambda: model.vote(role, material), max_attempts=3, base_delay=2.0
             )
+            if timeout_seconds:
+                decision = await asyncio.wait_for(vote_call, timeout=timeout_seconds)
+            else:
+                decision = await vote_call
             return candidate, role, decision, "ok", None
         except AdapterError as exc:
             return (
@@ -50,6 +58,17 @@ async def run_vote(
                 ),
                 "failed",
                 exc.code,
+            )
+        except TimeoutError:
+            return (
+                candidate,
+                role,
+                VoteDecision(
+                    validity=VoteValidity.NOT_ASSESSED.value,
+                    reason="vote_failed:MODEL_TIMEOUT",
+                ),
+                "failed",
+                "MODEL_TIMEOUT",
             )
 
     results = await asyncio.gather(
@@ -88,6 +107,13 @@ async def run_vote(
                     "response": decision.output_tokens,
                 },
                 "cost_estimate": decision.cost_estimate,
+                "attempts": list(getattr(decision, "attempts", []) or []),
+                "provider": getattr(decision, "provider", None),
+                "request_hash": getattr(decision, "request_hash", None),
+                "response_hash": getattr(decision, "response_hash", None),
+                "raw_request": getattr(decision, "raw_request", None),
+                "raw_response": getattr(decision, "raw_response", None),
+                "warnings": list(decision.warnings),
             }
         )
     return votes, calls

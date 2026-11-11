@@ -59,9 +59,9 @@ class Settings(BaseSettings):
     # ── 阶段超时（docs/13 §3） ──
     stage_timeout_preprocess: int = 60
     stage_timeout_kb: int = 60
-    stage_timeout_blind: int = 240
+    stage_timeout_blind: int = 480
     stage_timeout_fusion: int = 30
-    stage_timeout_vote: int = 180
+    stage_timeout_vote: int = 360
     stage_timeout_arbitration: int = 180
     stage_timeout_verdict: int = 15
     stage_timeout_render: int = 30
@@ -118,6 +118,12 @@ class Settings(BaseSettings):
     review_topology: Literal["single", "dual", "multi"] = "multi"
     # mock：确定性 Mock（单测/离线）；live：调用 config/models.yaml 注册的真实模型
     review_model_mode: Literal["mock", "live"] = "mock"
+    # 是否把原始请求/响应写入 model_runs；默认只存 hash，避免敏感原文无边界扩散
+    store_raw_model_io: bool = False
+    # 生产模型准入：design/model_admission.yaml；require 时缺文件/未 verified 直接拒绝启动
+    model_admission_path: Path = Path("design/model_admission.yaml")
+    enforce_model_admission: bool = True
+    masking_policy_enabled: bool = False
 
     # ── 审批与业务边界 ──
     decision_require_separation: bool = True
@@ -209,3 +215,4 @@ def load_settings_or_exit() -> Settings:
             location = ".".join(str(part) for part in error["loc"])
             missing.append(f"{location.upper()}: {error['msg']}")
         raise SystemExit("缺少或非法配置，服务未启动：\n  " + "\n  ".join(missing)) from None
+

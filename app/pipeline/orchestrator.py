@@ -39,6 +39,7 @@ from app.pipeline.verdict import (
 from app.schemas.report import load_report_schema
 from app.storage.models import (
     CandidateRecord,
+    ModelRunRecord,
     ReviewJob,
     ReviewTaskRecord,
     StageAttempt,
@@ -127,6 +128,165 @@ class ReviewPipeline:
 
     # ── 主流程 ──
 
+    def _raw(self, payload: dict[str, Any] | None) -> dict[str, Any] | None:
+        return payload if self.settings.store_raw_model_io else None
+
+    async def _persist_attempt_errors(
+        self,
+        job: ReviewJob,
+        *,
+        role: str,
+        operation: str,
+        model: str,
+        prompt_version: str | None,
+        attempts: list[dict[str, Any]],
+        versions: Any,
+    ) -> None:
+        for item in attempts:
+            if item.get("status") != "error":
+                continue
+            await self.storage.add_model_run(
+                ModelRunRecord(
+                    review_id=job.id,
+                    role=role,
+                    operation=operation,
+                    model=model,
+                    requested_model=versions.models.get(role),
+                    prompt_version=prompt_version,
+                    attempt=int(item.get("attempt") or 1),
+                    status="error",
+                    latency_ms=item.get("latency_ms"),
+                    error_code=item.get("error_code"),
+                    error=f"attempt {item.get('attempt')} failed: {item.get('error_code')}",
+                    price_config_version=versions.price_config,
+                )
+            )
+
+    async def _persist_opinion_run(
+        self,
+        job: ReviewJob,
+        role: str,
+        operation: str,
+        opinion: Any,
+        versions: Any,
+    ) -> None:
+        attempts = list(getattr(opinion, "attempts", []) or [])
+        model = opinion.model or versions.models.get(role, "unknown")
+        prompt_version = versions.prompts.get(role)
+        await self._persist_attempt_errors(
+            job,
+            role=role,
+            operation=operation,
+            model=model,
+            prompt_version=prompt_version,
+            attempts=attempts,
+            versions=versions,
+        )
+        await self.storage.add_model_run(
+            ModelRunRecord(
+                review_id=job.id,
+                role=role,
+                operation=operation,
+                provider=getattr(opinion, "provider", None),
+                model=model,
+                requested_model=versions.models.get(role),
+                model_version=opinion.model_version,
+                prompt_version=prompt_version,
+                attempt=max(1, len(attempts)),
+                status="ok",
+                request_tokens=opinion.input_tokens,
+                response_tokens=opinion.output_tokens,
+                latency_ms=opinion.latency_ms,
+                request_hash=getattr(opinion, "request_hash", None),
+                response_hash=getattr(opinion, "response_hash", None),
+                raw_request=self._raw(getattr(opinion, "raw_request", None)),
+                raw_response=self._raw(getattr(opinion, "raw_response", None)),
+                parse_warnings=list(opinion.warnings or []),
+                cost_estimate=opinion.cost_estimate,
+                price_config_version=versions.price_config,
+            )
+        )
+
+    async def _persist_failed_run(
+        self,
+        job: ReviewJob,
+        role: str,
+        operation: str,
+        error: Exception,
+        versions: Any,
+    ) -> None:
+        await self.storage.add_model_run(
+            ModelRunRecord(
+                review_id=job.id,
+                role=role,
+                operation=operation,
+                model=versions.models.get(role, "unknown"),
+                requested_model=versions.models.get(role),
+                prompt_version=versions.prompts.get(role),
+                status="error",
+                error_code=getattr(error, "code", "UNKNOWN"),
+                error=str(error)[:1000],
+                price_config_version=versions.price_config,
+            )
+        )
+
+    async def _persist_vote_run(self, job: ReviewJob, call: dict[str, Any], versions: Any) -> None:
+        attempts = list(call.get("attempts") or [])
+        role = str(call.get("role"))
+        model = str(call.get("model") or versions.models.get(role, "unknown"))
+        prompt_version = versions.prompts.get(role)
+        await self._persist_attempt_errors(
+            job,
+            role=role,
+            operation="vote",
+            model=model,
+            prompt_version=prompt_version,
+            attempts=attempts,
+            versions=versions,
+        )
+        if call.get("status") != "ok":
+            if not attempts:
+                await self.storage.add_model_run(
+                    ModelRunRecord(
+                        review_id=job.id,
+                        role=role,
+                        operation="vote",
+                        model=model,
+                        requested_model=versions.models.get(role),
+                        prompt_version=prompt_version,
+                        status="error",
+                        error_code=call.get("error_code") or "UNKNOWN",
+                        error=call.get("error"),
+                        price_config_version=versions.price_config,
+                    )
+                )
+            return
+        await self.storage.add_model_run(
+            ModelRunRecord(
+                review_id=job.id,
+                role=role,
+                operation="vote",
+                provider=call.get("provider"),
+                model=model,
+                requested_model=versions.models.get(role),
+                prompt_version=prompt_version,
+                attempt=max(1, len(attempts)),
+                status="ok",
+                request_tokens=(call.get("tokens") or {}).get("request"),
+                response_tokens=(call.get("tokens") or {}).get("response"),
+                latency_ms=call.get("latency_ms"),
+                request_hash=call.get("request_hash"),
+                response_hash=call.get("response_hash"),
+                raw_request=self._raw(call.get("raw_request")),
+                raw_response=self._raw(call.get("raw_response")),
+                parse_warnings=list(call.get("warnings") or []),
+                cost_estimate=call.get("cost_estimate"),
+                error_code=call.get("error_code"),
+                error=call.get("error"),
+                price_config_version=versions.price_config,
+            )
+        )
+
     async def run(self, job: ReviewJob, versions: Any) -> PipelineResult:
         started = time.perf_counter()
         case = (job.normalized_case or {}) or {}
@@ -175,8 +335,22 @@ class ReviewPipeline:
         async def _review_role(role: str):
             call_started = time.perf_counter()
             try:
-                opinion = await self.model.review(role, case_for_review)
+                opinion = await asyncio.wait_for(
+                    self.model.review(role, case_for_review),
+                    timeout=self.settings.stage_timeout_blind,
+                )
                 return role, opinion, None, int((time.perf_counter() - call_started) * 1000)
+            except TimeoutError:
+                return (
+                    role,
+                    None,
+                    AdapterError(
+                        "MODEL_TIMEOUT",
+                        f"盲评超过 {self.settings.stage_timeout_blind}s",
+                        retryable=True,
+                    ),
+                    int((time.perf_counter() - call_started) * 1000),
+                )
             except AdapterError as exc:
                 return role, None, exc, int((time.perf_counter() - call_started) * 1000)
 
@@ -203,9 +377,15 @@ class ReviewPipeline:
                         "tokens": {"request": 0, "response": 0},
                     }
                 )
+                await self._persist_failed_run(
+                    job, role, "blind_review", error, versions
+                )
                 continue
             active_roles.append(role)
             opinions.append(opinion)
+            await self._persist_opinion_run(
+                job, role, "blind_review", opinion, versions
+            )
             model_calls.append(
                 {
                     "role": role,
@@ -253,9 +433,15 @@ class ReviewPipeline:
         # 6. 投票
         await self._stage(job, Stage.VOTE, StageStatus.RUNNING, fencing_token=job.fencing_token)
         vote_records, vote_calls = await vote.run_vote(
-            job.id, candidates, self.model, active_roles
+            job.id,
+            candidates,
+            self.model,
+            active_roles,
+            timeout_seconds=self.settings.stage_timeout_vote,
         )
         model_calls.extend(vote_calls)
+        for call in vote_calls:
+            await self._persist_vote_run(job, call, versions)
         await self.storage.add_votes(job.id, vote_records)
         participants = len(active_roles)
         vote_ratio = _global_vote_ratio(vote_records, participants, len(candidates))
@@ -528,15 +714,17 @@ def _build_report(
             "dimension": candidate.dimension,
             "severity": severity,
             "category": candidate.category or "未分类",
-            "evidence_quote": None,
+            "evidence_quote": candidate.evidence_quote,
             "rationale": candidate.standardized_text,
-            "suggestion": None,
-            "kb_grounded": False,
-            "kb_refs": [],
-            "evidence_type": "testing_standard",
-            "evidence_strength": "medium",
+            "suggestion": candidate.suggestion,
+            "kb_grounded": candidate.kb_grounded,
+            "kb_refs": list(candidate.kb_refs),
+            "evidence_type": candidate.evidence_type or "inference",
+            "evidence_strength": candidate.evidence_strength or "weak",
             "evidence_status": trace.evidence_status,
-            "evidence_refs": [],
+            "evidence_refs": list(candidate.evidence_refs),
+            "evidence_support_status": candidate.evidence_support_status,
+            "validation_status": candidate.validation_status,
             "proposed_by": list(candidate.proposed_by),
             "votes": {
                 record.reviewer_id: {
@@ -548,9 +736,7 @@ def _build_report(
             "vote_summary": _vote_summary(records, len(records)),
             "confidence": None,
             "confidence_source": "uncalibrated",
-            "model_confidence": None,
-            "validation_status": "passed",
-            "evidence_support_status": None,
+            "model_confidence": candidate.model_confidence,
             "decision_status": None,
             "status": trace.issue_status,
             "chief_decision": arbitration.get("chief_decision")
@@ -691,3 +877,4 @@ async def create_review_tasks_after_report(
 
 def job_is_complete(job: ReviewJob) -> bool:
     return job.status in ("done", "completed_with_warnings", "failed", "cancelled")
+

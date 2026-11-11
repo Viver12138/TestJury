@@ -39,6 +39,7 @@ class Versions:
     embedding_profile: str
     model_config: str
     models: dict[str, str] = field(default_factory=dict)
+    price_config: str = "price-unverified"
 
     def report_versions(self) -> dict[str, Any]:
         return {
@@ -51,6 +52,7 @@ class Versions:
             "embedding_profile": self.embedding_profile,
             "model_config": self.model_config,
             "models": dict(self.models),
+            "price_config": self.price_config,
         }
 
     def idempotency_components(self) -> dict[str, str]:
@@ -98,6 +100,9 @@ def compute_versions(settings: Settings) -> Versions:
         for role, spec in (model_registry.get("roles") or {}).items()
         if isinstance(spec, dict) and spec.get("model_id")
     }
+    price_config = str(
+        (model_registry.get("pricing") or {}).get("version") or "price-unverified"
+    )
 
     retrieval_params = {
         "query_max": settings.retrieval_query_max,
@@ -130,4 +135,5 @@ def compute_versions(settings: Settings) -> Versions:
         embedding_profile=embedding_profile,
         model_config=model_config,
         models=models,
+        price_config=price_config,
     )

@@ -25,6 +25,7 @@ from app.storage.models import (
     CandidateRecord,
     DecisionRecord,
     IssueRecord,
+    ModelRunRecord,
     ReviewJob,
     ReviewTaskRecord,
     StageAttempt,
@@ -154,6 +155,8 @@ _JOB_COLUMNS = (
     "report_summary",
     "report_json",
     "report_locked_at",
+    "total_cost_estimate",
+    "cost_currency",
     "error",
     "attempt_count",
     "max_attempts",
@@ -235,6 +238,8 @@ def _row_to_job(row: asyncpg.Record) -> ReviewJob:
         report_summary=data["report_summary"],
         report_json=data["report_json"],
         report_locked_at=data["report_locked_at"],
+        total_cost_estimate=float(data["total_cost_estimate"]) if data["total_cost_estimate"] is not None else None,
+        cost_currency=data["cost_currency"] or "CNY",
         error=data["error"],
         attempt_count=data["attempt_count"],
         max_attempts=data["max_attempts"],
@@ -665,8 +670,12 @@ class PostgresStorage(_PooledStorage):
                             (id, review_id, candidate_no, step_index, dimension,
                              severity_proposal, standardized_text, claims, evidence_status,
                              vote_valid_count, vote_completeness, evidence_refs, proposed_by,
-                             merged_from, fusion_basis, status, category)
-                        VALUES ($1::uuid,$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+                             merged_from, fusion_basis, status, category,
+                             kb_grounded, kb_refs, evidence_type, evidence_strength,
+                             evidence_quote, model_evidence_status, evidence_support_status,
+                             validation_status, parse_warnings, model_confidence, suggestion)
+                        VALUES ($1::uuid,$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,
+                                $18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28)
                         """,
                         UUID(candidate.id),
                         UUID(review_id),
@@ -685,6 +694,17 @@ class PostgresStorage(_PooledStorage):
                         candidate.fusion_basis,
                         candidate.status,
                         candidate.category,
+                        candidate.kb_grounded,
+                        candidate.kb_refs,
+                        candidate.evidence_type,
+                        candidate.evidence_strength,
+                        candidate.evidence_quote,
+                        candidate.model_evidence_status,
+                        candidate.evidence_support_status,
+                        candidate.validation_status,
+                        candidate.parse_warnings,
+                        candidate.model_confidence,
+                        candidate.suggestion,
                     )
 
     async def list_candidates(self, review_id: str) -> list[CandidateRecord]:
@@ -706,6 +726,17 @@ class PostgresStorage(_PooledStorage):
                 claims=row["claims"] or [],
                 evidence_status=row["evidence_status"],
                 evidence_refs=row["evidence_refs"] or [],
+                kb_grounded=row["kb_grounded"],
+                kb_refs=row["kb_refs"] or [],
+                evidence_type=row["evidence_type"],
+                evidence_strength=row["evidence_strength"],
+                evidence_quote=row["evidence_quote"],
+                model_evidence_status=row["model_evidence_status"],
+                evidence_support_status=row["evidence_support_status"],
+                validation_status=row["validation_status"] or "passed",
+                parse_warnings=row["parse_warnings"] or [],
+                model_confidence=row["model_confidence"],
+                suggestion=row["suggestion"],
                 proposed_by=row["proposed_by"] or [],
                 merged_from=row["merged_from"] or [],
                 fusion_basis=row["fusion_basis"] or {},
@@ -754,6 +785,86 @@ class PostgresStorage(_PooledStorage):
                 severity=row["severity"],
                 reason=row["reason"],
                 model_run_id=str(row["model_run_id"]) if row["model_run_id"] else None,
+                created_at=row["created_at"],
+            )
+            for row in rows
+        ]
+
+    async def add_model_run(self, run: ModelRunRecord) -> None:
+        pool = await self._get_pool()
+        async with pool.acquire() as conn:
+            await conn.execute(
+                """
+                INSERT INTO model_runs
+                    (id, review_id, role, provider, model, requested_model, model_version,
+                     prompt_version, attempt, status, request_tokens, response_tokens,
+                     latency_ms, raw_request, raw_response, parsed_output, parse_warnings,
+                     cost_estimate, cost_currency, price_config_version, error,
+                     operation, request_hash, response_hash, error_code)
+                VALUES ($1::uuid,$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
+                        $16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
+                """,
+                UUID(run.id),
+                UUID(run.review_id),
+                run.role,
+                run.provider,
+                run.model,
+                run.requested_model,
+                run.model_version,
+                run.prompt_version,
+                run.attempt,
+                run.status,
+                run.request_tokens,
+                run.response_tokens,
+                run.latency_ms,
+                run.raw_request,
+                run.raw_response,
+                run.parsed_output,
+                run.parse_warnings,
+                run.cost_estimate,
+                run.cost_currency,
+                run.price_config_version,
+                run.error,
+                run.operation,
+                run.request_hash,
+                run.response_hash,
+                run.error_code,
+            )
+
+    async def list_model_runs(self, review_id: str) -> list[ModelRunRecord]:
+        pool = await self._get_pool()
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(
+                "SELECT * FROM model_runs WHERE review_id=$1::uuid ORDER BY created_at, attempt",
+                review_id,
+            )
+        return [
+            ModelRunRecord(
+                id=str(row["id"]),
+                review_id=str(row["review_id"]),
+                role=row["role"],
+                provider=row["provider"],
+                model=row["model"],
+                requested_model=row["requested_model"],
+                model_version=row["model_version"],
+                prompt_version=row["prompt_version"],
+                attempt=row["attempt"],
+                status=row["status"],
+                request_tokens=row["request_tokens"],
+                response_tokens=row["response_tokens"],
+                latency_ms=row["latency_ms"],
+                raw_request=row["raw_request"],
+                raw_response=row["raw_response"],
+                parsed_output=row["parsed_output"],
+                parse_warnings=row["parse_warnings"] or [],
+                cost_estimate=float(row["cost_estimate"]) if row["cost_estimate"] is not None else None,
+                cost_currency=row["cost_currency"] or "CNY",
+                price_config_version=row["price_config_version"],
+                error=row["error"],
+                operation=row["operation"] or "blind_review",
+                request_hash=row["request_hash"],
+                response_hash=row["response_hash"],
+                error_code=row["error_code"],
                 created_at=row["created_at"],
             )
             for row in rows

@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.13 + M0 实现 + M1 真实模型接入**（Qwen3.8-Max / DeepSeek-Flash / Kimi-K3.1-Pro 已跑通真实评审；274 条测试通过；知识库与生产部署未开始）· 2026-11-11
+> **状态**：**design-v1.13 + M0 实现 + M1 工程收口**（真实三模型 3/3 盲评 + 3/3 投票；303 条测试通过；V-01F 数据准入与 M2 知识库未完成）· 2026-11-11
 
 ---
 
@@ -477,8 +477,8 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 
 | 差异 | 现状 | 后续动作 |
 |---|---|---|
-| 存储适配器实现 | docs/06 列 SQLAlchemy 2.0 ORM；当前实现使用 asyncpg 直连 + Alembic 管理 DDL，语义与约束已由测试覆盖 | M1 前确认：补 ORM 层，或回写 docs/06 的适配器实现口径 |
-| 真实模型 | **已接入并跑通**：`qwen3.8-max` / `deepseek-flash` / `kimi-k3.1-pro`（Kimi 指定 pro）；三路盲评与投票全部真实调用，Kimi 按约 3 RPM 限速；仍为 `testing` | V-01 实测报告与数据准入（Q-09）完成后再标 `verified` |
+| 存储适配器实现 | 已回写 docs/06：运行时 `asyncpg` 直连，SQLAlchemy 2.0 仅作 Alembic 迁移引擎；不再声称 ORM 运行时 | 已收口（2026-11-11） |
+| 真实模型 | **已接入并跑通**：`qwen3.8-max` / `deepseek-flash` / `kimi-k3.1-pro`（Kimi 指定 pro）；最终验收运行 `770b119b…`：3/3 盲评、3/3 投票、27 次调用 0 失败、成本 ¥1.2035 | V-01 A–E 有证据；V-01F 数据准入（Q-09）未完成，父项不标 verified/accepted |
 | 知识库检索 | 阶段固定 `skipped`，报告记 `kb_module_missing` | M2/M3 接入 KB、向量、RRF、Rerank |
 | CI 远端执行 | `.github/workflows/contracts.yml` 已定义 contract/unit/migration/mock-e2e/ci-all；本地等价命令全部通过，未在 GitHub 远端实际运行 | 首次 push 后确认各 Job 通过 |
 
@@ -486,6 +486,8 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 
 | 能力 | 入口 | 验证 |
 |---|---|---|
+| M1 工程收口 | [evidence/M1/closure-2026-11-11.md](evidence/M1/closure-2026-11-11.md) | P0/P1 审查项关闭；303 passed；真实运行 3/3 + 3/3；V-01F 仍 pending |
+| V-01 子项 | [design/v01_acceptance.yaml](design/v01_acceptance.yaml) | A–E verified、F pending（数据准入） |
 | 真实评审 | `.env` 设 `REVIEW_MODEL_MODE=live`；模型见 [config/models.yaml](config/models.yaml) | 三路盲评 + 投票真实调用；`TC-LIVE-006`：blind 3/3、vote 3/3、27 次调用 0 失败、成本约 ¥1.04、结论 `need_human`（模型间成立性分歧） |
 | 模型连通性 | `python scripts/check_model_connectivity.py` | [evidence/V-01/model-smoke-2026-11-11.json](evidence/V-01/model-smoke-2026-11-11.json) |
 | 报告投影 | Worker `finalize_report`：报告字段与 `issues` 同事务写入；ID 由 `uuid5(review_id, issue_no)` 生成 | `tests/m0/test_projection.py`、`tests/integration/test_postgres_e2e.py` |
