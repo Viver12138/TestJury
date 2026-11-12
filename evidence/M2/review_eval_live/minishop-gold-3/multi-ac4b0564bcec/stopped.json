@@ -1,0 +1,45 @@
+{
+  "status": "stopped_by_user",
+  "reason": "User requested dual-model reviews; stop multi-model evaluation.",
+  "planned_cases": 6,
+  "completed_cases": 4,
+  "reports": [
+    {
+      "case_id": "G-001-negative",
+      "file": "G-001-negative.json",
+      "sha256": "d9468112fd18603b75e68713fc1c977cea9a0c56f0a5d423b1bd57dc7bef05f1",
+      "status": "completed_with_warnings",
+      "reported_count": 2
+    },
+    {
+      "case_id": "G-001-positive",
+      "file": "G-001-positive.json",
+      "sha256": "cba3194c303b4314ad24c5ac2004d4b54caa949021776015ebeed86547bf2b53",
+      "status": "done",
+      "reported_count": 0
+    },
+    {
+      "case_id": "G-008-negative",
+      "file": "G-008-negative.json",
+      "sha256": "a73a3387996980d43581efee4add31c86f759b90409ebe6ec65973f7e19b8179",
+      "status": "completed_with_warnings",
+      "reported_count": 3
+    },
+    {
+      "case_id": "G-008-positive",
+      "file": "G-008-positive.json",
+      "sha256": "96a1f1cce52cc0f23a39f5972e237f38d5912d2821f90b8e9fdc0a6008131054",
+      "status": "completed_with_warnings",
+      "reported_count": 0
+    }
+  ],
+  "unfinished_case": "G-015-positive",
+  "unfinished_provider_cost": "unknown; process interrupted",
+  "next_topology": "dual",
+  "independent_human_validation": false,
+  "subsequent_changes_not_evaluated_here": [
+    "identical grounded correction fusion",
+    "dual default"
+  ],
+  "report_hash_format": "UTF-8 with LF line endings, matching Git checkout attributes"
+}

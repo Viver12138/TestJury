@@ -119,7 +119,7 @@ class Settings(BaseSettings):
     # ── 拓扑与降级 ──
     min_participants: int = Field(default=2, ge=0, le=3)
     chief_required: bool = True
-    review_topology: Literal["single", "dual", "multi"] = "multi"
+    review_topology: Literal["single", "dual", "multi"] = "dual"
     # mock：确定性 Mock（单测/离线）；live：调用 config/models.yaml 注册的真实模型
     review_model_mode: Literal["mock", "live"] = "mock"
     # 是否把原始请求/响应写入 model_runs；默认只存 hash，避免敏感原文无边界扩散

@@ -115,14 +115,20 @@ def fuse(
                 left, right = set(tokens(str(issue.get("rationale")))), set(tokens(str(other.get("rationale"))))
                 overlap = len(left & right) / max(1, len(left | right))
                 containment = len(left & right) / max(1, min(len(left), len(right)))
-                same_correction = bool(
-                    _correction_assertions(str(issue.get("suggestion") or ""))
-                    & _correction_assertions(str(other.get("suggestion") or "")))
+                corrections = _correction_assertions(str(issue.get("suggestion") or ""))
+                other_corrections = _correction_assertions(str(other.get("suggestion") or ""))
+                same_correction = bool(corrections & other_corrections)
+                identical_corrections = bool(corrections) and corrections == other_corrections
+                conflicting_corrections = any(field == other_field and value != other_value
+                                              for field, value in corrections
+                                              for other_field, other_value in other_corrections)
                 same_supported_rule = (issue.get("kb_grounded") and other.get("kb_grounded")
                                        and bool(set(issue.get("kb_refs") or []) & set(other.get("kb_refs") or [])))
                 if (issue.get("dimension") == other.get("dimension")
                         and issue.get("evidence_quote") == other.get("evidence_quote")
-                        and (overlap >= 0.65 or (same_supported_rule and same_correction and containment >= 0.5))):
+                        and not conflicting_corrections
+                        and (overlap >= 0.65 or (same_supported_rule and (
+                            identical_corrections or (same_correction and containment >= 0.5))))):
                     found = group
                     break
             if found is None:
@@ -189,7 +195,7 @@ def fuse(
                 fusion_basis={
                     "bucket": f"step={step_index},category={category}",
                     "tolerance": step_tolerance,
-                    "rule": "same_step_category_dimension_quote_and_similar_claim",
+                    "rule": "same_step_category_dimension_quote_and_similar_claim_or_identical_grounded_correction",
                 },
                 category=category,
             )

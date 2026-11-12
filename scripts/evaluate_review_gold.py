@@ -24,7 +24,7 @@ async def main():
     parser.add_argument('--mode', choices=['live', 'mock'], required=True)
     parser.add_argument('--split', choices=['dev', 'validation', 'frozen', 'regression', 'all'], default='dev')
     parser.add_argument('--limit', type=int, default=6)
-    parser.add_argument('--topology', choices=['single', 'dual', 'multi'], default='multi')
+    parser.add_argument('--topology', choices=['single', 'dual', 'multi'], default='dual')
     parser.add_argument('--release', type=Path)
     parser.add_argument('--dataset', type=Path, default=ROOT / 'datasets/minishop/v3')
     parser.add_argument('--budget-tokens', type=int, help='Evaluation token reservation limit; cost limit is unchanged')

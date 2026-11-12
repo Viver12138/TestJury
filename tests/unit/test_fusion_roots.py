@@ -27,3 +27,26 @@ def test_same_grounded_assertion_merges_paraphrases_but_not_another_correction()
     assert result[0].proposed_by == ["chief_blind", "jury_a"]
     assert len(fuse("r", {}, [ReviewOpinion("chief_blind", "", [short]),
                               ReviewOpinion("jury_a", "", [other])])) == 2
+
+
+def test_identical_grounded_corrections_merge_even_with_different_explanations():
+    base = {"step_index": 2, "dimension": "business", "severity": "major", "category": "规则冲突",
+            "evidence_quote": "total=72; payable=1", "kb_grounded": True, "kb_refs": ["server-pricing"],
+            "evidence_status": "grounded"}
+    price = {**base, "rationale": "客户端传入的应付价格不参与计价，响应预期冲突",
+             "suggestion": "改为 total=72, payable=72"}
+    formula = {**base, "rationale": "无折扣时从购物项汇总并计算支付数值，断言应满足计算公式",
+               "suggestion": "检查 payable=72.00; total=72"}
+    opinions = [ReviewOpinion("chief_blind", "", [price]), ReviewOpinion("jury_b", "", [formula])]
+    result = fuse("r", {}, opinions)
+    assert len(result) == 1
+    assert result[0].proposed_by == ["chief_blind", "jury_b"]
+    # One shared assertion is not enough: these propose incompatible changes.
+    conflict = {**formula, "suggestion": "检查 payable=71; total=72"}
+    assert len(fuse("r", {}, [opinions[0], ReviewOpinion("jury_b", "", [conflict])])) == 2
+    assert len(fuse("r", {}, [opinions[0], ReviewOpinion("jury_b", "", [{**conflict,
+                                            "rationale": price["rationale"]}])])) == 2
+    # Same correction without the same source or source quote is not proof of the same defect.
+    for different in ({"kb_refs": ["different-rule"]}, {"evidence_quote": "another expectation"},
+                      {"kb_grounded": False}):
+        assert len(fuse("r", {}, [opinions[0], ReviewOpinion("jury_b", "", [{**formula, **different}])])) == 2

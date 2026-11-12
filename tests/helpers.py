@@ -42,6 +42,8 @@ def make_settings(**overrides: object) -> Settings:
         "storage_backend": "memory",
         "run_worker": False,
         "review_model_mode": "mock",
+        # Historical contract fixtures exercise all three seats explicitly.
+        "review_topology": "multi",
         "bootstrap_api_keys": bootstrap_keys(),
         "decision_require_separation": True,
     }

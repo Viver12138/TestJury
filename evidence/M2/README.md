@@ -8,7 +8,7 @@
 | `delegated_content_review.json` | 本轮 17 份知识内容的来源、修订与审核记录 |
 | `minishop_gold_source_verification.json` | 用冻结源码、夹具身份和临时 SQLite 执行 15 类黄金集业务事实 |
 | `acceptance/` | 不同不可变知识版本的 18 条检索评测，仅代表检索准入 |
-| `delegated_verification/` | 独立数据库回归，保留成功与失败记录；最新全套 402 项通过 |
+| `delegated_verification/` | 独立数据库回归，保留成功与失败记录；最新全套 405 项通过 |
 | `upgrade_preservation.json` | 备份实际恢复至临时库，升级前后 9 张业务表一致，8 条历史费用回填 |
 | `review_eval_live/` | 真实模型运行的原始报告、失败及汇总，以目录内数据集版本、构建版本和代码指纹区分 |
 | `review_eval_mock/` | 确定性 Mock 的离线流程检查，不能作为模型效果证明 |

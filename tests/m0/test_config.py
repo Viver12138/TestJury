@@ -61,6 +61,13 @@ def test_embedding_profile_must_match_actual_registry():
         compute_versions(settings)
 
 
+def test_default_topology_uses_two_models(monkeypatch):
+    monkeypatch.delenv("REVIEW_TOPOLOGY", raising=False)
+    settings = Settings(_env_file=None, database_url="postgresql://unused/unused_test")
+    assert settings.review_topology == "dual"
+    assert settings.review_roles == ("chief_blind", "jury_a")
+
+
 def test_production_rejects_memory_storage() -> None:
     with pytest.raises(ValidationError):
         Settings(

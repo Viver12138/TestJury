@@ -60,6 +60,7 @@ _COPY_ITEMS = (
     "config",
     "app",
     "kb_content",
+    "datasets",
     "TestJury_项目知识库数据规范_v1.0.md",
     ".github",
     "README.md",

@@ -510,6 +510,6 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 >
 MiniShop 已接入，冻结源码为 `e354437069504381f10a54d9c14baed755f3ba56`。知识内容见 [kb_content/minishop](kb_content/minishop/README.md)，当前黄金集为 [datasets/minishop/v3](datasets/minishop/v3)，包含 18 条检索和 30 条评审种子，均标注 AI 复核身份。
 
-本地工作台：[http://127.0.0.1:8088](http://127.0.0.1:8088)。运行方式、证据和未完成事项见 [开发记录](docs/development-2026-11-12.md) 与 [验收证据索引](evidence/M2/README.md)。技术预览可运行，不代表生产效果已验收。
+本地工作台：[http://127.0.0.1:8088](http://127.0.0.1:8088)。当前默认 Qwen + DeepSeek 双模型，Kimi 按用户要求暂停使用。运行方式、证据和未完成事项见 [开发记录](docs/development-2026-11-12.md) 与 [验收证据索引](evidence/M2/README.md)。技术预览可运行，不代表生产效果已验收。
 
 
