@@ -14,6 +14,20 @@ pytest-of-*/
 # 附件本机持久化卷（不进 Git，见 docs/06 §1）
 data/attachments/
 
+# 人工裁决导入批次备份/恢复记录（本地审计）
+data/projects/*/adjudication/.imports/
+# 人工裁决 Excel 是本地填写入口（可由 scripts/adjudication_sheet.py 重建）
+data/projects/*/adjudication*/adjudication.xlsx
+
+# 文档工具临时目录
+.dsh-office-*/
+
+# pip editable install
+*.egg-info/
+
+# Excel 临时锁文件
+~$*.xlsx
+
 # ---- 补充：密钥与环境（来自本地 GitLab 约定） ----
 .env.*
 *.pem
@@ -25,7 +39,6 @@ config/secrets*
 
 # ---- 补充：Python 构建产物 ----
 *$py.class
-*.egg-info/
 .eggs/
 build/
 dist/

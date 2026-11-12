@@ -58,7 +58,7 @@ async def test_review_parses_issues_and_drops_decision_fields() -> None:
             "overall": {"comment": "整体可执行，但第 3 步缺预期"},
             "issues": [
                 {
-                    "step_index": 3,
+                    "scope": "step", "step_index": 3,
                     "dimension": "test_design",
                     "severity": "major",
                     "category": "预期不明确",
@@ -137,7 +137,7 @@ async def test_vote_rejects_severity_on_non_accept_and_invalid_severity() -> Non
     with pytest.raises(AdapterError):
         await model.vote("jury_a", {"description": "第 3 步缺预期"})
 
-    model, _ = _model(json.dumps({"validity": "accept", "severity": "major"}))
+    model, _ = _model(json.dumps({"validity": "accept", "severity": "major", "reason": "成立"}))
     decision = await model.vote("jury_a", {"description": "x"})
     assert decision.validity == "accept" and decision.severity == "major"
 
@@ -153,7 +153,7 @@ async def test_vote_rejects_severity_on_non_accept_and_invalid_severity() -> Non
 @pytest.mark.asyncio
 async def test_invalid_issue_enum_drops_issue_instead_of_downgrading() -> None:
     base = {
-        "step_index": 1,
+        "scope": "step", "step_index": 1,
         "dimension": "test_design",
         "severity": "major",
         "category": "预期不明确",
@@ -187,7 +187,7 @@ async def test_invalid_issue_enum_drops_issue_instead_of_downgrading() -> None:
 @pytest.mark.asyncio
 async def test_evidence_quote_must_exist_and_grounded_is_not_trusted() -> None:
     issue = {
-        "step_index": 1,
+        "scope": "step", "step_index": 1,
         "dimension": "test_design",
         "severity": "blocker",
         "category": "预期不明确",
@@ -213,6 +213,61 @@ async def test_evidence_quote_must_exist_and_grounded_is_not_trusted() -> None:
     assert any("kb_refs_not_in_pack" in warning for warning in opinion.warnings)
 
 
+@pytest.mark.asyncio
+async def test_case_scope_issue_requires_null_step_index() -> None:
+    base = {
+        "scope": "case",
+        "step_index": None,
+        "dimension": "test_design",
+        "severity": "major",
+        "category": "覆盖缺失",
+        "evidence_quote": None,
+        "rationale": "整个用例缺少边界场景",
+        "suggestion": "补充边界场景",
+        "kb_grounded": False,
+        "evidence_type": "testing_standard",
+        "evidence_strength": "medium",
+        "evidence_status": "ungrounded",
+    }
+    content = json.dumps({"overall": {"comment": "x"}, "issues": [base]}, ensure_ascii=False)
+    model, _ = _model(content)
+    opinion = await model.review("chief_blind", {"case_id": "TC-CASE", "steps": []})
+    assert opinion.issues[0]["scope"] == "case"
+    assert opinion.issues[0]["step_index"] is None
+
+    bad = dict(base, step_index=1)
+    model, _ = _model(
+        json.dumps({"overall": {"comment": "x"}, "issues": [bad]}, ensure_ascii=False)
+    )
+    with pytest.raises(AdapterError):
+        await model.review("chief_blind", {"case_id": "TC-CASE2", "steps": [{"index": 1, "action": "a"}]})
+
+
+@pytest.mark.asyncio
+async def test_step_scope_requires_quote() -> None:
+    issue = {
+        "scope": "step",
+        "step_index": 1,
+        "dimension": "test_design",
+        "severity": "major",
+        "category": "预期不明确",
+        "evidence_quote": None,
+        "rationale": "缺预期",
+        "suggestion": "补预期",
+        "kb_grounded": False,
+        "evidence_type": "testing_standard",
+        "evidence_strength": "medium",
+        "evidence_status": "ungrounded",
+    }
+    model, _ = _model(
+        json.dumps({"overall": {"comment": "x"}, "issues": [issue]}, ensure_ascii=False)
+    )
+    with pytest.raises(AdapterError):
+        await model.review(
+            "chief_blind", {"case_id": "TC-STEP", "steps": [{"index": 1, "action": "a"}]}
+        )
+
+
 def test_output_schema_has_no_role_field() -> None:
     from app.llm.review import _OUTPUT_SCHEMA
 
@@ -233,7 +288,7 @@ async def test_missing_issues_field_is_rejected() -> None:
 @pytest.mark.asyncio
 async def test_invalid_category_and_types_are_dropped() -> None:
     base = {
-        "step_index": 1,
+        "scope": "step", "step_index": 1,
         "dimension": "test_design",
         "severity": "major",
         "category": "预期不明确",

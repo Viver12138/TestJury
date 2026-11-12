@@ -27,12 +27,13 @@ from app.adjudication import (  # noqa: E402
     import_decisions_from_csv,
     load_case,
     record_decision,
+    recover_imports,
     save_case,
     set_case_verdict,
     stats,
 )
 
-DEFAULT_ROOT = ROOT / "data" / "projects" / "testlab-arcade" / "adjudication"
+DEFAULT_ROOT = ROOT / "data" / "adjudication"
 
 
 def _case_path(root: Path, case_id: str) -> Path:
@@ -63,7 +64,7 @@ def main() -> int:
 
     verdict = sub.add_parser("case-verdict", help="填写用例级结论")
     verdict.add_argument("case_id")
-    verdict.add_argument("--verdict", required=True, choices=["pass", "needs_fix", "blocked", "uncertain"])
+    verdict.add_argument("--verdict", required=True, choices=["in_progress", "pass", "needs_fix", "blocked", "uncertain"])
     verdict.add_argument("--defect-count", type=int)
     verdict.add_argument("--note")
     verdict.add_argument("--adjudicator", required=True)
@@ -74,6 +75,7 @@ def main() -> int:
     import_csv.add_argument("--csv", default=str(DEFAULT_ROOT / "adjudication.csv"))
     import_csv.add_argument("--adjudicator", help="CSV 未填 adjudicator 时的默认裁决人")
     import_csv.add_argument("--dry-run", action="store_true", help="只校验，不写库")
+    sub.add_parser("recover-imports", help="恢复中断的 CSV 批次导入")
 
     args = parser.parse_args()
     root = Path(args.root)
@@ -86,9 +88,11 @@ def main() -> int:
                     for item in data.get("candidates", [])
                     if item.get("final", {}).get("validity", "pending") != "pending"
                 )
+                total = len(data.get("candidates", []))
+                verdict = data.get("case_level", {}).get("verdict", "pending")
                 print(
                     f"{data['case_id']:18} {data.get('case_title', '')[:28]:30} "
-                    f"裁决 {done}/{len(data.get('candidates', []))} 用例结论={data.get('case_level', {}).get('verdict', 'pending')}"
+                    f"裁决 {done}/{total} 用例结论={verdict}"
                 )
             return 0
         if args.command == "show":
@@ -142,8 +146,13 @@ def main() -> int:
             )
             print(
                 f"import-csv: cases={result['cases']} decisions={result['decisions']} "
-                f"dry_run={result['dry_run']}"
+                f"dry_run={result['dry_run']} "
+                f"already_applied={result.get('already_applied', 0)}"
             )
+            return 0
+        if args.command == "recover-imports":
+            result = recover_imports(root)
+            print(f"recover-imports: recovered={result['recovered']} failed={result['failed']}")
             return 0
     except AdjudicationError as exc:
         print(f"[ERROR] {exc}")

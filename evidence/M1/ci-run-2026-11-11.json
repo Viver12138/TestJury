@@ -1,0 +1,15 @@
+{
+  "run_id": 42982761632,
+  "run_url": "https://github.com/Viver12138/TestJury/actions/runs/42982761632",
+  "head_sha": "6bce3491bc562fca6de22aeb95bf7f064d80ccb2",
+  "workflow": "ci",
+  "conclusion": "success",
+  "jobs": {
+    "contract": "success",
+    "unit": "success",
+    "migration": "success",
+    "mock-e2e": "success",
+    "ci-all": "success"
+  },
+  "note": "GitHub Actions 远端完整 CI 全绿；此前 25f4694 的 unit/contract 失败由 README 链接本地 xlsx 导致，6bce349 已修复。"
+}

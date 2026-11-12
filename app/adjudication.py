@@ -9,9 +9,14 @@
 from __future__ import annotations
 
 import csv
+import hashlib
+import json
 import os
 import re
+import shutil
 import tempfile
+import uuid
+from contextlib import contextmanager
 from copy import deepcopy
 from datetime import UTC, datetime
 from pathlib import Path
@@ -21,7 +26,7 @@ import yaml
 
 VALIDITY_VALUES = {"pending", "valid", "invalid", "uncertain", "needs_spec"}
 SEVERITY_VALUES = {"blocker", "major", "suggestion"}
-CASE_VERDICTS = {"pending", "pass", "needs_fix", "blocked", "uncertain"}
+CASE_VERDICTS = {"pending", "in_progress", "pass", "needs_fix", "blocked", "uncertain"}
 CASE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 
@@ -61,6 +66,48 @@ def save_case(path: Path, data: dict[str, Any]) -> None:
     finally:
         if os.path.exists(temp_name):
             os.unlink(temp_name)
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(65536), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+            json.dump(payload, handle, ensure_ascii=False, indent=2)
+        os.replace(temp_name, path)
+    finally:
+        if os.path.exists(temp_name):
+            os.unlink(temp_name)
+
+
+@contextmanager
+def _import_lock(root: Path, *, force: bool = False):
+    """同一 adjudication root 的批次导入互斥锁（跨进程文件锁）。"""
+
+    lock_path = Path(root) / ".imports" / "import.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    if force and lock_path.exists():
+        lock_path.unlink()
+    try:
+        fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError as exc:
+        raise AdjudicationError("另一个裁决导入正在进行（锁文件已存在）") from exc
+    try:
+        os.write(fd, f"pid={os.getpid()} at={datetime.now(UTC).isoformat()}".encode())
+        os.close(fd)
+        yield
+    finally:
+        if lock_path.exists():
+            lock_path.unlink()
 
 
 def _find_candidate(data: dict[str, Any], candidate_id: str) -> dict[str, Any]:
@@ -136,26 +183,45 @@ def set_case_verdict(
         raise AdjudicationError("adjudicator 必填")
     if defect_count is not None and (not isinstance(defect_count, int) or defect_count < 0):
         raise AdjudicationError("defect_count 必须是非负整数")
+    candidates_list = data.get("candidates", [])
     valid_count = sum(
         1
-        for candidate in data.get("candidates", [])
+        for candidate in candidates_list
         if candidate.get("final", {}).get("validity") == "valid"
     )
+    pending_count = sum(
+        1
+        for candidate in candidates_list
+        if candidate.get("final", {}).get("validity", "pending") == "pending"
+    )
+    final_verdicts = {"pass", "needs_fix", "blocked", "uncertain"}
+    if verdict in final_verdicts and pending_count:
+        raise AdjudicationError(
+            f"仍有 {pending_count} 条候选未裁决，不能填写最终结论 {verdict}"
+        )
     if defect_count is None:
         defect_count = valid_count
     elif defect_count != valid_count:
         raise AdjudicationError(
             f"defect_count={defect_count} 与 valid 候选数 {valid_count} 不一致"
         )
-    if verdict == "pass" and valid_count:
-        raise AdjudicationError("pass 不允许存在 valid 问题")
+    if verdict == "pass":
+        if valid_count:
+            raise AdjudicationError("pass 不允许存在 valid 问题")
+        unsettled = [
+            candidate
+            for candidate in candidates_list
+            if candidate.get("final", {}).get("validity") in ("uncertain", "needs_spec")
+        ]
+        if unsettled:
+            raise AdjudicationError("存在 uncertain/needs_spec 候选，不能判 pass")
     if verdict == "needs_fix" and not valid_count:
         raise AdjudicationError("needs_fix 至少需要一条 valid 问题")
     if verdict == "blocked":
         has_blocker = any(
             candidate.get("final", {}).get("validity") == "valid"
             and candidate.get("final", {}).get("severity") == "blocker"
-            for candidate in data.get("candidates", [])
+            for candidate in candidates_list
         )
         if not has_blocker:
             raise AdjudicationError("blocked 至少需要一条 valid blocker")
@@ -182,7 +248,7 @@ def append_history(path: Path, entry: dict[str, Any]) -> None:
 def stats(root: Path) -> dict[str, Any]:
     files = sorted(Path(root).glob("*.yaml"))
     total = decided = valid = invalid = needs_spec = pending = 0
-    cases_done = 0
+    cases_done = cases_in_progress = 0
     for path in files:
         data = load_case(path)
         case_candidates = data.get("candidates", [])
@@ -199,11 +265,15 @@ def stats(root: Path) -> dict[str, Any]:
                     invalid += 1
                 elif validity == "needs_spec":
                     needs_spec += 1
-        if data.get("case_level", {}).get("verdict", "pending") != "pending":
+        verdict = data.get("case_level", {}).get("verdict", "pending")
+        if verdict == "in_progress":
+            cases_in_progress += 1
+        elif verdict in {"pass", "needs_fix", "blocked", "uncertain"}:
             cases_done += 1
     return {
         "cases": len(files),
         "cases_done": cases_done,
+        "cases_in_progress": cases_in_progress,
         "candidates": total,
         "decided": decided,
         "pending": pending,
@@ -213,11 +283,54 @@ def stats(root: Path) -> dict[str, Any]:
     }
 
 
+def _case_lines(value: Any) -> str:
+    """把 YAML 里的列表型快照字段拼成多行文本（CSV/Excel 复用）。"""
+
+    if value is None:
+        return ""
+    if isinstance(value, (list, tuple)):
+        lines: list[str] = []
+        for index, item in enumerate(value, start=1):
+            if isinstance(item, dict):
+                action = str(item.get("action") or "").strip()
+                expected = str(item.get("expected") or "").strip()
+                text = f"{index}. {action}"
+                if expected:
+                    text += f" => {expected}"
+                lines.append(text)
+            elif str(item).strip():
+                lines.append(str(item).strip())
+        return "\n".join(lines)
+    return str(value).strip()
+
+
+def case_snapshot(data: dict[str, Any]) -> dict[str, str]:
+    """原始用例快照：让裁决人不必回看 YAML 就能判断 claim 是否成立。"""
+
+    expected = data.get("expected")
+    if not expected:
+        expected = [
+            item.get("expected")
+            for item in data.get("steps", [])
+            if isinstance(item, dict) and item.get("expected")
+        ]
+    return {
+        "module": _case_lines(data.get("module")),
+        "priority": _case_lines(data.get("priority")),
+        "source": _case_lines(data.get("source")),
+        "ui_spec_ref": _case_lines(data.get("ui_spec_ref") or data.get("requirement_ref")),
+        "preconditions": _case_lines(data.get("preconditions")),
+        "steps": _case_lines(data.get("steps")),
+        "expected": _case_lines(expected),
+    }
+
+
 def export_csv(root: Path, destination: Path) -> int:
     rows: list[dict[str, Any]] = []
     for path in sorted(Path(root).glob("*.yaml")):
         data = load_case(path)
         level = data.get("case_level", {})
+        snapshot = case_snapshot(data)
         for candidate in data.get("candidates", []):
             final = candidate.get("final", {})
             rows.append(
@@ -232,6 +345,17 @@ def export_csv(root: Path, destination: Path) -> int:
                     "ai_recommendation": candidate.get("ai_recommendation"),
                     "ai_reason": candidate.get("ai_reason"),
                     "ai_suggested_severity": candidate.get("ai_suggested_severity"),
+                    "ai_suggested_validity": candidate.get("ai_suggested_validity"),
+                    "ai_suggested_category": candidate.get("ai_suggested_category"),
+                    "ai_suggested_correction": candidate.get("ai_suggested_correction"),
+                    "ai_suggestion_note": candidate.get("ai_suggestion_note"),
+                    "module": snapshot["module"],
+                    "priority": snapshot["priority"],
+                    "source": snapshot["source"],
+                    "ui_spec_ref": snapshot["ui_spec_ref"],
+                    "preconditions": snapshot["preconditions"],
+                    "steps": snapshot["steps"],
+                    "expected": snapshot["expected"],
                     "final_validity": final.get("validity", "pending"),
                     "final_severity": final.get("severity") or "",
                     "final_category": final.get("category") or "",
@@ -244,6 +368,11 @@ def export_csv(root: Path, destination: Path) -> int:
                     if level.get("defect_count") is not None
                     else "",
                     "case_note": level.get("note") or "",
+                    "ai_case_verdict": level.get("ai_suggested_verdict") or "",
+                    "ai_case_defect_count": level.get("ai_suggested_defect_count")
+                    if level.get("ai_suggested_defect_count") is not None
+                    else "",
+                    "ai_case_note": level.get("ai_suggested_note") or "",
                 }
             )
     if not rows:
@@ -260,7 +389,48 @@ def export_csv(root: Path, destination: Path) -> int:
     return len(rows)
 
 
+def _decision_signature(data: dict[str, Any]) -> tuple[Any, ...]:
+    """忽略 adjudicated_at 的幂等签名。"""
+
+    candidates = tuple(
+        (
+            item.get("candidate_id"),
+            item.get("final", {}).get("validity"),
+            item.get("final", {}).get("severity"),
+            item.get("final", {}).get("category"),
+            item.get("final", {}).get("correction"),
+            item.get("final", {}).get("adjudicator"),
+            item.get("final", {}).get("note"),
+        )
+        for item in data.get("candidates", [])
+    )
+    level = data.get("case_level", {})
+    return (
+        candidates,
+        level.get("verdict"),
+        level.get("defect_count"),
+        level.get("adjudicator"),
+        level.get("note"),
+    )
+
+
 def import_decisions_from_csv(
+    root: Path,
+    csv_path: Path,
+    *,
+    default_adjudicator: str | None = None,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    with _import_lock(Path(root)):
+        return _import_decisions_from_csv_unlocked(
+            root,
+            csv_path,
+            default_adjudicator=default_adjudicator,
+            dry_run=dry_run,
+        )
+
+
+def _import_decisions_from_csv_unlocked(
     root: Path,
     csv_path: Path,
     *,
@@ -297,13 +467,15 @@ def import_decisions_from_csv(
             seen_candidates.add(key)
             grouped.setdefault(case_id, []).append(row)
 
-    prepared: list[tuple[Path, dict[str, Any], list[dict[str, Any]]]] = []
+    prepared: list[tuple[Path, dict[str, Any], list[dict[str, Any]], dict[str, Any], str]] = []
     decided = 0
     for case_id, rows in grouped.items():
         path = case_path(root, case_id)
         if not path.exists():
             raise AdjudicationError(f"CSV 引用了不存在的用例: {case_id}")
-        data = deepcopy(load_case(path))
+        original = load_case(path)
+        before_hash = _sha256_file(path)
+        data = deepcopy(original)
         case_verdicts: set[str] = set()
         case_verdict_row: dict[str, str] | None = None
         entries: list[dict[str, Any]] = []
@@ -351,16 +523,145 @@ def import_decisions_from_csv(
                     at=(case_verdict_row.get("adjudicated_at") or "").strip() or None,
                 )
             )
-        prepared.append((path, data, entries))
+        prepared.append((path, data, entries, original, before_hash))
 
     if dry_run:
         return {"cases": len(prepared), "decisions": decided, "dry_run": True}
 
-    # 全部校验通过后再落盘；YAML 原子写，最后追加 history
-    for path, data, _ in prepared:
-        save_case(path, data)
-    for _, _, entries in prepared:
-        for entry in entries:
-            append_history(Path(root) / "history.jsonl", entry)
-    return {"cases": len(prepared), "decisions": decided, "dry_run": False}
+    # 完整幂等：当前 YAML 的裁决内容已与目标一致，不重复写 history
+    if all(_decision_signature(load_case(path)) == _decision_signature(data) for path, data, _, _, _ in prepared):
+        return {
+            "cases": len(prepared),
+            "decisions": 0,
+            "already_applied": decided,
+            "dry_run": False,
+        }
+
+    batch_id = uuid.uuid4().hex
+    imports_dir = Path(root) / ".imports"
+    backup_dir = imports_dir / f"{batch_id}.backup"
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    history_path = Path(root) / "history.jsonl"
+    history_backup = imports_dir / f"{batch_id}.history"
+    history_backup_hash: str | None = None
+    if history_path.exists():
+        shutil.copy2(history_path, history_backup)
+        history_backup_hash = _sha256_file(history_backup)
+    backups: list[tuple[Path, Path, str]] = []
+    for path, _, _, _, _ in prepared:
+        backup = backup_dir / path.name
+        shutil.copy2(path, backup)
+        backups.append((path, backup, _sha256_file(backup)))
+    journal_path = imports_dir / f"{batch_id}.json"
+    journal: dict[str, Any] = {
+        "batch_id": batch_id,
+        "status": "applying",
+        "created_at": datetime.now(UTC).isoformat(),
+        "files": [
+            {
+                "case_id": path.stem,
+                "path": path.name,
+                "before_hash": before_hash,
+                "backup_hash": backup_hash,
+            }
+            for (path, _, _, _, before_hash), (_, _, backup_hash) in zip(
+                prepared, backups, strict=True
+            )
+        ],
+        "history_existed": history_path.exists(),
+        "history_size": history_path.stat().st_size if history_path.exists() else 0,
+        "history_backup_hash": history_backup_hash,
+    }
+    _write_json(journal_path, journal)
+    written: list[tuple[Path, Path]] = []
+    try:
+        for (path, data, _, _, before_hash), (_, backup, _) in zip(
+            prepared, backups, strict=True
+        ):
+            # 写入前再次检查并发修改
+            if _sha256_file(path) != before_hash:
+                raise AdjudicationError(f"用例文件已被其他人修改: {path.name}")
+            save_case(path, data)
+            written.append((path, backup))
+        for _, _, entries, _, _ in prepared:
+            for entry in entries:
+                entry["batch_id"] = batch_id
+                append_history(history_path, entry)
+        journal["status"] = "applied"
+        journal["applied_at"] = datetime.now(UTC).isoformat()
+        _write_json(journal_path, journal)
+    except Exception as exc:
+        # 失败恢复：还原已写 YAML 与 history，保留失败 journal
+        for path, backup in written:
+            shutil.copy2(backup, path)
+        if history_backup.exists():
+            shutil.copy2(history_backup, history_path)
+        elif not journal["history_existed"] and history_path.exists():
+            history_path.unlink()
+        journal["status"] = "failed"
+        journal["error"] = str(exc)[:1000]
+        _write_json(journal_path, journal)
+        if isinstance(exc, AdjudicationError):
+            raise
+        raise AdjudicationError(f"批次导入失败，已回滚: {exc}") from exc
+    return {
+        "cases": len(prepared),
+        "decisions": decided,
+        "dry_run": False,
+        "batch_id": batch_id,
+    }
+
+
+def recover_imports(root: Path) -> dict[str, Any]:
+    """恢复中断的批次导入；备份缺失或哈希不符时标记失败，不谎报 recovered。"""
+
+    imports_dir = Path(root) / ".imports"
+    recovered = 0
+    failed = 0
+    with _import_lock(Path(root), force=True):
+        for journal_path in sorted(imports_dir.glob("*.json")):
+            try:
+                journal = json.loads(journal_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                failed += 1
+                continue
+            if journal.get("status") != "applying":
+                continue
+            batch_id = journal.get("batch_id") or journal_path.stem
+            backup_dir = imports_dir / f"{batch_id}.backup"
+            problems: list[str] = []
+            for entry in journal.get("files", []):
+                backup = backup_dir / entry["path"]
+                if not backup.exists():
+                    problems.append(f"缺少备份 {entry['path']}")
+                elif entry.get("backup_hash") and _sha256_file(backup) != entry["backup_hash"]:
+                    problems.append(f"备份 hash 不匹配 {entry['path']}")
+            history_path = Path(root) / "history.jsonl"
+            history_backup = imports_dir / f"{batch_id}.history"
+            if journal.get("history_existed"):
+                if not history_backup.exists():
+                    problems.append("缺少 history 备份")
+                elif journal.get("history_backup_hash") and _sha256_file(
+                    history_backup
+                ) != journal["history_backup_hash"]:
+                    problems.append("history 备份 hash 不匹配")
+            if problems:
+                journal["status"] = "recovery_failed"
+                journal["error"] = "; ".join(problems)[:1000]
+                _write_json(journal_path, journal)
+                failed += 1
+                continue
+            for entry in journal.get("files", []):
+                path = Path(root) / entry["path"]
+                backup = backup_dir / entry["path"]
+                shutil.copy2(backup, path)
+            if history_backup.exists():
+                shutil.copy2(history_backup, history_path)
+            elif not journal.get("history_existed") and history_path.exists():
+                history_path.unlink()
+            journal["status"] = "recovered"
+            journal["recovered_at"] = datetime.now(UTC).isoformat()
+            _write_json(journal_path, journal)
+            recovered += 1
+    return {"recovered": recovered, "failed": failed}
 

@@ -1,0 +1,261 @@
+{
+  "sheets": [
+    "填写说明",
+    "处理总览",
+    "待确认问题",
+    "知识冲突",
+    "知识缺口",
+    "文档审核",
+    "字典"
+  ],
+  "props": {
+    "title": "MiniShop 知识库人工确认清单",
+    "creator": "TestJury KB Candidate Builder"
+  },
+  "填写说明": {
+    "max_row": 30,
+    "max_col": 3,
+    "freeze": "None",
+    "dv": 0,
+    "cf": 0,
+    "charts": 0,
+    "merged": [
+      "B16:C16",
+      "B7:C7",
+      "B22:C22",
+      "B27:C27",
+      "A2:C2",
+      "B12:C12",
+      "B21:C21",
+      "B23:C23"
+    ]
+  },
+  "处理总览": {
+    "max_row": 12,
+    "max_col": 6,
+    "freeze": "None",
+    "dv": 0,
+    "cf": 0,
+    "charts": 1,
+    "merged": [
+      "A2:F2",
+      "A11:F11",
+      "A10:F10",
+      "A1:F1",
+      "A12:F12"
+    ]
+  },
+  "待确认问题": {
+    "max_row": 18,
+    "max_col": 14,
+    "freeze": "A4",
+    "dv": 4,
+    "cf": 3,
+    "charts": 0,
+    "merged": [
+      "A2:N2",
+      "A1:N1"
+    ]
+  },
+  "知识冲突": {
+    "max_row": 13,
+    "max_col": 14,
+    "freeze": "A4",
+    "dv": 4,
+    "cf": 3,
+    "charts": 0,
+    "merged": [
+      "A2:N2",
+      "A1:N1"
+    ]
+  },
+  "知识缺口": {
+    "max_row": 18,
+    "max_col": 13,
+    "freeze": "A4",
+    "dv": 3,
+    "cf": 2,
+    "charts": 0,
+    "merged": [
+      "A2:M2",
+      "A1:M1"
+    ]
+  },
+  "文档审核": {
+    "max_row": 40,
+    "max_col": 13,
+    "freeze": "A4",
+    "dv": 3,
+    "cf": 3,
+    "charts": 0,
+    "merged": [
+      "A2:M2",
+      "A1:M1"
+    ]
+  },
+  "字典": {
+    "max_row": 8,
+    "max_col": 8,
+    "freeze": "None",
+    "dv": 0,
+    "cf": 0,
+    "charts": 0,
+    "merged": [
+      "A8:H8"
+    ]
+  },
+  "samples": {
+    "q_header": [
+      "编号",
+      "主题",
+      "需要确认的问题",
+      "关联冲突/缺口",
+      "建议默认值（仅供讨论）",
+      "是否阻塞正式评审",
+      "建议确认人角色",
+      "当前状态",
+      "人工结论",
+      "结论说明 / 决策依据",
+      "确认人",
+      "确认日期",
+      "后续动作",
+      "备注"
+    ],
+    "q_first": [
+      "Q-01",
+      "立即购买的产品定义",
+      "README 声称支持“立即购买”。当前实现是加购后跳转购物车。产品期望是直接进入结算页， 还是“加购 + 去购物车”即为可接受行为？",
+      "CONFLICT-001, REQ-ORDER-001",
+      "按当前实现记录，不假定支持直接结算",
+      "是",
+      "产品负责人",
+      "待处理",
+      "待定",
+      null,
+      null,
+      null,
+      "更新 REQ-ORDER-001、FLOW-ORDER-001，关闭 CONFLICT-001",
+      null
+    ],
+    "q_last": [
+      "Q-15",
+      "版本发布信息",
+      "1.0.0 的发布日期、变更内容、后续版本计划是什么？是否有 Git 仓库可提供 commit？",
+      "GAP-006, GAP-015",
+      "记录为未知，不推断发布日期",
+      "是",
+      "项目经理",
+      "待处理",
+      "待定",
+      null,
+      null,
+      null,
+      "补 Git/发布记录，关闭 GAP-006、GAP-015",
+      null
+    ],
+    "c_first": [
+      "CONFLICT-001",
+      "文档 vs 实现",
+      "README 声称商品详情支持“立即购买”。前端实现中“立即购买”只是调用加购接口， 然后跳转到 /cart，并未直接进入结算页。",
+      "Minishop/README.md#L52-L53\nMinishop/frontend/src/pages/product/ProductDetail.tsx#L70-L77",
+      "涉及“立即购买”路径的用例，预期结果无法确定是“直接结算”还是“加购后去购物车”。",
+      "REQ-ORDER-001, FLOW-ORDER-001",
+      "高",
+      "是",
+      "以产品定义为准；若以当前实现为准，需更新 README 与 REQ-ORDER-001。",
+      null,
+      null,
+      "待处理",
+      null,
+      null
+    ],
+    "c_last": [
+      "CONFLICT-010",
+      "状态转换不一致",
+      "退款申请允许 PAID/SHIPPED/COMPLETED 订单进入 REFUNDING；管理员拒绝退款时， 代码把所有 REFUNDING 订单统一改回 PAID，未恢复退款前的 SHIPPED/COMPLETED， 导致已发货/已完成事实丢失。",
+      "Minishop/backend/app/api/refunds.py#L20-L22\nMinishop/backend/app/api/admin.py#L238-L243",
+      "退款拒绝后的订单状态断言无法按“回到原状态”设计；与已发货/已完成语义冲突。",
+      "STATE-ORDER-001, RULE-ORDER-010, EXP-ORDER-001",
+      "高",
+      "是",
+      "退款拒绝后恢复退款前状态（PAID/SHIPPED/COMPLETED），或在规则中明确统一回 PAID。",
+      null,
+      null,
+      "待处理",
+      null,
+      null
+    ],
+    "g_first": [
+      "GAP-001",
+      "项目级",
+      "正式 PRD 与功能规格",
+      "REQUIREMENT",
+      "仓库只有 README 和实现代码，没有正式 PRD、需求规格说明书或验收标准。 当前 REQ-ORDER-* 是从 README 和代码反向整理的候选需求，不是经业务确认的原始需求。",
+      "business_correctness, expected_result",
+      "高",
+      "产品负责人",
+      "正式评审前",
+      "待处理",
+      null,
+      null,
+      null
+    ],
+    "g_last": [
+      "GAP-015",
+      "项目级",
+      "产品发布日期与变更历史",
+      "PROJECT",
+      "只能确认版本号 1.0.0，无法确认发布日期、变更内容、历史版本或兼容性策略。",
+      "business_correctness, expected_result",
+      "中",
+      "项目经理",
+      "版本差异评审前",
+      "待处理",
+      null,
+      null,
+      null
+    ],
+    "d_first": [
+      "PROJECT-ENVIRONMENTS",
+      "MiniShop 环境与运行方式",
+      "项目级 (PROJECT)",
+      "项目级",
+      "E2",
+      "in_review（待审核）",
+      "Minishop/docker-compose.yml#L1-L22; Minishop/backend/Dockerfile#L1-L15; Minishop/frontend/vite.config.ts#L5-L17; Minishop/backend/app/config.py#L1-L23",
+      "待定",
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "d_last": [
+      "EXP-ORDER-001",
+      "交易域代码走查风险线索",
+      "专家经验 (EXPERT_KNOWLEDGE)",
+      "订单 (order)",
+      "E4",
+      "in_review（待审核）",
+      "Minishop/backend/app/api/orders.py; Minishop/backend/app/api/payments.py; Minishop/backend/app/api/admin.py; Minishop/backend/app/api/refunds.py; Minishop/frontend/src/pages/product/ProductDetail.tsx",
+      "待定",
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "overview_formulas": [
+      "=COUNTIF('待确认问题'!$I$4:$I$18,\"接受建议\")+COUNTIF('待确认问题'!$I$4:$I$18,\"修改\")+COUNTIF('待确认问题'!$I$4:$I$18,\"驳回\")",
+      "=COUNTIF('知识冲突'!$L$4:$L$13,\"已解决\")+COUNTIF('知识冲突'!$L$4:$L$13,\"已降级\")",
+      "=COUNTIF('知识缺口'!$J$4:$J$18,\"已关闭\")+COUNTIF('知识缺口'!$J$4:$J$18,\"已降级\")",
+      "=COUNTIF('文档审核'!$H$4:$H$40,\"通过\")+COUNTIF('文档审核'!$H$4:$H$40,\"修改后通过\")"
+    ],
+    "overview_progress": [
+      "=IF(B5=0,0,D5/B5)",
+      "=IF(B6=0,0,D6/B6)",
+      "=IF(B7=0,0,D7/B7)",
+      "=IF(B8=0,0,D8/B8)"
+    ]
+  }
+}

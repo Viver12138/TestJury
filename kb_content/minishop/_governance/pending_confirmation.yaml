@@ -1,0 +1,338 @@
+project_id: minishop
+snapshot: 2026-11-11
+description: '待人工确认清单。以下问题无法从现有资料得到唯一答案，或现有实现与文档存在冲突。 在确认前，相关评审结论必须降级为“待确认”，不得写成强制业务事实。
+
+  '
+items:
+- id: Q-01
+  topic: 立即购买的产品定义
+  question: 'README 声称支持“立即购买”。当前实现是加购后跳转购物车。产品期望是直接进入结算页， 还是“加购 + 去购物车”即为可接受行为？
+
+    '
+  related_ids:
+  - CONFLICT-001
+  - REQ-ORDER-001
+  owner_role: product_owner
+  blocking: true
+  suggested_default: 按当前实现记录，不假定支持直接结算
+  status: answered
+  status_cn: 已确认
+  decision: 接受建议
+  decision_note: README#L51 仅列出"立即购买"功能名，未定义交互。确认以当前实现为准：加购后跳转 /cart（ProductDetail.tsx#L70-L77），不支持直接进入结算页；需在 REQ-ORDER-001
+    与 README 补写该交互定义。
+  decided_by: 平台设计者（产品负责人）
+  decided_at: '2026-11-11'
+  follow_up: 更新 REQ-ORDER-001、FLOW-ORDER-001，关闭 CONFLICT-001
+  review_note: 连锁影响见 Q-03：立即购买会写入购物车，且下单后不清空。
+  applied_at: '2026-11-12'
+  blocking_resolved: true
+- id: Q-02
+  topic: 库存预占与超卖
+  question: '下单是否需要锁定/预占库存？支付时库存不足应失败还是继续（当前 max 截断为 0）？ 超卖是已知限制还是缺陷？
+
+    '
+  related_ids:
+  - CONFLICT-002
+  - GAP-012
+  - RULE-ORDER-003
+  - RULE-ORDER-009
+  owner_role: product_owner
+  blocking: true
+  suggested_default: 记录为风险，不把超卖写成正确规则
+  status: answered
+  status_cn: 已确认
+  decision: 接受建议
+  decision_note: 确认不引入库存预占。下单仅校验 sku.stock（orders.py#L55-L56）不占用不扣减；支付成功时 max(stock-qty,0) 截断扣减且不校验（payments.py#L22-L26），存在并发超卖窗口。定性为
+    Demo 已知限制，不得写成"库存充足即安全"；生产化前必须引入预占或支付时二次校验。
+  decided_by: 平台设计者（产品负责人）
+  decided_at: '2026-11-11'
+  follow_up: 更新 RULE-ORDER-003/009、STATE-ORDER-001，关闭 CONFLICT-002、GAP-012
+  review_note: EXP-ORDER-001 R-01（蓝牙耳机 stock=1 双订单）保留为已知限制验证，不作为阻塞缺陷。
+  applied_at: '2026-11-12'
+  blocking_resolved: true
+- id: Q-03
+  topic: 下单后购物车处理
+  question: 下单成功后是否应清空已购买的购物车项？当前不清空。
+  related_ids:
+  - RULE-ORDER-006
+  - EXP-ORDER-001
+  owner_role: product_owner
+  blocking: true
+  suggested_default: 按当前实现断言“不清空”，并标记待确认
+  status: answered
+  status_cn: 已确认
+  decision: 修改
+  decision_note: 维持"下单不清空购物车"为当前行为（orders.py#L116-L170；OrderConfirm.tsx#L47-L62 仅清 sessionStorage），但不接受把它当作无副作用的简化：立即购买=加购（ProductDetail.tsx#L70-L77）+
+    同 SKU 数量累加（cart.py#L65-L75）→ 对同一 SKU 二次"立即购买"会使结算数量翻倍；累加后超库存直接 400"库存不足，无法合并"（如蓝牙耳机 stock=1）。要求文档明确该连锁限制，UI 用例下单前清理购物车或改用
+    API 造数。
+  decided_by: 平台设计者（产品负责人）
+  decided_at: '2026-11-11'
+  follow_up: 更新 RULE-ORDER-006；确认是否清空购物车
+  review_note: 首版判"接受建议"偏松，复核后改判"修改"；后续版本评估下单后按 SKU 清除已购项。
+  applied_at: '2026-11-12'
+  blocking_resolved: true
+- id: Q-04
+  topic: 退款拒绝后的订单状态
+  question: '已发货/已完成订单申请退款被拒绝后，应回到 PAID、SHIPPED 还是 COMPLETED？ 当前统一回 PAID。
+
+    '
+  related_ids:
+  - CONFLICT-010
+  - STATE-ORDER-001
+  - EXP-ORDER-001
+  owner_role: product_owner
+  blocking: true
+  suggested_default: 期望恢复到退款前状态；当前实现作为缺陷/风险记录
+  status: answered
+  status_cn: 已确认
+  decision: 修改
+  decision_note: 确认应恢复退款前状态。当前 admin.py#L241 把所有 REFUNDING 统一改回 PAID，SHIPPED/COMPLETED 事实丢失、物流单仍存在，状态机不自洽。修复：refunds 增加 pre_refund_status（申请退款时快照），拒绝时按快照恢复。修复前按缺陷记录，用例预期以"应恢复原状态"为准。
+  decided_by: 平台设计者（产品负责人）
+  decided_at: '2026-11-11'
+  follow_up: 更新 STATE-ORDER-001、RULE-ORDER-010，关闭 CONFLICT-010
+  review_note: 影响 STATE-ORDER-001 转换表第 70 行与 RULE-ORDER-010。
+  applied_at: '2026-11-12'
+  blocking_resolved: true
+- id: Q-05
+  topic: 多支付记录时订单详情的支付展示
+  question: '同一订单支付失败后重试成功时，订单详情的 payment 应展示最新一条、成功一条， 还是保持第一条？当前关系为单对象且未排序。
+
+    '
+  related_ids:
+  - CONFLICT-007
+  - RULE-ORDER-008
+  - API-ORDER-003
+  owner_role: tech_lead
+  blocking: true
+  suggested_default: 期望展示成功/最新支付；当前行为标记待确认
+  status: answered
+  status_cn: 已确认
+  decision: 修改
+  decision_note: 确认订单详情应展示成功/最新支付。实测（本项目 .venv，SQLAlchemy 2.0.36）：同一订单存在 FAILED+SUCCESS 两条支付记录时，Order.payment（models.py#L192
+    uselist=False）稳定返回第一条 FAILED，并抛 SAWarning "Multiple rows returned with uselist=False"——即订单已 PAID 而详情 payment.status 恒为
+    FAILED，属确定性缺陷而非"断言不稳定"。修复：关系改多对象并按 paid_at/id 排序，或增加 current_payment_id；同步 common.py#L164-L174 与 orders.py#L190。
+  decided_by: 平台设计者（技术负责人）
+  decided_at: '2026-11-11'
+  follow_up: 更新 RULE-ORDER-008、API-ORDER-003，关闭 CONFLICT-007
+  review_note: 复核阶段新增实测证据，严重度由"高"上调为必须修复项。
+  applied_at: '2026-11-12'
+  blocking_resolved: true
+- id: Q-06
+  topic: 优惠券 total_quantity 语义
+  question: 'total_quantity 限制的是“发放总量”还是“使用总量”？当前领券不计数，用券才计数。
+
+    '
+  related_ids:
+  - CONFLICT-006
+  - RULE-ORDER-004
+  - EXP-ORDER-001
+  owner_role: product_owner
+  blocking: true
+  suggested_default: 期望为发放总量；当前实现作为不一致记录
+  status: answered
+  status_cn: 已确认
+  decision: 修改
+  decision_note: 确认 total_quantity 语义为"发放总量"（与建议默认值一致）。当前三处不一致：领券用 used_quantity>=total_quantity 判"已领完"（coupons.py#L83）；领券不计数、用券才
+    +1（orders.py#L166）；可用券查询用 used_quantity+当前用户是否已领（coupons.py#L51，claimed 为集合故最多计 1）。修复：领券时按 count(user_coupons.coupon_id)
+    判发放上限并计数，用券不再回写发放计数，三处统一。
+  decided_by: 平台设计者（产品负责人）
+  decided_at: '2026-11-11'
+  follow_up: 更新 RULE-ORDER-004、DATA-ORDER-001，关闭 CONFLICT-006
+  review_note: 首版 CONFLICT-006 裁决误写"明确为使用总量"，与本结论相反，已一并更正。
+  applied_at: '2026-11-12'
+  blocking_resolved: true
+- id: Q-07
+  topic: 优惠券 start_time 是否生效
+  question: 未到 start_time 的券是否允许领取/使用？当前两处都只校验 end_time。
+  related_ids:
+  - GAP-013
+  - RULE-ORDER-004
+  owner_role: product_owner
+  blocking: false
+  suggested_default: 期望未生效券不可领/不可用；当前行为待确认
+  status: answered
+  status_cn: 已确认
+  decision: 接受建议
+  decision_note: 期望行为为"未生效券不可领、不可用"；当前领券与用券均只校验 end_time（coupons.py#L76、orders.py#L74）。Demo 阶段接受现状并记为已知限制。测试数据缺口：seed.py#L134-L137
+    全部券 start_time 均为过去时间，无法构造"未生效券"场景 → 券边界用例须经 admin API 造数。另实测种子库（播种于 2026-09-21）：券#1「新人满100减10」end_time=2026-10-21 已自然过期但
+    status 仍为 ACTIVE，故 coupons.py#L76-L77 的"已过期"分支可达；券#4 名为"已过期"却被置 DISABLED（seed.py#L144），走的是"已停用"分支。
+  decided_by: 平台设计者（产品负责人）
+  decided_at: '2026-11-11'
+  follow_up: 更新 RULE-ORDER-004，关闭 GAP-013
+  review_note: 首版曾断言"已过期分支不可达"，经只读实测 minishop.db 更正为"可达（券#1 自然过期）"。券#1 过期还导致可领券仅剩 2 张、e2e_test.py#L81 抛 StopIteration 中止，详见文档审核
+    AUTO-FRAMEWORK 与 GAP-004。
+  applied_at: '2026-11-12'
+  blocking_resolved: false
+- id: Q-08
+  topic: PENDING_SHIPMENT 状态
+  question: '该状态是计划启用（支付后进入待发货）还是历史遗留应删除？当前从未赋值。
+
+    '
+  related_ids:
+  - CONFLICT-004
+  - STATE-ORDER-001
+  owner_role: tech_lead
+  blocking: true
+  suggested_default: 视为不可达状态，不纳入当前有效状态机
+  status: answered
+  status_cn: 已确认
+  decision: 接受建议
+  decision_note: 确认 PENDING_SHIPMENT 为不可达状态，不纳入当前有效状态机：全仓库仅有读取/比较（admin.py#L27,L29,L161；payments.py#L46,L87；common.py#L118；AdminOrders.tsx#L116），无任何赋值路径。要求
+    STATE-ORDER-001 标注"未启用"，后续版本再决定删除或启用。
+  decided_by: 平台设计者（技术负责人）
+  decided_at: '2026-11-11'
+  follow_up: 更新 STATE-ORDER-001，关闭 CONFLICT-004
+  review_note: 若将来启用，需同步支付成功后的状态写入与发货门禁。
+  applied_at: '2026-11-12'
+  blocking_resolved: true
+- id: Q-09
+  topic: Dashboard 销售额口径
+  question: 销售额是否应扣除已退款订单？当前销售额包含 REFUNDED 订单，退款额另计。
+  related_ids:
+  - CONFLICT-008
+  owner_role: product_owner
+  blocking: false
+  suggested_default: 期望净销售额扣除退款；当前按含退款记录
+  status: answered
+  status_cn: 已确认
+  decision: 接受建议
+  decision_note: 确认 sales_amount 为"毛销售额"口径：统计含 REFUNDED 订单 pay_amount（admin.py#L28-L31），refund_amount 另计（admin.py#L32-L33）。不改代码，但必须在
+    README 与 Dashboard 说明中标注口径；如需净销售额应新增字段，不得静默改动现有口径。
+  decided_by: 平台设计者（产品负责人）
+  decided_at: '2026-11-11'
+  follow_up: 更新 Dashboard 统计说明，关闭 CONFLICT-008
+  review_note: 统计类用例预期值须写明采用毛口径。
+  applied_at: '2026-11-12'
+  blocking_resolved: false
+- id: Q-10
+  topic: 单规格商品无法加购
+  question: '是否是已知缺陷？修复计划是什么？当前 8/9 个种子商品在详情页无法加购。
+
+    '
+  related_ids:
+  - CONFLICT-009
+  - EXP-ORDER-001
+  - AUTO-LIMITATIONS
+  owner_role: tech_lead
+  blocking: true
+  suggested_default: 记录为已知 UI 缺陷；UI 用例改用多规格商品
+  status: answered
+  status_cn: 已确认
+  decision: 修改
+  decision_note: 确认为缺陷并要求修复：8/9 个种子商品为单规格 spec_values={}（seed.py#L119-L128），ProductDetail.tsx#L45-L50 的 currentSku 依赖 selected
+    非空 → 详情页加购/立即购买均提示"请选择商品规格"。修复：无规格时默认取 skus[0]。修复前 UI 主流程只能用运动鞋（多规格）或 API 造数，AUTO-LIMITATIONS 须如实记录。
+  decided_by: 平台设计者（技术负责人）
+  decided_at: '2026-11-11'
+  follow_up: 修复前端或登记缺陷，关闭 CONFLICT-009
+  review_note: 阻塞 UI 主流程自动化，优先级高。
+  applied_at: '2026-11-12'
+  blocking_resolved: true
+- id: Q-11
+  topic: 空物流信息是否允许
+  question: 发货时 company/tracking_number 传空字符串是否算有效发货？
+  related_ids:
+  - RULE-ORDER-010
+  - API-ORDER-006
+  owner_role: product_owner
+  blocking: false
+  suggested_default: 期望拒绝空值；当前接受
+  status: answered
+  status_cn: 已确认
+  decision: 修改
+  decision_note: 确认空物流信息不算有效发货，需在后端补校验。层次说明：后端 ShipRequest.company/tracking_number 为裸 str 无 min_length（schemas.py），直连 API
+    传空串可发货成功；前端 AdminOrders.tsx#L38、L107-L108 有必填校验，UI 路径已被拦住。风险仅存在于 API 层，用例应针对 API 设计（期望 400/422），不要据此判定 UI 用例失败。
+  decided_by: 平台设计者（产品负责人）
+  decided_at: '2026-11-11'
+  follow_up: 更新 RULE-ORDER-010、API-ORDER-006
+  review_note: 首版仅写"当前接受"，未区分前后端层次，本次补充。
+  applied_at: '2026-11-12'
+  blocking_resolved: false
+- id: Q-12
+  topic: 订单超时关闭
+  question: 待支付订单是否需要超时自动取消？超时时长是多少？当前无定时任务。
+  related_ids:
+  - GAP-012
+  - REQ-ORDER-004
+  - STATE-ORDER-001
+  owner_role: product_owner
+  blocking: true
+  suggested_default: 不假设存在超时；当前无自动取消
+  status: answered
+  status_cn: 已确认
+  decision: 接受建议
+  decision_note: 确认当前不存在订单超时自动取消：无定时任务/调度器，取消仅由用户主动触发（orders.py#L223-L244）。不假设超时，用例不得断言自动取消。生产化需定义超时时长与定时任务，届时同步 REQ-ORDER-004
+    与状态机（PENDING_PAYMENT→CANCELLED）。
+  decided_by: 平台设计者（产品负责人）
+  decided_at: '2026-11-11'
+  follow_up: 更新 REQ-ORDER-004、STATE-ORDER-001，关闭 GAP-012
+  review_note: null
+  applied_at: '2026-11-12'
+  blocking_resolved: true
+- id: Q-13
+  topic: Docker seed_media 修复方式
+  question: '是补齐 backend/seed_media 目录，还是删除 Dockerfile 的 COPY 行并移除 Compose 挂载？ 该目录当前未被业务代码使用。
+
+    '
+  related_ids:
+  - CONFLICT-005
+  - GAP-014
+  owner_role: tech_lead
+  blocking: false
+  suggested_default: 删除未使用的 COPY/挂载；需负责人确认
+  status: answered
+  status_cn: 已确认
+  decision: 接受建议
+  decision_note: 确认删除方案。实测：Minishop/seed_media 存在（空目录）、Minishop/backend/seed_media 不存在，而 Dockerfile#L11 COPY seed_media 的构建上下文为
+    ./backend → 构建必失败。清理需同时处理三处：Dockerfile#L11、docker-compose.yml 的 ./backend/seed_media 挂载与 SEED_MEDIA_DIR 环境变量、config.py#L15（该配置无任何代码消费）。修复前容器环境不得作为正式测试环境。
+  decided_by: 平台设计者（技术负责人）
+  decided_at: '2026-11-11'
+  follow_up: 修复 Docker 构建，关闭 CONFLICT-005、GAP-014
+  review_note: 首版只提"删除 COPY/挂载"，遗漏 config.py#L15 与环境变量，本次补充。
+  applied_at: '2026-11-12'
+  blocking_resolved: false
+- id: Q-14
+  topic: 商品图 SVG 修复方式
+  question: '种子图是内联 SVG data URL，font-family 引号嵌套导致 XML 非法、且未 URL 编码。 是否改为 URL 编码/Base64，或改用静态图片文件？
+
+    '
+  related_ids:
+  - AUTO-LIMITATIONS
+  - CONFLICT-009
+  owner_role: tech_lead
+  blocking: false
+  suggested_default: 改为合法且编码的 data URL 或静态文件
+  status: answered
+  status_cn: 已确认
+  decision: 接受建议
+  decision_note: 确认修复方向：seed.py#L12-L25 生成 data:image/svg+xml;utf8 未做 URL 编码，且 font-family 由 '","'.join(CJK_FONTS) 拼出嵌套双引号
+    → XML 非法、渲染不稳定。改为 URL 编码或 Base64 data URL，或落地为静态图片文件；修复后同步 AUTO-LIMITATIONS 与 TEST-DATA 的图片断言。
+  decided_by: 平台设计者（技术负责人）
+  decided_at: '2026-11-11'
+  follow_up: 修复 seed 图片生成逻辑，更新 AUTO-LIMITATIONS
+  review_note: null
+  applied_at: '2026-11-12'
+  blocking_resolved: false
+- id: Q-15
+  topic: 版本发布信息
+  question: '1.0.0 的发布日期、变更内容、后续版本计划是什么？是否有 Git 仓库可提供 commit？
+
+    '
+  related_ids:
+  - GAP-006
+  - GAP-015
+  owner_role: project_manager
+  blocking: true
+  suggested_default: 记录为未知，不推断发布日期
+  status: answered
+  status_cn: 已确认
+  decision: 接受建议
+  decision_note: 确认记录为未知：实测 Minishop/.git 不存在，仅能确认 version=1.0.0（main.py、frontend/package.json）。不推断发布日期与变更内容，知识以 snapshot-2026-11-11
+    与文件哈希追溯。GAP-006 建 Git 后方可解除本项对正式评审的阻塞。
+  decided_by: 平台设计者（项目经理）
+  decided_at: '2026-11-11'
+  follow_up: 补 Git/发布记录，关闭 GAP-006、GAP-015
+  review_note: GAP-015 因此按"已降级"处理，不按"已关闭"。
+  applied_at: '2026-11-12'
+  blocking_resolved: true
+updated_at: '2026-11-12'
+status: answered

@@ -52,6 +52,83 @@ PII_KEYS = {
 }
 
 
+def normalize_key(key: str | None) -> str:
+    """兼容 camelCase / snake_case / kebab-case。"""
+
+    return re.sub(r"[^a-z0-9]", "", (key or "").lower())
+
+
+SECRET_KEYS_NORMALIZED = {normalize_key(item) for item in SECRET_KEYS}
+PII_KEYS_NORMALIZED = {normalize_key(item) for item in PII_KEYS}
+PII_KEY_PREFIXES = (
+    "phone",
+    "mobile",
+    "tel",
+    "email",
+    "idcard",
+    "idnumber",
+    "bankcard",
+    "account",
+    "address",
+    "username",
+    "displayname",
+    "realname",
+)
+SECRET_KEY_PREFIXES = (
+    "password",
+    "passwd",
+    "secret",
+    "token",
+    "apikey",
+    "privatekey",
+    "authorization",
+    "cookie",
+    "session",
+)
+PII_KEY_SUFFIXES = (
+    "email",
+    "phone",
+    "mobile",
+    "tel",
+    "name",
+    "address",
+    "idcard",
+    "idnumber",
+    "bankcard",
+    "account",
+    "username",
+)
+SECRET_KEY_SUFFIXES = (
+    "password",
+    "passwd",
+    "secret",
+    "token",
+    "apikey",
+    "privatekey",
+    "authorization",
+    "cookie",
+    "session",
+)
+
+
+def is_secret_key(key: str | None) -> bool:
+    normalized = normalize_key(key)
+    return (
+        normalized in SECRET_KEYS_NORMALIZED
+        or any(normalized.startswith(prefix) for prefix in SECRET_KEY_PREFIXES)
+        or any(normalized.endswith(suffix) for suffix in SECRET_KEY_SUFFIXES)
+    )
+
+
+def is_pii_key(key: str | None) -> bool:
+    normalized = normalize_key(key)
+    return (
+        normalized in PII_KEYS_NORMALIZED
+        or any(normalized.startswith(prefix) for prefix in PII_KEY_PREFIXES)
+        or any(normalized.endswith(suffix) for suffix in PII_KEY_SUFFIXES)
+    )
+
+
 @dataclass
 class MaskingResult:
     data: Any
@@ -96,10 +173,9 @@ class MaskingPolicy:
             for item in value:
                 self._collect(key, item)
         elif isinstance(value, str):
-            lower = (key or "").lower()
-            if lower in SECRET_KEYS:
+            if is_secret_key(key):
                 self._known[value] = "SECRET"
-            elif lower in PII_KEYS:
+            elif is_pii_key(key):
                 if EMAIL.fullmatch(value):
                     self._known[value] = "EMAIL"
                 elif PHONE.fullmatch(value):
@@ -108,6 +184,12 @@ class MaskingPolicy:
                     self._known[value] = "ID_CARD"
                 else:
                     self._known[value] = "PII"
+        elif isinstance(value, (int, float)) and not isinstance(value, bool):
+            lower = normalize_key(key)
+            if lower in SECRET_KEYS_NORMALIZED:
+                self._known[str(value)] = "SECRET"
+            elif lower in PII_KEYS_NORMALIZED:
+                self._known[str(value)] = "PII"
 
     def _mask_value(self, key: str | None, value: Any) -> Any:
         if isinstance(value, dict):
@@ -115,12 +197,16 @@ class MaskingPolicy:
         if isinstance(value, list):
             return [self._mask_value(key, item) for item in value]
         if isinstance(value, str):
-            if key and key.lower() in SECRET_KEYS:
+            if is_secret_key(key):
                 return self._placeholder("SECRET", value)
             masked = self._mask_text(value)
-            if key and key.lower() in PII_KEYS and masked == value and value:
+            if is_pii_key(key) and masked == value and value:
                 return self._placeholder("PII", value)
             return masked
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            if is_secret_key(key) or is_pii_key(key):
+                kind = "SECRET" if is_secret_key(key) else "PII"
+                return self._placeholder(kind, str(value))
         return value
 
     def apply(self, payload: Any) -> MaskingResult:

@@ -1,0 +1,42 @@
+{
+  "drift": [],
+  "meta_errors": [],
+  "meta_warnings": [],
+  "counts": {
+    "inventory_entries": 80,
+    "sha_checked": 80,
+    "governance": {
+      "project/modules.yaml": 12,
+      "_governance/knowledge_gaps.yaml": 15,
+      "_governance/conflicts.yaml": 10,
+      "_governance/pending_confirmation.yaml": 15
+    },
+    "governance_ids": 53,
+    "docs": 37,
+    "ids": 37,
+    "anchors": 86,
+    "by_type": {
+      "AUTOMATION": 3,
+      "EXPERT_KNOWLEDGE": 1,
+      "GLOSSARY": 1,
+      "INTERFACE": 7,
+      "PROJECT": 5,
+      "REQUIREMENT": 4,
+      "BUSINESS_RULE": 11,
+      "TEST_SPEC": 3,
+      "WORKFLOW": 2
+    },
+    "by_status": {
+      "in_review": 13,
+      "approved": 24
+    },
+    "by_evidence": {
+      "E3": 6,
+      "E4": 1,
+      "E2": 30
+    },
+    "errors": 0,
+    "warnings": 0,
+    "drift": 0
+  }
+}

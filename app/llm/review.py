@@ -21,6 +21,7 @@ from app.core.enums import (
     Severity,
     VoteValidity,
 )
+from app.llm.attempts import attempt_log
 from app.llm.base import (
     AdapterError,
     ChatAdapter,
@@ -63,8 +64,11 @@ A1 步骤可自动化、A2 状态可获取、A3 定位可维护、A4 数据可�
 可以对业务维度提出问题，但严重级不超过 major。""",
 }
 
-_DEFAULT_CATEGORIES = {
-    "覆盖缺失",
+OVERALL_COMMENT_MAX = 80
+VOTE_REASON_MAX = 60
+
+
+_DEFAULT_CATEGORIES = {    "覆盖缺失",
     "规则冲突",
     "意图不符",
     "前置不足",
@@ -89,7 +93,9 @@ _OUTPUT_SCHEMA = """严格输出一个 JSON 对象：{
   "overall": {"comment": "不超过 80 字的整体判断"},
   "issues": [
     {
+      "scope": "step|case",
       "step_index": 1,
+      "evidence_quote": "用例原文逐字摘录；case 级可为 null",
       "dimension": "business|test_design|automation",
       "severity": "blocker|major|suggestion",
       "category": "覆盖缺失|规则冲突|意图不符|前置不足|术语不一致|状态不自洽|步骤不可执行|预期不明确|数据缺失|边界缺失|不可重复|歧义|自动化不可行|状态不可读|定位不稳定|数据不可准备|框架不匹配|重复冗余",
@@ -105,7 +111,7 @@ _OUTPUT_SCHEMA = """严格输出一个 JSON 对象：{
     }
   ]
 }
-没有问题时 issues 输出空数组；不要输出 markdown 代码块；不要输出 role、ai_verdict、status、权限等字段。"""
+没有问题时 issues 输出空数组；scope=step 时必须给出 step_index 与 evidence_quote；scope=case 时 step_index 必须为 null；不要输出 markdown 代码块；不要输出 role、ai_verdict、status、权限等字段。"""
 
 _VOTE_SYSTEM = """你是评审团中的一名评审员，对一条“候选问题”独立投票。
 只能依据候选描述与评审标准判断：问题是否成立（validity），以及严重级（severity）。
@@ -213,6 +219,7 @@ class ChatReviewModel:
         loop = asyncio.get_running_loop()
         interval = self.registry.role(role).min_interval_seconds
         attempts: list[dict[str, Any]] = []
+        sink = attempt_log.get()
         attempt_started: dict[int, float] = {}
 
         async def send():
@@ -222,14 +229,31 @@ class ChatReviewModel:
                 if wait > 0:
                     await asyncio.sleep(wait)
             self._last_call[role] = loop.time()
-            attempt_started[len(attempts) + 1] = loop.time()
+            number = len(attempts) + 1
+            attempt_started[number] = loop.time()
+            entry = {
+                "attempt": number,
+                "status": "started",
+                "error_code": None,
+                "retryable": None,
+                "delay_s": None,
+                "latency_ms": None,
+            }
+            attempts.append(entry)
+            if sink is not None:
+                sink.append(entry)
             return await adapter.complete(request)
 
         def on_attempt(number: int, error: AdapterError | None, delay: float) -> None:
             started = attempt_started.get(number, loop.time())
-            attempts.append(
+            entry = next(
+                (item for item in attempts if item.get("attempt") == number), None
+            )
+            if entry is None:
+                entry = {"attempt": number}
+                attempts.append(entry)
+            entry.update(
                 {
-                    "attempt": number,
                     "status": "error" if error else "ok",
                     "error_code": error.code if error else None,
                     "retryable": error.retryable if error else None,
@@ -301,7 +325,16 @@ class ChatReviewModel:
             )
             issues = issues[:6]
             warnings.append("issues_truncated:6")
-        summary = str(overall.get("comment") or "").strip()
+        summary = overall.get("comment")
+        if not isinstance(summary, str):
+            raise AdapterError("OUTPUT_INVALID", "overall.comment 必须是字符串", retryable=False)
+        summary = summary.strip()
+        if len(summary) > OVERALL_COMMENT_MAX:
+            raise AdapterError(
+                "OUTPUT_INVALID",
+                f"overall.comment 超过 {OVERALL_COMMENT_MAX} 字",
+                retryable=False,
+            )
         request_snapshot = _request_snapshot(request, config)
         response_snapshot = _response_snapshot(response)
         return ReviewOpinion(
@@ -375,6 +408,7 @@ class ChatReviewModel:
         if not isinstance(raw, dict):
             return drop("not_object")
         needed = (
+            "scope",
             "dimension",
             "severity",
             "category",
@@ -389,6 +423,9 @@ class ChatReviewModel:
         for field_name in ("dimension", "severity", "category", "rationale", "evidence_type", "evidence_strength", "evidence_status"):
             if not isinstance(raw[field_name], str):
                 return drop(f"{field_name}_type")
+        scope = raw["scope"]
+        if scope not in ("step", "case"):
+            return drop("scope_invalid")
         dimension = raw["dimension"]
         if dimension not in {item.value for item in Dimension}:
             return drop("dimension_invalid")
@@ -423,15 +460,20 @@ class ChatReviewModel:
             return drop("evidence_status_invalid")
 
         step_index = raw.get("step_index")
-        if step_index is not None:
+        quote = raw.get("evidence_quote")
+        if scope == "step":
             if not isinstance(step_index, int) or isinstance(step_index, bool):
-                return drop("step_index_invalid")
+                return drop("step_index_missing")
             if not (1 <= step_index <= step_count):
                 return drop("step_index_out_of_range")
+            if not isinstance(quote, str) or not quote.strip():
+                return drop("evidence_quote_missing")
+        else:
+            if step_index is not None:
+                return drop("case_scope_step_index_must_be_null")
         if "kb_grounded" in raw and not isinstance(raw["kb_grounded"], bool):
             return drop("kb_grounded_invalid")
 
-        quote = raw.get("evidence_quote")
         if quote is not None and not isinstance(quote, str):
             return drop("evidence_quote_invalid")
         if isinstance(quote, str) and len(quote) > 2000:
@@ -468,6 +510,7 @@ class ChatReviewModel:
         )
         warnings.extend(f"evidence:{index}:{item}" for item in evidence.warnings)
         issue = {
+            "scope": scope,
             "step_index": step_index,
             "dimension": dimension,
             "severity": severity,
@@ -521,8 +564,8 @@ class ChatReviewModel:
         )
         response, attempts = await self._complete(role, request)
         payload = sanitize_model_output(parse_json_object(response.text)).data
-        validity = str(payload.get("validity") or "")
-        if validity not in {item.value for item in VoteValidity}:
+        validity = payload.get("validity")
+        if not isinstance(validity, str) or validity not in {item.value for item in VoteValidity}:
             raise AdapterError("OUTPUT_INVALID", f"非法 validity: {validity!r}", retryable=False)
         severity = payload.get("severity")
         if validity != VoteValidity.ACCEPT.value:
@@ -535,12 +578,24 @@ class ChatReviewModel:
             raise AdapterError(
                 "OUTPUT_INVALID", f"accept 票 severity 非法: {severity!r}", retryable=False
             )
+        raw_reason = payload.get("reason")
+        if not isinstance(raw_reason, str):
+            raise AdapterError("OUTPUT_INVALID", "vote.reason 必须是字符串", retryable=False)
+        raw_reason = raw_reason.strip()
+        if not raw_reason:
+            raise AdapterError("OUTPUT_INVALID", "vote.reason 不能为空", retryable=False)
+        if len(raw_reason) > VOTE_REASON_MAX:
+            raise AdapterError(
+                "OUTPUT_INVALID",
+                f"vote.reason 超过 {VOTE_REASON_MAX} 字",
+                retryable=False,
+            )
         request_snapshot = _request_snapshot(request, config)
         response_snapshot = _response_snapshot(response)
         return VoteDecision(
             validity=validity,
             severity=severity,
-            reason=str(payload.get("reason") or "") or None,
+            reason=raw_reason,
             model=response.model,
             latency_ms=response.latency_ms,
             input_tokens=response.usage.input_tokens,
