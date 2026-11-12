@@ -1,0 +1,8 @@
+{
+  "previous": "kb-runtime-7f401c235ac7b32cda4f556c4830bf480aeb7bd20af055f7ca0940f250329188",
+  "active": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+  "retriever": "hybrid-bm25-rrf-4",
+  "active_jobs_at_switch": 0,
+  "historical_builds_preserved": true,
+  "scope": "delegated technical preview"
+}

@@ -97,7 +97,8 @@ async def main():
             runs = await app.state.storage.list_model_runs(job.id)
             result['model_errors'] = [{'role':r.role, 'operation':r.operation, 'error':r.error}
                                       for r in runs if r.status == 'error']
-            path.write_text(json.dumps(result, ensure_ascii=False, indent=2, default=str) + '\n', encoding='utf-8')
+            path.write_text(json.dumps(result, ensure_ascii=False, indent=2, default=str) + '\n',
+                            encoding='utf-8', newline='\n')
             results.append(result)
             print(json.dumps({k: v for k, v in result.items() if k != 'report'}, ensure_ascii=False), flush=True)
     finally:
@@ -108,6 +109,12 @@ async def main():
             await app.state.knowledge.embedder.aclose()
     expected = sum(x['expected_count'] for x in results)
     detected = sum(x['matched_count'] for x in results)
+    expected_participation = f'{len(settings.review_roles)}/{len(settings.review_roles)}'
+    def fully_assessed(item):
+        completeness = (item.get('report') or {}).get('review_completeness', {})
+        return (completeness.get('complete') is True and completeness.get('blind') == expected_participation
+                and completeness.get('vote') == expected_participation)
+
     summary = {'mode': args.mode, 'build_version': release['version'], 'cases': len(results),
                'dataset_version': manifest['version'], 'code_fingerprint': code_fingerprint,
                'reports': sum(bool(x['report']) for x in results),
@@ -116,10 +123,15 @@ async def main():
                'clean_cases': sum(x['expected_count'] == 0 for x in results),
                'clean_cases_with_reported_issues': sum(x['expected_count'] == 0 and x['reported_count'] > 0 for x in results),
                'reported_issues': sum(x['reported_count'] for x in results),
+               'topology': args.topology, 'evaluation_budget': budget_config,
+               'fully_assessed_cases': sum(fully_assessed(x) for x in results),
+               'budget_exhausted_cases': sum(bool((x.get('report') or {}).get('appendix', {}).get('budget', {})
+                                                   .get('exhausted')) for x in results),
                'independent_human_validation': False,
                'limitations': ['category-level diagnostic matching', 'authored seed set, not blind independent gold',
                                'mock runs verify plumbing only']}
-    (directory / 'summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    (directory / 'summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2) + '\n',
+                                          encoding='utf-8', newline='\n')
     print(json.dumps(summary, ensure_ascii=False), flush=True)
     return 0 if summary['reports'] == len(results) else 1
 

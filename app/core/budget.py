@@ -1,13 +1,23 @@
 """Reserve conservatively before each paid attempt; uncertain calls keep their reservation."""
 from __future__ import annotations
 
+import asyncio
 import math
 from contextvars import ContextVar
 
+from app.core.errors import ApiError, ErrorCode
 from app.llm.base import AdapterError
 from app.storage.models import new_id
 
 active_budget: ContextVar[ModelBudget | None] = ContextVar("active_budget", default=None)
+
+
+def check_admission_costs(daily_cost, batch_cost, limits):
+    """Reject already exhausted scopes; call reservations still enforce actual admission."""
+    if daily_cost >= limits["daily_cost"] or batch_cost >= limits["batch_cost"]:
+        scope = "daily" if daily_cost >= limits["daily_cost"] else "batch"
+        raise ApiError(ErrorCode.BUDGET_EXCEEDED, "预算已用尽，未创建新的评审任务",
+                       details={"scope": scope})
 
 
 class ModelBudget:
@@ -22,6 +32,8 @@ class ModelBudget:
                        "batch_cost": min(settings.batch_budget_cost, frozen.get("batch_cost", settings.batch_budget_cost)),
                        "daily_cost": min(settings.daily_budget_cost, frozen.get("daily_cost", settings.daily_budget_cost))}
         self.exhausted = False
+        self._condition = asyncio.Condition()
+        self._inflight: set[str] = set()
 
     async def reserve(self, request, config, pricing):
         prices = pricing.get(config.model_id)
@@ -37,12 +49,23 @@ class ModelBudget:
         reservation = {"id": new_id(), "model": config.model_id,
                        "tokens_reserved": input_bound + output_bound,
                        "cost_reserved": (input_bound * rates[0] + output_bound * rates[1]) / 1000}
-        accepted = await self.storage.reserve_model_budget(self.job.id, self.job.fencing_token,
-                                                           reservation, self.limits)
-        if not accepted:
-            self.exhausted = True
-            raise AdapterError("BUDGET_EXCEEDED", "剩余预算不足以覆盖本次调用，未发起供应商请求", retryable=False)
+        async with self._condition:
+            while not await self.storage.reserve_model_budget(self.job.id, self.job.fencing_token,
+                                                               reservation, self.limits):
+                # A concurrent call may settle below its conservative reservation.
+                # Wait only for calls owned by this live task; unknown durable charges
+                # are never released or assumed to be free.
+                if not self._inflight:
+                    self.exhausted = True
+                    raise AdapterError("BUDGET_EXCEEDED", "剩余预算不足以覆盖本次调用，未发起供应商请求", retryable=False)
+                await self._condition.wait()
+            self._inflight.add(reservation["id"])
         return reservation["id"], rates
+
+    async def finish(self, reservation):
+        async with self._condition:
+            self._inflight.discard(reservation[0])
+            self._condition.notify_all()
 
     async def settle(self, reservation, response):
         ident, rates = reservation

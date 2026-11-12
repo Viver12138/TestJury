@@ -50,3 +50,6 @@ def test_identical_grounded_corrections_merge_even_with_different_explanations()
     for different in ({"kb_refs": ["different-rule"]}, {"evidence_quote": "another expectation"},
                       {"kb_grounded": False}):
         assert len(fuse("r", {}, [opinions[0], ReviewOpinion("jury_b", "", [{**formula, **different}])])) == 2
+
+    echoed = {**formula, "suggestion": "检查 payable=72; total=72; discount=0。请求 payable=1 应被忽略。"}
+    assert len(fuse("r", {}, [opinions[0], ReviewOpinion("jury_b", "", [echoed])])) == 1

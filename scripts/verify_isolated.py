@@ -4,7 +4,6 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-import subprocess
 import sys
 import uuid
 from pathlib import Path
@@ -31,8 +30,9 @@ async def main():
             '--junitxml=' + str(directory / 'tests.xml'), cwd=ROOT, env=env,
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT)
         output, _ = await process.communicate()
-        text = output.decode('utf-8', errors='replace')
-        (directory / 'tests.txt').write_text(text, encoding='utf-8')
+        text = output.decode('utf-8', errors='replace').replace('\r\n', '\n').replace('\r', '\n')
+        text = '\n'.join(line.rstrip() for line in text.splitlines()).rstrip() + '\n'
+        (directory / 'tests.txt').write_text(text, encoding='utf-8', newline='\n')
         print(text, flush=True)
         return process.returncode
     finally:
@@ -40,7 +40,7 @@ async def main():
         await connection.close()
         (directory / 'isolation.json').write_text(json.dumps({
             'temporary_database': name, 'temporary_database_removed': True,
-            'application_database_modified': False}, indent=2) + '\n', encoding='utf-8')
+            'application_database_modified': False}, indent=2) + '\n', encoding='utf-8', newline='\n')
 
 
 if __name__ == '__main__':

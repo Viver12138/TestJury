@@ -271,10 +271,14 @@ class ChatReviewModel:
                 sink.append(entry)
             budget = active_budget.get()
             reservation = await budget.reserve(request, self.registry.role(role), self.registry.pricing) if budget else None
-            response = await adapter.complete(request)
-            if budget is not None:
-                await budget.settle(reservation, response)
-            return response
+            try:
+                response = await adapter.complete(request)
+                if budget is not None:
+                    await budget.settle(reservation, response)
+                return response
+            finally:
+                if budget is not None:
+                    await budget.finish(reservation)
 
         def on_attempt(number: int, error: AdapterError | None, delay: float) -> None:
             started = attempt_started.get(number, loop.time())

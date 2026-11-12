@@ -124,6 +124,37 @@ async def test_explicit_endpoint_keeps_matching_contract_in_small_context():
     assert not _matches_endpoint(("GET", "/api/orders/{order_id}"), ("POST", "/api/orders/10"))
 
 
+async def test_endpoint_behavior_survives_tight_context_without_duplicate_contracts():
+    data = candidate()
+    specifications = [
+        ("api-preview", "API-PREVIEW", "INTERFACE", "Method", "POST /api/orders/preview"),
+        ("data-preview", "DATA-ORDER", "INTERFACE", "Examples",
+         "POST /api/orders/preview; POST /api/orders; GET /api/orders"),
+        ("preview-behavior", "REQ-ORDER", "REQUIREMENT", "POST /api/orders/preview",
+         "Preview does not create orders, reserve coupons or deduct stock."),
+        ("wrong-method", "REQ-WRONG", "REQUIREMENT", "DELETE /api/orders/preview", "Delete orders."),
+    ]
+    for chunk_id, doc_id, kind, heading, text in specifications:
+        chunk = copy.deepcopy(data["chunks"][0])
+        chunk.update(chunk_id=chunk_id, doc_id=doc_id, knowledge_type=kind, heading_path=heading,
+                     text=text, content_hash=hashlib.sha256(text.encode()).hexdigest())
+        data["chunks"].append(chunk)
+    service = KnowledgeService(MemoryKnowledgeStore())
+    release = await index_candidate(data)
+    await service.store.put(release)
+    args = dict(project="minishop", module="order", product_version="1.0.0",
+                query="POST /api/orders/preview preview orders coupons", top_k=4)
+    pack = await service.retrieve(release["version"], **args)
+    assert [c["chunk_id"] for c in pack["evidence"][:2]] == ["api-preview", "preview-behavior"]
+    priority = [c for c in pack["evidence"] if "interface_contract" in c["retrieval_channels"]]
+    assert [c["chunk_id"] for c in priority] == ["api-preview"]
+    assert all("endpoint_behavior" not in c["retrieval_channels"]
+               for c in pack["evidence"] if c["chunk_id"] == "wrong-method")
+    limited = await service.retrieve(release["version"], **args, char_cap=30)
+    assert sum(len(c["text"]) for c in limited["evidence"]) <= 30
+    assert all(c["chunk_id"] != "preview-behavior" for c in limited["evidence"])
+
+
 @pytest.mark.parametrize("patch, message", [
     ({"retriever": "retired-retriever"}, "retrieval implementation unavailable"),
     ({"profile": "unavailable-vector-profile"}, "embedding profile unavailable"),

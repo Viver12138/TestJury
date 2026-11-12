@@ -130,3 +130,81 @@ async def test_report_finalization_rolls_back_when_review_task_insert_fails(migr
         assert await app.state.storage.list_review_tasks() == []
     finally:
         await app.state.storage.close()
+
+
+async def exercise_waiting_reservations(settings, outcome):
+    app = create_app(settings, run_worker=False)
+    actor = Principal("budget-wait-test", ActorType.SERVICE, frozenset({"reviewer"}), None)
+    await app.state.review_service.submit(review_payload(), actor)
+    job = await app.state.worker.claim_next()
+    budget = ModelBudget(app.state.storage, job, settings)
+    model, adapter = _model('{}')
+    complete = adapter.complete
+    release, started, denied = asyncio.Event(), asyncio.Event(), asyncio.Event()
+    requests = []
+    reserve = app.state.storage.reserve_model_budget
+
+    async def observe_reservation(*args, **kwargs):
+        accepted = await reserve(*args, **kwargs)
+        if not accepted:
+            denied.set()
+        return accepted
+
+    app.state.storage.reserve_model_budget = observe_reservation
+
+    async def delayed(request):
+        requests.append(request)
+        if len(requests) == 1:
+            started.set()
+            await release.wait()
+            if outcome == "failure":
+                raise AdapterError("PROVIDER_REJECTED", "unknown charge", retryable=False)
+        return await complete(request)
+
+    adapter.complete = delayed
+    token = active_budget.set(budget)
+    tasks = []
+    try:
+        request = ChatRequest(messages=[ChatMessage("user", "x")], max_tokens=100)
+        tasks.append(asyncio.create_task(model._complete("chief_blind", request)))
+        await asyncio.wait_for(started.wait(), 5)
+        tasks.append(asyncio.create_task(model._complete("jury_a", request)))
+        await asyncio.wait_for(denied.wait(), 5)
+        assert len(requests) == 1
+        assert not budget.exhausted
+        if outcome == "cancelled":
+            tasks[0].cancel()
+        else:
+            release.set()
+        results = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), 5)
+        summary = await budget.summary()
+        if outcome == "success":
+            assert not any(isinstance(result, BaseException) for result in results)
+            assert len(requests) == 2 and not budget.exhausted
+            assert summary["uncertain_calls"] == 0 and summary["accounted_tokens"] == 300
+        else:
+            assert isinstance(results[0], asyncio.CancelledError if outcome == "cancelled" else AdapterError)
+            assert isinstance(results[1], AdapterError) and results[1].code == "BUDGET_EXCEEDED"
+            assert len(requests) == 1 and budget.exhausted
+            assert summary["uncertain_calls"] == 1
+        assert not budget._inflight
+    finally:
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        active_budget.reset(token)
+        close = getattr(app.state.storage, "close", None)
+        if close:
+            await close()
+
+
+@pytest.mark.parametrize("outcome", ["success", "failure", "cancelled"])
+async def test_memory_budget_waits_for_inflight_settlement_without_releasing_unknown_charge(outcome):
+    await exercise_waiting_reservations(make_settings(review_budget_tokens=700), outcome)
+
+
+@pytest.mark.postgres
+@pytest.mark.parametrize("outcome", ["success", "failure", "cancelled"])
+async def test_postgres_budget_waits_for_inflight_settlement_without_releasing_unknown_charge(migrated_database, outcome):
+    await exercise_waiting_reservations(make_settings(review_budget_tokens=700, storage_backend="postgres",
+                                                    database_url=migrated_database), outcome)

@@ -278,7 +278,20 @@ class PostgresStorage(_PooledStorage):
 
     # ── 提交与任务 ──
 
-    async def submit_review(self, job: ReviewJob, *, force: bool) -> SubmitOutcome:
+    async def _check_budget_admission(self, conn, limits, batch_id=None):
+        from app.core.budget import check_admission_costs
+
+        await conn.execute("SELECT pg_advisory_xact_lock(4823701)")
+        totals = await conn.fetchrow("""SELECT
+            COALESCE(SUM(COALESCE(cost_actual,cost_reserved))
+                FILTER(WHERE budget_day=(now() AT TIME ZONE 'UTC')::date),0) AS daily,
+            COALESCE(SUM(COALESCE(cost_actual,cost_reserved)) FILTER(WHERE batch_id=$1::uuid),0) AS batch
+            FROM model_budget_reservations
+            WHERE budget_day=(now() AT TIME ZONE 'UTC')::date OR batch_id=$1::uuid""",
+            UUID(batch_id) if batch_id else None)
+        check_admission_costs(totals["daily"], totals["batch"], limits)
+
+    async def submit_review(self, job: ReviewJob, *, force: bool, budget_limits: dict | None = None) -> SubmitOutcome:
         pool = await self._get_pool()
         async with pool.acquire() as conn:
             async with conn.transaction():
@@ -290,6 +303,9 @@ class PostgresStorage(_PooledStorage):
                     "AND superseded_by IS NULL ORDER BY generation DESC LIMIT 1",
                     job.idempotency_key,
                 )
+                if budget_limits and (active is None or (force and is_terminal_review_status(active["status"])
+                                                        and active["input_hash"] == job.input_hash)):
+                    await self._check_budget_admission(conn, budget_limits, job.batch_id)
                 if active is not None:
                     existing = _row_to_job(active)
                     if existing.input_hash != job.input_hash:
@@ -1361,9 +1377,18 @@ class PostgresStorage(_PooledStorage):
 
     # ── 批次 ──
 
-    async def create_batch(self, batch: BatchRecord) -> BatchRecord:
+    async def create_batch(self, batch: BatchRecord, *, budget_limits: dict | None = None,
+                           force: bool = False) -> BatchRecord:
         pool = await self._get_pool()
-        async with pool.acquire() as conn:
+        async with pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT pg_advisory_xact_lock(hashtext($1))", "batch:" + str(batch.idempotency_key))
+            existing = await conn.fetchrow("SELECT * FROM batches WHERE idempotency_key=$1", batch.idempotency_key)
+            if existing is not None:
+                if force and budget_limits:
+                    await self._check_budget_admission(conn, budget_limits, str(existing["id"]))
+                return self._row_to_batch(existing)
+            if budget_limits:
+                await self._check_budget_admission(conn, budget_limits, batch.id)
             row = await conn.fetchrow(
                 """
                 INSERT INTO batches

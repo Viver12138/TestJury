@@ -13,6 +13,7 @@ import copy
 from datetime import timedelta
 from typing import Any
 
+from app.core.budget import check_admission_costs
 from app.core.errors import ApiError, ErrorCode
 from app.core.state_machine import FencingMismatch
 from app.storage.models import (
@@ -78,8 +79,16 @@ class MemoryStorage:
 
     # ── 提交与任务 ──
 
-    async def submit_review(self, job: ReviewJob, *, force: bool) -> SubmitOutcome:
-        async with self._lock(job.idempotency_key):
+    def _check_budget_admission(self, limits, batch_id=None):
+        rows = list(self._budget_reservations.values())
+        def cost(row):
+            return row["cost_actual"] if row["status"] == "settled" else row["cost_reserved"]
+        daily = sum(cost(row) for row in rows if row["budget_day"] == now().date().isoformat())
+        batch = sum(cost(row) for row in rows if batch_id and row["batch_id"] == batch_id)
+        check_admission_costs(daily, batch, limits)
+
+    async def submit_review(self, job: ReviewJob, *, force: bool, budget_limits: dict | None = None) -> SubmitOutcome:
+        async with self._lock(job.idempotency_key), self._global_lock:
             actives = [
                 candidate
                 for candidate in self._jobs.values()
@@ -87,6 +96,8 @@ class MemoryStorage:
                 and candidate.superseded_by is None
             ]
             active = max(actives, key=lambda item: item.generation) if actives else None
+            if budget_limits and (active is None or (force and active.is_terminal and active.input_hash == job.input_hash)):
+                self._check_budget_admission(budget_limits, job.batch_id)
 
             if active is not None:
                 if active.input_hash != job.input_hash:
@@ -477,12 +488,17 @@ class MemoryStorage:
 
     # ── 批次 ──
 
-    async def create_batch(self, batch: BatchRecord) -> BatchRecord:
+    async def create_batch(self, batch: BatchRecord, *, budget_limits: dict | None = None,
+                           force: bool = False) -> BatchRecord:
         async with self._global_lock:
             if batch.idempotency_key:
                 for existing in self._batches.values():
                     if existing.idempotency_key == batch.idempotency_key:
+                        if force and budget_limits:
+                            self._check_budget_admission(budget_limits, existing.id)
                         return existing
+            if budget_limits:
+                self._check_budget_admission(budget_limits, batch.id)
             self._batches[batch.id] = batch
             return batch
 

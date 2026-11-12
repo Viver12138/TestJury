@@ -117,6 +117,17 @@ def fuse(
                 containment = len(left & right) / max(1, min(len(left), len(right)))
                 corrections = _correction_assertions(str(issue.get("suggestion") or ""))
                 other_corrections = _correction_assertions(str(other.get("suggestion") or ""))
+                original = _correction_assertions(str(issue.get("evidence_quote") or ""))
+                other_original = _correction_assertions(str(other.get("evidence_quote") or ""))
+                # Suggestions may echo the old invalid value ("...is ignored") and
+                # add unrelated observations. Compare changed assertions about the
+                # quoted fields, without treating an echoed old value as a new fix.
+                changed = {(field, value) for field, value in corrections - original
+                           if field in {f for f, _ in original}}
+                other_changed = {(field, value) for field, value in other_corrections - other_original
+                                 if field in {f for f, _ in other_original}}
+                if changed and other_changed:
+                    corrections, other_corrections = changed, other_changed
                 same_correction = bool(corrections & other_corrections)
                 identical_corrections = bool(corrections) and corrections == other_corrections
                 conflicting_corrections = any(field == other_field and value != other_value

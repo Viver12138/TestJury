@@ -20,7 +20,7 @@ from typing import Any
 from app.knowledge.contract import KnowledgeError
 from app.llm.base import AdapterError, EmbeddingAdapter, RerankAdapter
 
-RETRIEVER_VERSION = "hybrid-bm25-rrf-3"
+RETRIEVER_VERSION = "hybrid-bm25-rrf-4"
 
 
 def _endpoints(text: str) -> list[tuple[str, str]]:
@@ -263,16 +263,32 @@ class KnowledgeService:
         # Preserve explicit API contracts alongside semantic rules, even when the
         # general ranking prefers long business-rule chunks. A method mismatch
         # must never introduce an unrelated create/update contract.
-        requests = _endpoints(query)
-        contracts = [i for i, chunk in enumerate(chunks) if chunk["knowledge_type"] == "INTERFACE"
-                     and any(_matches_endpoint(template, request)
-                             for template in _endpoints(chunk["text"]) for request in requests)]
-        contracts.sort(key=lambda i: (len(chunks[i]["text"]), chunks[i]["chunk_id"]))
-        contracts = contracts[:min(2, max(0, top_k - 1))]
-        for i in contracts:
-            channels.setdefault(i, []).append("interface_contract")
-            scores.setdefault(i, 0.0)
-        ordered = contracts + [i for i in ordered if i not in contracts]
+        requests = set(_endpoints(query))
+        endpoints = {i: set(_endpoints(c["heading_path"] + "\n" + c["text"]))
+                     for i, c in enumerate(chunks)}
+        coverage = {i: {r for r in requests if any(_matches_endpoint(t, r) for t in paths)}
+                    for i, paths in endpoints.items()}
+        priority: list[int] = []
+        for kind, channel in (("INTERFACE", "interface_contract"), ("REQUIREMENT", "endpoint_behavior")):
+            covered: set[tuple[str, str]] = set()
+            candidates = [i for i, c in enumerate(chunks) if c["knowledge_type"] == kind and coverage[i]]
+            # Prefer a focused contract over example data mentioning several APIs.
+            # Requirements carry behavior which a short method/path chunk omits.
+            candidates.sort(key=lambda i: (len(endpoints[i]) - len(coverage[i]),
+                                            -scores.get(i, 0) if kind == "REQUIREMENT" else 0,
+                                            len(chunks[i]["text"]), chunks[i]["chunk_id"]))
+            for i in candidates:
+                if len(priority) >= max(0, top_k - 1):
+                    break
+                if not coverage[i] - covered or any(chunks[j]["doc_id"] == chunks[i]["doc_id"] for j in priority):
+                    continue
+                if sum(len(chunks[j]["text"]) for j in priority) + len(chunks[i]["text"]) > char_cap:
+                    continue
+                priority.append(i)
+                covered.update(coverage[i])
+                channels.setdefault(i, []).append(channel)
+                scores.setdefault(i, 0.0)
+        ordered = priority + [i for i in ordered if i not in priority]
         evidence = []
         used = 0
         per_document: Counter = Counter()

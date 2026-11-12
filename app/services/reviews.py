@@ -53,6 +53,11 @@ class ReviewService:
         self.versions = versions
         self.knowledge = knowledge
 
+    def admission_limits(self):
+        if self.settings.review_model_mode != "live":
+            return None
+        return {"daily_cost": self.settings.daily_budget_cost, "batch_cost": self.settings.batch_budget_cost}
+
     async def select_versions(self, case: dict) -> tuple[Versions, dict | None]:
         versions, release = self.versions, None
         if self.knowledge is not None and case.get("project_id"):
@@ -146,7 +151,10 @@ class ReviewService:
         if await self.storage.queue_depth() >= self.settings.max_queue_depth:
             raise ApiError(ErrorCode.QUEUE_FULL, "队列已满，请稍后重试", headers={"Retry-After": "30"})
 
-        outcome = await self.storage.submit_review(job, force=normalized.options.get("force", False))
+        # Batches are admitted once before creating their children. A later quota
+        # change is enforced again at each provider call, without partial enqueue.
+        outcome = await self.storage.submit_review(job, force=normalized.options.get("force", False),
+                                                  budget_limits=self.admission_limits() if batch_id is None else None)
         if outcome.kind == "conflict":
             raise ApiError(
                 ErrorCode.IDEMPOTENCY_KEY_CONFLICT,

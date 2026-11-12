@@ -1,0 +1,14 @@
+{
+  "status": "stopped",
+  "reason": "Superseded after endpoint behavior retrieval gap was identified",
+  "requested_by_user": false,
+  "recorded_at": "2026-11-12T09:23:46.255807+00:00",
+  "completed_reports": 4,
+  "interrupted_call_cost": "unknown; not assumed free",
+  "reports": {
+    "G-001-negative.json": "3adfeecf2ab18670561268e0625e2eb24d4799156d55b449a8f4b1bf6e097b5a",
+    "G-001-positive.json": "ce2e1df65b5e753cf93a3102836df45596089aa83b41eaded7b8bb26dc0344af",
+    "G-002-negative.json": "29b7e8f7564729d51551ce04e6ebe74b34130b258d49dac79038eaa1bcf15551",
+    "G-002-positive.json": "b825e8c178eaf2b7b936b8ddbcc97427d704ae016a0c8d213e2b887ce4728efb"
+  }
+}

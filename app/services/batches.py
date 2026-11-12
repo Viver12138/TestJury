@@ -82,7 +82,7 @@ class BatchService:
             input_hash="|".join(hashes),
             idempotency_key=batch_key,
         )
-        created = await self.storage.create_batch(batch)
+        created = await self.storage.create_batch(batch, budget_limits=self.reviews.admission_limits(), force=force)
         existing_batch = created.id != batch.id
         if existing_batch:
             children = await self.storage.list_jobs(batch_id=created.id, limit=500)
