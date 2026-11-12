@@ -1,0 +1,519 @@
+{
+  "source_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+  "archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+  "dataset_version": "minishop-gold-4",
+  "dataset_files": {
+    "retrieval.jsonl": "bfef25226dfdd7644800fe1c0754fb30f451a2e1de124971e6154319782ee95f",
+    "review.jsonl": "69999d177f72cf98655e65feaa84e5e4fd607f4ec03f6345761c5ab65aaf0cd0"
+  },
+  "cases": [
+    {
+      "family": "amount",
+      "passed": true,
+      "observed": [
+        {
+          "method": "POST",
+          "url": "/api/orders",
+          "status": 201,
+          "body": {
+            "code": "OK",
+            "message": "下单成功",
+            "data": {
+              "id": 1,
+              "order_no": "20261112174516578141",
+              "user_id": 1,
+              "status": "PENDING_PAYMENT",
+              "status_cn": "待支付",
+              "total_amount": 200.0,
+              "discount_amount": 0.0,
+              "pay_amount": 200.0,
+              "receiver_name": "A",
+              "phone": "fixture",
+              "address_snapshot": {
+                "receiver_name": "A",
+                "phone": "fixture",
+                "province": "",
+                "city": "",
+                "district": "",
+                "detail_address": ""
+              },
+              "user_coupon_id": 0,
+              "created_at": "2026-11-12T09:45:16.824408",
+              "paid_at": null,
+              "shipped_at": null,
+              "completed_at": null,
+              "cancelled_at": null,
+              "items": [
+                {
+                  "id": 1,
+                  "order_id": 1,
+                  "product_id": 1,
+                  "sku_id": 1,
+                  "product_name": "Fixture product",
+                  "spec_values": {},
+                  "price": 100.0,
+                  "quantity": 2,
+                  "subtotal": 200.0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "family": "address",
+      "passed": true,
+      "observed": [
+        {
+          "method": "POST",
+          "url": "/api/orders",
+          "status": 400,
+          "body": {
+            "code": "HTTP_ERROR",
+            "message": "收货地址不存在",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "family": "stock",
+      "passed": true,
+      "observed": [
+        {
+          "method": "POST",
+          "url": "/api/orders",
+          "status": 409,
+          "body": {
+            "code": "HTTP_ERROR",
+            "message": "商品「Fixture product」库存不足",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "family": "coupon_owner",
+      "passed": true,
+      "observed": [
+        {
+          "method": "POST",
+          "url": "/api/orders",
+          "status": 400,
+          "body": {
+            "code": "HTTP_ERROR",
+            "message": "优惠券不存在",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "family": "threshold",
+      "passed": true,
+      "observed": [
+        {
+          "method": "POST",
+          "url": "/api/orders/preview",
+          "status": 200,
+          "body": {
+            "code": "OK",
+            "message": "success",
+            "data": {
+              "items": [
+                {
+                  "sku_id": 1,
+                  "product_id": 1,
+                  "name": "Fixture product",
+                  "spec_values": {},
+                  "price": 100.0,
+                  "quantity": 1,
+                  "subtotal": 100.0,
+                  "stock": 10
+                }
+              ],
+              "total_amount": 100.0,
+              "discount_amount": 10.0,
+              "pay_amount": 90.0,
+              "address": {
+                "id": 1,
+                "receiver_name": "A",
+                "phone": "fixture",
+                "full_address": ""
+              },
+              "coupon": {
+                "id": 7,
+                "name": "Fixture coupon",
+                "threshold": 100.0,
+                "discount_amount": 10.0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "family": "create_effect",
+      "passed": true,
+      "observed": [
+        {
+          "method": "POST",
+          "url": "/api/orders",
+          "status": 201,
+          "body": {
+            "code": "OK",
+            "message": "下单成功",
+            "data": {
+              "id": 1,
+              "order_no": "20261112174519938440",
+              "user_id": 1,
+              "status": "PENDING_PAYMENT",
+              "status_cn": "待支付",
+              "total_amount": 100.0,
+              "discount_amount": 0.0,
+              "pay_amount": 100.0,
+              "receiver_name": "A",
+              "phone": "fixture",
+              "address_snapshot": {
+                "receiver_name": "A",
+                "phone": "fixture",
+                "province": "",
+                "city": "",
+                "district": "",
+                "detail_address": ""
+              },
+              "user_coupon_id": 0,
+              "created_at": "2026-11-12T09:45:19.218730",
+              "paid_at": null,
+              "shipped_at": null,
+              "completed_at": null,
+              "cancelled_at": null,
+              "items": [
+                {
+                  "id": 1,
+                  "order_id": 1,
+                  "product_id": 1,
+                  "sku_id": 1,
+                  "product_name": "Fixture product",
+                  "spec_values": {},
+                  "price": 100.0,
+                  "quantity": 1,
+                  "subtotal": 100.0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "database_assertion": "cart quantity unchanged",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "family": "cancel",
+      "passed": true,
+      "observed": [
+        {
+          "method": "POST",
+          "url": "/api/orders/10/cancel",
+          "status": 200,
+          "body": {
+            "code": "OK",
+            "message": "订单已取消",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "family": "payment_retry",
+      "passed": true,
+      "observed": [
+        {
+          "method": "POST",
+          "url": "/api/payments/20/fail",
+          "status": 200,
+          "body": {
+            "code": "OK",
+            "message": "支付失败",
+            "data": {
+              "order_id": 10,
+              "order_status": "PENDING_PAYMENT"
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "url": "/api/payments",
+          "status": 201,
+          "body": {
+            "code": "OK",
+            "message": "success",
+            "data": {
+              "id": 21,
+              "order_id": 10,
+              "payment_no": "PAY202611121745203830",
+              "amount": 200.0,
+              "method": "WECHAT",
+              "status": "PENDING"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "family": "deduct",
+      "passed": true,
+      "observed": [
+        {
+          "method": "POST",
+          "url": "/api/payments/20/success",
+          "status": 200,
+          "body": {
+            "code": "OK",
+            "message": "支付成功",
+            "data": {
+              "order_id": 10,
+              "order_status": "PAID"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "family": "ship",
+      "passed": true,
+      "observed": [
+        {
+          "method": "POST",
+          "url": "/api/admin/orders/10/ship",
+          "status": 409,
+          "body": {
+            "code": "HTTP_ERROR",
+            "message": "只有已支付/待发货的订单可以发货",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "family": "ownership",
+      "passed": true,
+      "observed": [
+        {
+          "method": "GET",
+          "url": "/api/orders/10",
+          "status": 403,
+          "body": {
+            "code": "HTTP_ERROR",
+            "message": "无权查看该订单",
+            "data": null
+          }
+        },
+        {
+          "method": "POST",
+          "url": "/api/orders/10/cancel",
+          "status": 404,
+          "body": {
+            "code": "HTTP_ERROR",
+            "message": "订单不存在",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "family": "unreachable",
+      "passed": true,
+      "observed": [
+        {
+          "method": "POST",
+          "url": "/api/payments/20/success",
+          "status": 200,
+          "body": {
+            "code": "OK",
+            "message": "支付成功",
+            "data": {
+              "order_id": 10,
+              "order_status": "PAID"
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/api/orders/10",
+          "status": 200,
+          "body": {
+            "code": "OK",
+            "message": "success",
+            "data": {
+              "id": 10,
+              "order_no": "fixture-10",
+              "user_id": 1,
+              "status": "PAID",
+              "status_cn": "已支付",
+              "total_amount": 200.0,
+              "discount_amount": 0.0,
+              "pay_amount": 200.0,
+              "receiver_name": "",
+              "phone": "",
+              "address_snapshot": {},
+              "user_coupon_id": 0,
+              "created_at": "2026-11-12T09:45:22.510277",
+              "paid_at": "2026-11-12T09:45:22.534420",
+              "shipped_at": null,
+              "completed_at": null,
+              "cancelled_at": null,
+              "items": [
+                {
+                  "id": 1,
+                  "order_id": 10,
+                  "product_id": 1,
+                  "sku_id": 1,
+                  "product_name": "",
+                  "spec_values": {},
+                  "price": 100.0,
+                  "quantity": 2,
+                  "subtotal": 200.0
+                }
+              ],
+              "payment": {
+                "id": 20,
+                "payment_no": "fixture-20",
+                "method": "WECHAT",
+                "amount": 200.0,
+                "method_cn": "微信支付",
+                "status": "SUCCESS",
+                "status_cn": "支付成功",
+                "paid_at": "2026-11-12T09:45:22.534420"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "family": "refund",
+      "passed": true,
+      "observed": [
+        {
+          "method": "POST",
+          "url": "/api/admin/refunds/30/reject",
+          "status": 200,
+          "body": {
+            "code": "OK",
+            "message": "已拒绝退款",
+            "data": {
+              "id": 30,
+              "order_id": 10,
+              "order_no": null,
+              "user_id": 1,
+              "amount": 200.0,
+              "reason": "",
+              "description": "",
+              "status": "REJECTED",
+              "status_cn": "已拒绝",
+              "reject_reason": "不满足条件",
+              "created_at": "2026-11-12T09:45:23.004706",
+              "processed_at": "2026-11-12T09:45:23.024036"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "family": "payment_detail",
+      "passed": true,
+      "observed": [
+        {
+          "method": "GET",
+          "url": "/api/orders/10",
+          "status": 200,
+          "body": {
+            "code": "OK",
+            "message": "success",
+            "data": {
+              "id": 10,
+              "order_no": "fixture-10",
+              "user_id": 1,
+              "status": "PENDING_PAYMENT",
+              "status_cn": "待支付",
+              "total_amount": 200.0,
+              "discount_amount": 0.0,
+              "pay_amount": 200.0,
+              "receiver_name": "",
+              "phone": "",
+              "address_snapshot": {},
+              "user_coupon_id": 0,
+              "created_at": "2026-11-12T09:45:23.475878",
+              "paid_at": null,
+              "shipped_at": null,
+              "completed_at": null,
+              "cancelled_at": null,
+              "items": [
+                {
+                  "id": 1,
+                  "order_id": 10,
+                  "product_id": 1,
+                  "sku_id": 1,
+                  "product_name": "",
+                  "spec_values": {},
+                  "price": 100.0,
+                  "quantity": 2,
+                  "subtotal": 200.0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "family": "preview",
+      "passed": true,
+      "observed": [
+        {
+          "method": "POST",
+          "url": "/api/orders/preview",
+          "status": 200,
+          "body": {
+            "code": "OK",
+            "message": "success",
+            "data": {
+              "items": [
+                {
+                  "sku_id": 1,
+                  "product_id": 1,
+                  "name": "Fixture product",
+                  "spec_values": {},
+                  "price": 100.0,
+                  "quantity": 1,
+                  "subtotal": 100.0,
+                  "stock": 10
+                }
+              ],
+              "total_amount": 100.0,
+              "discount_amount": 10.0,
+              "pay_amount": 90.0,
+              "address": null,
+              "coupon": {
+                "id": 7,
+                "name": "Fixture coupon",
+                "threshold": 100.0,
+                "discount_amount": 10.0
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "passed": true,
+  "limitations": [
+    "fixture authentication, not JWT testing",
+    "business-fact probes, not independent review-quality labels"
+  ],
+  "application_database_modified": false
+}

@@ -1,0 +1,19 @@
+{
+  "scope": "local Mock queue benchmark, not provider throughput or production capacity",
+  "temporary_database": "testjury_benchmark_ce59a772cf04",
+  "application_database_modified": false,
+  "jobs": 50,
+  "submit_concurrency": 8,
+  "workers": 4,
+  "passed": true,
+  "statuses": {
+    "done": 50
+  },
+  "unique_jobs": 50,
+  "submit_seconds": 0.189,
+  "total_seconds": 4.024,
+  "submit_p95_ms": 93.36,
+  "completed_jobs_per_second": 12.42,
+  "all_jobs_single_attempt": true,
+  "temporary_database_removed": true
+}

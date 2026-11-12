@@ -27,6 +27,7 @@ async def main():
     parser.add_argument('--topology', choices=['single', 'dual', 'multi'], default='dual')
     parser.add_argument('--release', type=Path)
     parser.add_argument('--dataset', type=Path, default=ROOT / 'datasets/minishop/v3')
+    parser.add_argument('--case-id', action='append', help='Evaluate only named cases; repeat to select several')
     parser.add_argument('--budget-tokens', type=int, help='Evaluation token reservation limit; cost limit is unchanged')
     args = parser.parse_args()
     if args.release is None:
@@ -59,7 +60,11 @@ async def main():
                                       reason='isolated evaluation only', expected=None,
                                       acceptance=proof, allow_delegated=True)
     manifest, data = load_dataset(args.dataset)
+    if args.case_id and set(args.case_id) - {x['id'] for x in data['review.jsonl']}:
+        parser.error('unknown case id')
     selected = [x for x in data['review.jsonl'] if args.split == 'all' or x['split'] == args.split][:args.limit]
+    if args.case_id:
+        selected = [x for x in data['review.jsonl'] if x['id'] in args.case_id]
     directory = ROOT / 'evidence/M2' / ('review_eval_' + args.mode) / manifest['version'] / (args.topology + '-' + code_fingerprint[:12])
     directory.mkdir(parents=True, exist_ok=True)
     principal = Principal('gold-evaluator', ActorType.SERVICE, frozenset({'reviewer'}), 'gold-evaluator')

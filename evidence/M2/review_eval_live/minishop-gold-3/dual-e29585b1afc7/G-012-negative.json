@@ -1,0 +1,1383 @@
+{
+  "id": "G-012-negative",
+  "mode": "live",
+  "split": "validation",
+  "build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+  "code_fingerprint": "e29585b1afc75845a0a489386e242f637df97d23167cc5c7fc799a026bf18e39",
+  "evaluation_budget": {
+    "review_tokens": 60000,
+    "review_cost": 2.0,
+    "batch_cost": 60.0,
+    "daily_cost": 500.0
+  },
+  "dataset_version": "minishop-gold-3",
+  "dataset_files": {
+    "retrieval.jsonl": "bfef25226dfdd7644800fe1c0754fb30f451a2e1de124971e6154319782ee95f",
+    "review.jsonl": "e28ccaeb34632659948ac82bc2af40b9bb3e43ad1c9023ef3fbd20f33d745948"
+  },
+  "annotation_type": "delegated_ai",
+  "status": "completed_with_warnings",
+  "error": null,
+  "expected_count": 1,
+  "reported_count": 4,
+  "matched_count": 1,
+  "report": {
+    "review_id": "cd5eb9e6-547c-4d1a-bc2d-98dbb66dea3b",
+    "case_id": "G-012-negative",
+    "case_version": 3,
+    "module": "order",
+    "test_type": "functional",
+    "test_type_source": "request",
+    "generation": 1,
+    "parent_review_id": null,
+    "status": "completed_with_warnings",
+    "stage": "render",
+    "ai_verdict": "blocked",
+    "human_status": "pending",
+    "report_schema_version": "report-1.0",
+    "degraded": true,
+    "degraded_reasons": [
+      "budget_exceeded",
+      "model_missing"
+    ],
+    "participants": [
+      "chief_blind:qwen3.8-max",
+      "jury_a:deepseek-flash"
+    ],
+    "topology": "dual",
+    "review_participants": [
+      {
+        "participant_id": "p-01",
+        "role_id": "chief_blind",
+        "status": "active",
+        "model": "qwen3.8-max",
+        "actual_model": "qwen3.8-max"
+      },
+      {
+        "participant_id": "p-02",
+        "role_id": "jury_a",
+        "status": "active",
+        "model": "deepseek-flash",
+        "actual_model": "deepseek-flash"
+      },
+      {
+        "participant_id": "p-03",
+        "role_id": "jury_b",
+        "status": "absent",
+        "model": "kimi-k3.1-pro",
+        "actual_model": null
+      }
+    ],
+    "review_completeness": {
+      "blind": "2/2",
+      "vote": "1/2",
+      "arbitration": "failed",
+      "arbitration_required": true,
+      "stages_completed": [
+        "input_check",
+        "kb_retrieve",
+        "blind_review",
+        "fusion",
+        "vote",
+        "verdict",
+        "render"
+      ],
+      "stages_skipped": [
+        "preprocess"
+      ],
+      "stages_failed": [
+        "arbitration"
+      ],
+      "stages_pending": [],
+      "complete": false,
+      "full_participation": false
+    },
+    "input_quality": {
+      "hard_errors": [],
+      "soft_issues": []
+    },
+    "versions": {
+      "kb": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+      "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+      "kb_build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+      "rubric": "0.2.0",
+      "prompts": {
+        "preprocess": "p-m0-pre-01",
+        "chief_blind": "p-m0-chief-01",
+        "jury_a": "p-m0-jury-a-01",
+        "jury_b": "p-m0-jury-b-01",
+        "vote": "p-m0-vote-01",
+        "arbitration": "p-m0-arb-01"
+      },
+      "retrieval_config": "161fcb22",
+      "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+      "model_config": "7e35c71d",
+      "models": {
+        "chief_blind": "qwen3.8-max",
+        "jury_a": "deepseek-flash",
+        "jury_b": "kimi-k3.1-pro",
+        "vote": "qwen3.8-max",
+        "arbitration": "qwen3.8-max",
+        "preprocess": "deepseek-flash"
+      },
+      "price_config": "price-unverified-2026-11"
+    },
+    "summary": {
+      "total_issues": 4,
+      "blocker": 2,
+      "major": 0,
+      "suggestion": 2
+    },
+    "issues": [
+      {
+        "issue_no": 1,
+        "candidate_id": "3c01cc46-0d8e-4650-ab2f-86d93d699381",
+        "step_index": 1,
+        "dimension": "business",
+        "severity": "blocker",
+        "category": "规则冲突",
+        "evidence_quote": "支付成功和详情查询均HTTP 200；data.order_status和详情data.status均为PENDING_SHIPMENT",
+        "rationale": "第 1 步存在「规则冲突」问题：知识库明确当前实现中支付成功后订单由 PENDING_PAYMENT 转为 PAID；PENDING_SHIPMENT 未被赋值且未启用。用例预期为 PENDING_SHIPMENT，与当前实现规则直接冲突",
+        "suggestion": "将预期改为支付成功后订单状态为 PAID；如仅验证订单详情，可断言 GET /api/orders/10 的 data.status 为 PAID。",
+        "kb_grounded": true,
+        "kb_refs": [
+          "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3"
+        ],
+        "evidence_type": "business_rule",
+        "evidence_strength": "strong",
+        "evidence_status": "grounded",
+        "evidence_refs": [
+          {
+            "ref_id": "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3",
+            "verified": true
+          }
+        ],
+        "evidence_support_status": "supported",
+        "validation_status": "passed",
+        "proposed_by": [
+          "chief_blind"
+        ],
+        "votes": {
+          "chief_blind": {
+            "validity": "accept",
+            "severity": "blocker"
+          },
+          "jury_a": {
+            "validity": "accept",
+            "severity": "blocker"
+          }
+        },
+        "vote_summary": {
+          "support": 2,
+          "reject": 0,
+          "not_assessed": 0,
+          "uncertain": 0,
+          "support_ratio": 1.0,
+          "severity_distribution": {
+            "blocker": 2,
+            "major": 0,
+            "suggestion": 0
+          },
+          "severity_disputed": false,
+          "vote_completeness": "2/2"
+        },
+        "confidence": null,
+        "confidence_source": "uncalibrated",
+        "model_confidence": null,
+        "decision_status": null,
+        "status": "adopted",
+        "chief_decision": "need_human",
+        "chief_reason": "主审仲裁调用失败，保留分歧待复核",
+        "human_verdict": null
+      },
+      {
+        "issue_no": 2,
+        "candidate_id": "1be8fe67-ee2d-4b1e-839c-77077c50b12e",
+        "step_index": 1,
+        "dimension": "business",
+        "severity": "blocker",
+        "category": "规则冲突",
+        "evidence_quote": "支付成功和详情查询均HTTP 200；data.order_status和详情data.status均为PENDING_SHIPMENT",
+        "rationale": "第 1 步存在「规则冲突」问题：依据需求，支付成功时支付单置 SUCCESS、订单置 PAID 并记录 paid_at；PENDING_SHIPMENT 在数据字典中存在但从未被赋值、不纳入当前有效状态机，因此预期 PENDING_SHIPMENT 与权威规则冲突，执行必然失败。（依据充分）",
+        "suggestion": "将预期改为：支付成功返回 HTTP 200，订单状态为 PAID（并可选断言 paid_at 非空、支付单为 SUCCESS），同时删除对 PENDING_SHIPMENT 的期望。",
+        "kb_grounded": false,
+        "kb_refs": [
+          "c77506788741b03a0ae88e32c7f6cf2c5083b42a3d5302566e822eaf3806d185",
+          "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3"
+        ],
+        "evidence_type": "requirement",
+        "evidence_strength": "strong",
+        "evidence_status": "insufficient",
+        "evidence_refs": [
+          {
+            "ref_id": "c77506788741b03a0ae88e32c7f6cf2c5083b42a3d5302566e822eaf3806d185",
+            "verified": true
+          },
+          {
+            "ref_id": "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3",
+            "verified": true
+          }
+        ],
+        "evidence_support_status": "insufficient",
+        "validation_status": "needs_review",
+        "proposed_by": [
+          "jury_a"
+        ],
+        "votes": {
+          "chief_blind": {
+            "validity": "accept",
+            "severity": "blocker"
+          },
+          "jury_a": {
+            "validity": "not_assessed",
+            "severity": null
+          }
+        },
+        "vote_summary": {
+          "support": 1,
+          "reject": 0,
+          "not_assessed": 1,
+          "uncertain": 0,
+          "support_ratio": 0.5,
+          "severity_distribution": {
+            "blocker": 1,
+            "major": 0,
+            "suggestion": 0
+          },
+          "severity_disputed": false,
+          "vote_completeness": "1/2"
+        },
+        "confidence": null,
+        "confidence_source": "uncalibrated",
+        "model_confidence": null,
+        "decision_status": null,
+        "status": "need_human",
+        "chief_decision": "need_human",
+        "chief_reason": "主审仲裁调用失败，保留分歧待复核",
+        "human_verdict": null
+      },
+      {
+        "issue_no": 3,
+        "candidate_id": "c256e1d3-adcc-4a00-a777-ce7cf4c550e3",
+        "step_index": null,
+        "dimension": "business",
+        "severity": "suggestion",
+        "category": "意图不符",
+        "evidence_quote": "支付成功会进入 PAID 还是 PENDING_SHIPMENT？",
+        "rationale": "用例整体存在「意图不符」问题：标题是疑问句，未声明唯一确定的测试目的，且与正文给出的预期相互矛盾，执行者无法从标题判断本用例到底验证哪个状态。（推断）",
+        "suggestion": "改为陈述式目的，如“支付成功后订单状态应为 PAID，不应进入 PENDING_SHIPMENT”。",
+        "kb_grounded": false,
+        "kb_refs": [],
+        "evidence_type": "inference",
+        "evidence_strength": "medium",
+        "evidence_status": "ungrounded",
+        "evidence_refs": [],
+        "evidence_support_status": "unsupported",
+        "validation_status": "passed",
+        "proposed_by": [
+          "jury_a"
+        ],
+        "votes": {
+          "chief_blind": {
+            "validity": "accept",
+            "severity": "suggestion"
+          },
+          "jury_a": {
+            "validity": "reject",
+            "severity": null
+          }
+        },
+        "vote_summary": {
+          "support": 1,
+          "reject": 1,
+          "not_assessed": 0,
+          "uncertain": 0,
+          "support_ratio": 0.5,
+          "severity_distribution": {
+            "blocker": 0,
+            "major": 0,
+            "suggestion": 1
+          },
+          "severity_disputed": false,
+          "vote_completeness": "2/2"
+        },
+        "confidence": null,
+        "confidence_source": "uncalibrated",
+        "model_confidence": null,
+        "decision_status": null,
+        "status": "disputed",
+        "chief_decision": "need_human",
+        "chief_reason": "主审仲裁调用失败，保留分歧待复核",
+        "human_verdict": null
+      },
+      {
+        "issue_no": 4,
+        "candidate_id": "b70ed92d-a329-4eaa-b2d8-e77f6fcf480b",
+        "step_index": null,
+        "dimension": "test_design",
+        "severity": "suggestion",
+        "category": "状态不自洽",
+        "evidence_quote": "测试框架支持所列只读数据库查询，前后快照在同一用例中比较。",
+        "rationale": "用例整体存在「状态不自洽」问题：前置条件声明要做前后数据库快照比较，但步骤与预期中没有任何数据库查询或快照比较动作，前置约定与用例内容不一致。（推断）",
+        "suggestion": "如本用例不需数据库快照，删除该前置描述；若需要，在步骤中增加对应只读查询与断言。",
+        "kb_grounded": false,
+        "kb_refs": [],
+        "evidence_type": "inference",
+        "evidence_strength": "weak",
+        "evidence_status": "ungrounded",
+        "evidence_refs": [],
+        "evidence_support_status": "unsupported",
+        "validation_status": "passed",
+        "proposed_by": [
+          "jury_a"
+        ],
+        "votes": {
+          "chief_blind": {
+            "validity": "reject",
+            "severity": null
+          },
+          "jury_a": {
+            "validity": "not_assessed",
+            "severity": null
+          }
+        },
+        "vote_summary": {
+          "support": 0,
+          "reject": 1,
+          "not_assessed": 1,
+          "uncertain": 0,
+          "support_ratio": 0.0,
+          "severity_distribution": {
+            "blocker": 0,
+            "major": 0,
+            "suggestion": 0
+          },
+          "severity_disputed": false,
+          "vote_completeness": "1/2"
+        },
+        "confidence": null,
+        "confidence_source": "uncalibrated",
+        "model_confidence": null,
+        "decision_status": null,
+        "status": "need_human",
+        "chief_decision": "need_human",
+        "chief_reason": "主审仲裁调用失败，保留分歧待复核",
+        "human_verdict": null
+      }
+    ],
+    "human_review_items": [
+      {
+        "issue_no": 1,
+        "reason": "need_human",
+        "priority": "normal"
+      },
+      {
+        "issue_no": 2,
+        "reason": "need_human",
+        "priority": "normal"
+      },
+      {
+        "issue_no": 3,
+        "reason": "validity_disputed",
+        "priority": "normal"
+      },
+      {
+        "issue_no": 4,
+        "reason": "need_human",
+        "priority": "normal"
+      }
+    ],
+    "kb_gaps": [
+      {
+        "module": "order",
+        "function_point": "支付成功会进入 PAID 还是 PENDING_SHIPMENT？",
+        "suspected_rule": "待核实证据：第 1 步存在「规则冲突」问题：依据需求，支付成功时支付单置 SUCCESS、订单置 PAID 并记录 paid_at；PENDING_SHIPMENT 在数据字典中存在但从未被赋值、不纳入当前有效状态机，因此预期 PENDING_SHIPMENT 与权威规则冲突，执行必然失败。（依据充分）",
+        "occurrences": 1,
+        "status": "open",
+        "gap_type": "retrieval_missed"
+      },
+      {
+        "module": "order",
+        "function_point": "支付成功会进入 PAID 还是 PENDING_SHIPMENT？",
+        "suspected_rule": "待核实证据：用例整体存在「意图不符」问题：标题是疑问句，未声明唯一确定的测试目的，且与正文给出的预期相互矛盾，执行者无法从标题判断本用例到底验证哪个状态。（推断）",
+        "occurrences": 1,
+        "status": "open",
+        "gap_type": "retrieval_missed"
+      }
+    ],
+    "attachments": [],
+    "scope": {
+      "feature_point": "支付成功会进入 PAID 还是 PENDING_SHIPMENT？",
+      "scope_version": null,
+      "provided": true,
+      "coverage_claims_allowed": false,
+      "note": "v1 仅做单条用例评审，不输出功能点整体覆盖率"
+    },
+    "decision_summary": {
+      "human_status": "pending",
+      "latest_decision": null,
+      "history_count": 0
+    },
+    "appendix": {
+      "raw_opinions": {
+        "chief_blind": {
+          "summary": "预期状态与当前实现冲突，支付成功应为PAID。",
+          "issues": [
+            {
+              "scope": "step",
+              "step_index": 1,
+              "dimension": "business",
+              "severity": "blocker",
+              "category": "规则冲突",
+              "evidence_quote": "支付成功和详情查询均HTTP 200；data.order_status和详情data.status均为PENDING_SHIPMENT",
+              "rationale": "知识库明确当前实现中支付成功后订单由 PENDING_PAYMENT 转为 PAID；PENDING_SHIPMENT 未被赋值且未启用。用例预期为 PENDING_SHIPMENT，与当前实现规则直接冲突。",
+              "suggestion": "将预期改为支付成功后订单状态为 PAID；如仅验证订单详情，可断言 GET /api/orders/10 的 data.status 为 PAID。",
+              "kb_grounded": true,
+              "kb_refs": [
+                "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3"
+              ],
+              "evidence_refs": [
+                "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3"
+              ],
+              "evidence_type": "business_rule",
+              "evidence_strength": "strong",
+              "evidence_status": "grounded",
+              "model_evidence_status": "grounded",
+              "evidence_support_status": "supported",
+              "validation_status": "passed",
+              "parse_warnings": [],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            }
+          ]
+        },
+        "jury_a": {
+          "summary": "预期状态与支付成功后订单应为 PAID 的规则直接冲突，需修正预期并明确单一测试目的。",
+          "issues": [
+            {
+              "scope": "step",
+              "step_index": 1,
+              "dimension": "business",
+              "severity": "blocker",
+              "category": "规则冲突",
+              "evidence_quote": "支付成功和详情查询均HTTP 200；data.order_status和详情data.status均为PENDING_SHIPMENT",
+              "rationale": "依据需求，支付成功时支付单置 SUCCESS、订单置 PAID 并记录 paid_at；PENDING_SHIPMENT 在数据字典中存在但从未被赋值、不纳入当前有效状态机，因此预期 PENDING_SHIPMENT 与权威规则冲突，执行必然失败。（依据充分）",
+              "suggestion": "将预期改为：支付成功返回 HTTP 200，订单状态为 PAID（并可选断言 paid_at 非空、支付单为 SUCCESS），同时删除对 PENDING_SHIPMENT 的期望。",
+              "kb_grounded": false,
+              "kb_refs": [
+                "c77506788741b03a0ae88e32c7f6cf2c5083b42a3d5302566e822eaf3806d185",
+                "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3"
+              ],
+              "evidence_refs": [
+                "c77506788741b03a0ae88e32c7f6cf2c5083b42a3d5302566e822eaf3806d185",
+                "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3"
+              ],
+              "evidence_type": "requirement",
+              "evidence_strength": "strong",
+              "evidence_status": "insufficient",
+              "model_evidence_status": "grounded",
+              "evidence_support_status": "insufficient",
+              "validation_status": "needs_review",
+              "parse_warnings": [
+                "kb_quote_or_evidence_scope_unverified",
+                "model_grounded_downgraded"
+              ],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            },
+            {
+              "scope": "case",
+              "step_index": null,
+              "dimension": "business",
+              "severity": "suggestion",
+              "category": "意图不符",
+              "evidence_quote": "支付成功会进入 PAID 还是 PENDING_SHIPMENT？",
+              "rationale": "标题是疑问句，未声明唯一确定的测试目的，且与正文给出的预期相互矛盾，执行者无法从标题判断本用例到底验证哪个状态。（推断）",
+              "suggestion": "改为陈述式目的，如“支付成功后订单状态应为 PAID，不应进入 PENDING_SHIPMENT”。",
+              "kb_grounded": false,
+              "kb_refs": [],
+              "evidence_refs": [],
+              "evidence_type": "inference",
+              "evidence_strength": "medium",
+              "evidence_status": "ungrounded",
+              "model_evidence_status": "ungrounded",
+              "evidence_support_status": "unsupported",
+              "validation_status": "passed",
+              "parse_warnings": [],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            },
+            {
+              "scope": "step",
+              "step_index": 1,
+              "dimension": "test_design",
+              "severity": "suggestion",
+              "category": "预期不明确",
+              "evidence_quote": "API POST /api/payments/20/success；GET /api/orders/10",
+              "rationale": "步骤把两个请求合并在一步，预期只用一句“均HTTP 200”概括；预期中的 data.order_status 在依据给出的订单详情响应字段（status、status_cn、paid_at 等）中没有对应，无法判断该断言来自哪个响应。（推断）",
+              "suggestion": "拆为两步并分别断言：支付成功接口的返回码与支付单状态；GET /api/orders/10 的 data.status=PAID、paid_at 非空。",
+              "kb_grounded": false,
+              "kb_refs": [],
+              "evidence_refs": [],
+              "evidence_type": "inference",
+              "evidence_strength": "weak",
+              "evidence_status": "ungrounded",
+              "model_evidence_status": "ungrounded",
+              "evidence_support_status": "unsupported",
+              "validation_status": "passed",
+              "parse_warnings": [],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            },
+            {
+              "scope": "case",
+              "step_index": null,
+              "dimension": "test_design",
+              "severity": "suggestion",
+              "category": "状态不自洽",
+              "evidence_quote": "测试框架支持所列只读数据库查询，前后快照在同一用例中比较。",
+              "rationale": "前置条件声明要做前后数据库快照比较，但步骤与预期中没有任何数据库查询或快照比较动作，前置约定与用例内容不一致。（推断）",
+              "suggestion": "如本用例不需数据库快照，删除该前置描述；若需要，在步骤中增加对应只读查询与断言。",
+              "kb_grounded": false,
+              "kb_refs": [],
+              "evidence_refs": [],
+              "evidence_type": "inference",
+              "evidence_strength": "weak",
+              "evidence_status": "ungrounded",
+              "model_evidence_status": "ungrounded",
+              "evidence_support_status": "unsupported",
+              "validation_status": "passed",
+              "parse_warnings": [],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            }
+          ]
+        }
+      },
+      "disagreements": [],
+      "model_runs": [
+        {
+          "role": "chief_blind",
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "latency_ms": 77320,
+          "tokens": {
+            "request": 5809,
+            "response": 3083
+          },
+          "cost_estimate": 0.30116,
+          "parse_warnings": []
+        },
+        {
+          "role": "jury_a",
+          "model": "deepseek-flash",
+          "status": "ok",
+          "latency_ms": 12395,
+          "tokens": {
+            "request": 5679,
+            "response": 2283
+          },
+          "cost_estimate": 0.010245,
+          "parse_warnings": [
+            "evidence:0:kb_quote_or_evidence_scope_unverified",
+            "evidence:0:model_grounded_downgraded"
+          ]
+        },
+        {
+          "role": "chief_blind",
+          "operation": "vote",
+          "candidate_no": 1,
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 12613,
+          "tokens": {
+            "request": 5971,
+            "response": 422
+          },
+          "cost_estimate": 0.14474,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 12614
+            }
+          ],
+          "provider": null,
+          "request_hash": "86a538823cc2dbc3ecfdcb39d56ef08ffc612a28095b2396e8db6966d7d2187e",
+          "response_hash": "45e734f23dc64113f03a4455ec85909cddcb1376f6b9364c2d60a73f4aeb42c7",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "jury_a",
+          "operation": "vote",
+          "candidate_no": 1,
+          "model": "deepseek-flash",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 2388,
+          "tokens": {
+            "request": 5570,
+            "response": 332
+          },
+          "cost_estimate": 0.006234,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 15000
+            }
+          ],
+          "provider": null,
+          "request_hash": "94eed8a7dfc0244434c54b78ff0e3c874ff2a82d7855a0e0c948a7b6a4920ce7",
+          "response_hash": "d63051af7c3d4dc82c8d941b040e3b6d073a66f685a0c9e267e0fb93eb94e5e2",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "chief_blind",
+          "operation": "vote",
+          "candidate_no": 2,
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 17015,
+          "tokens": {
+            "request": 7447,
+            "response": 600
+          },
+          "cost_estimate": 0.18494,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 32016
+            }
+          ],
+          "provider": null,
+          "request_hash": "aa6e6f4ee367cbf532fa1b59d39def7bd87535b41ef534bb83165bd44ba26043",
+          "response_hash": "03f06a453e20c7503226cf8f7aeb76bf06df152b4c4915323671bda00cf4ac11",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "jury_a",
+          "operation": "vote",
+          "candidate_no": 2,
+          "model": "-",
+          "status": "failed",
+          "error_code": "BUDGET_EXCEEDED",
+          "error": "vote_failed:BUDGET_EXCEEDED: 剩余预算不足以覆盖本次调用，未发起供应商请求",
+          "latency_ms": null,
+          "tokens": {
+            "request": 0,
+            "response": 0
+          },
+          "cost_estimate": null,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "error",
+              "error_code": "BUDGET_EXCEEDED",
+              "retryable": false,
+              "delay_s": 0.0,
+              "latency_ms": 32018
+            }
+          ],
+          "provider": null,
+          "request_hash": null,
+          "response_hash": null,
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "chief_blind",
+          "operation": "vote",
+          "candidate_no": 3,
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 38400,
+          "tokens": {
+            "request": 1273,
+            "response": 1442
+          },
+          "cost_estimate": 0.11198,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 57811
+            }
+          ],
+          "provider": null,
+          "request_hash": "f328c8c9a1a810663bc700248b85ce29f406fc7444ac8b0b022ba4ec7385b591",
+          "response_hash": "512a02fa056308a794c3fece64469c415252af7ce79bcfded8bb94c607a2fb31",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "jury_a",
+          "operation": "vote",
+          "candidate_no": 3,
+          "model": "deepseek-flash",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 4305,
+          "tokens": {
+            "request": 1237,
+            "response": 579
+          },
+          "cost_estimate": 0.002395,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 59724
+            }
+          ],
+          "provider": null,
+          "request_hash": "28559dea950ea0b439db6bfe2121d9b381a96c229e9a918dbbabbd4374882df3",
+          "response_hash": "21fb63be2f3071c5f5fd2ab2eecc2bb041509eef6a093db21480264b521a02af",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "chief_blind",
+          "operation": "vote",
+          "candidate_no": 4,
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 29080,
+          "tokens": {
+            "request": 1245,
+            "response": 991
+          },
+          "cost_estimate": 0.08436,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 71787
+            }
+          ],
+          "provider": null,
+          "request_hash": "0c71a13646a6da8eb0d8683ef1b16a6b33c48969f3486d91470a28ec279c80ce",
+          "response_hash": "e185a7c0f8990bd9d839f5134b32dfd0b30d7da3706ac1b7e07ade22cd2b5094",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "jury_a",
+          "operation": "vote",
+          "candidate_no": 4,
+          "model": "deepseek-flash",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 2993,
+          "tokens": {
+            "request": 1209,
+            "response": 412
+          },
+          "cost_estimate": 0.002033,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 74781
+            }
+          ],
+          "provider": null,
+          "request_hash": "a497d56f1b759022764c8e46a1c01f8aa726f1688ac9744faee2a370fd518383",
+          "response_hash": "1f93e71816b70b510b8391a6089cefab1b2cf672f82cc3549b4dbe5318639714",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "chief_blind",
+          "operation": "vote",
+          "candidate_no": 5,
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 25717,
+          "tokens": {
+            "request": 1243,
+            "response": 990
+          },
+          "cost_estimate": 0.08426,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 62098
+            }
+          ],
+          "provider": null,
+          "request_hash": "636550f505149bdadb2d8591f9949f870efdec11ec29c6f972203e005496b97a",
+          "response_hash": "d616f7fb25fe305e93b8947d3dca9515618e24f86433a395ddd8db7106469fb4",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "jury_a",
+          "operation": "vote",
+          "candidate_no": 5,
+          "model": "-",
+          "status": "failed",
+          "error_code": "BUDGET_EXCEEDED",
+          "error": "vote_failed:BUDGET_EXCEEDED: 剩余预算不足以覆盖本次调用，未发起供应商请求",
+          "latency_ms": null,
+          "tokens": {
+            "request": 0,
+            "response": 0
+          },
+          "cost_estimate": null,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "error",
+              "error_code": "BUDGET_EXCEEDED",
+              "retryable": false,
+              "delay_s": 0.0,
+              "latency_ms": 57795
+            }
+          ],
+          "provider": null,
+          "request_hash": null,
+          "response_hash": null,
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        }
+      ],
+      "normalized_case": {
+        "case_id": "G-012-negative",
+        "case_version": 3,
+        "module": "order",
+        "test_type": "functional",
+        "title": "支付成功会进入 PAID 还是 PENDING_SHIPMENT？",
+        "priority": null,
+        "source": "manual",
+        "preconditions": [
+          "A已登录；订单10为PENDING_PAYMENT，SKU库存充足；支付20为PENDING",
+          "每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。",
+          "订单10属于A，应付金额200；支付20属于订单10，amount=200，是该订单唯一支付记录；订单明细为SKU1数量2，关联商品1。"
+        ],
+        "steps": [
+          {
+            "index": 1,
+            "action": "API POST /api/payments/20/success；GET /api/orders/10",
+            "expected": "支付成功和详情查询均HTTP 200；data.order_status和详情data.status均为PENDING_SHIPMENT"
+          }
+        ],
+        "test_data": {
+          "fixture": "A已登录；订单10为PENDING_PAYMENT，SKU库存充足；支付20为PENDING；每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。；订单10属于A，应付金额200；支付20属于订单10，amount=200，是该订单唯一支付记录；订单明细为SKU1数量2，关联商品1。",
+          "isolation": "独立测试库"
+        },
+        "attachments": [],
+        "raw_text": null,
+        "kb_hint": null,
+        "project_id": "minishop",
+        "review_baseline": "current_implementation",
+        "product_version": "1.0.0",
+        "platform": "api"
+      },
+      "knowledge_pack": {
+        "build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+        "content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+        "retriever_version": "hybrid-bm25-rrf-4",
+        "project_id": "minishop",
+        "module": "order",
+        "baseline": {
+          "type": "current_implementation",
+          "product_version": "1.0.0",
+          "source_ref": "https://github.com/Viver12138/minishop.git",
+          "source_version": "e354437069504381f10a54d9c14baed755f3ba56"
+        },
+        "as_of": "2026-11-12",
+        "query": "支付成功会进入 PAID 还是 PENDING_SHIPMENT？\nA已登录；订单10为PENDING_PAYMENT，SKU库存充足；支付20为PENDING\n每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。\n订单10属于A，应付金额200；支付20属于订单10，amount=200，是该订单唯一支付记录；订单明细为SKU1数量2，关联商品1。\nAPI POST /api/payments/20/success；GET /api/orders/10 支付成功和详情查询均HTTP 200；data.order_status和详情data.status均为PENDING_SHIPMENT",
+        "evidence": [
+          {
+            "chunk_id": "e702a80e42ab188908eb7170bca1cde0c332fe45681c4b640a8176683e92c6cd",
+            "project_id": "minishop",
+            "doc_id": "API-ORDER-002",
+            "module": "order",
+            "doc_type": "design",
+            "knowledge_type": "INTERFACE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L116-L170; Minishop/backend/app/schemas/schemas.py#L145-L149; Minishop/backend/app/api/common.py#L142-L184",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L116-L170",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/schemas/schemas.py#L145-L149",
+                "snapshot_sha256": "ec03f7efa334fcfb4e7439240757a131a91ee0005cdcd25071631fd05f1fcc16",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/schemas/schemas.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/schemas/schemas.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/common.py#L142-L184",
+                "snapshot_sha256": "4adcca84be8ce74c3e07c5c13444b3956a5f9abf8a0c25a8891e0c983d4a80ee",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/common.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/common.py"
+              }
+            ],
+            "heading_path": "9. 结果查询与验证",
+            "chunk_index": 8,
+            "content_hash": "9b9088386e2a5c0c5b9de89b0186eb4136a078af42034e754a7cd553c48c7b37",
+            "text": "# 9. 结果查询与验证\n\n1. 断言 HTTP 201、`code=OK`、`status=PENDING_PAYMENT`；\n2. 断言金额与 `API-ORDER-001` 预览一致；\n3. 断言 `address_snapshot` 字段完整；\n4. 断言 `order_items` 保存商品名称、规格、单价、数量快照；\n5. 断言用户券变 `USED`、`used_order_id` 指向新订单、`used_quantity+1`；\n6. 断言 SKU 库存、商品销量、购物车未变化；\n7. 通过 `GET /api/orders/{id}` 复核。\n\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "vector",
+              "interface_contract"
+            ],
+            "rrf_score": 0.013157894736842105,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf"
+          },
+          {
+            "chunk_id": "1276cc64e74a33c5c32e469050c817fa55dfbb9136b56b2daad1f1a5eddefd8f",
+            "project_id": "minishop",
+            "doc_id": "API-ORDER-005",
+            "module": "order",
+            "doc_type": "design",
+            "knowledge_type": "INTERFACE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/payments.py#L39-L118; Minishop/backend/app/schemas/schemas.py#L152-L156",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/payments.py#L39-L118",
+                "snapshot_sha256": "0e0dbc41e30ce901cb220bc7b61d0cf7ce1697b0f892a216bb4454fa61258e08",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/payments.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/payments.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/schemas/schemas.py#L152-L156",
+                "snapshot_sha256": "ec03f7efa334fcfb4e7439240757a131a91ee0005cdcd25071631fd05f1fcc16",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/schemas/schemas.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/schemas/schemas.py"
+              }
+            ],
+            "heading_path": "2. 请求方式与路径",
+            "chunk_index": 1,
+            "content_hash": "7e5e448591909498d9ed1f75fc097b23816947017c999cad5fdc3a5a39bbf363",
+            "text": "# 2. 请求方式与路径\n\n```http\nPOST /api/payments                     # 创建支付单（201）\nPOST /api/payments/{payment_id}/success # 支付成功（200）\nPOST /api/payments/{payment_id}/fail    # 支付失败（200）\nAuthorization: Bearer <JWT>\n```\n\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "vector",
+              "interface_contract"
+            ],
+            "rrf_score": 0.010309278350515464,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf"
+          },
+          {
+            "chunk_id": "c77506788741b03a0ae88e32c7f6cf2c5083b42a3d5302566e822eaf3806d185",
+            "project_id": "minishop",
+            "doc_id": "REQ-ORDER-002",
+            "module": "order",
+            "doc_type": "requirement",
+            "knowledge_type": "REQUIREMENT",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/README.md#L56-L57; Minishop/backend/app/api/payments.py#L15-L119",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/README.md#L56-L57",
+                "snapshot_sha256": "7d78ca14a2c5114628fca82b05aafb2c615114f2b554b52a49a00fe5c27f1ede",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "README.md",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/README.md"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/payments.py#L15-L119",
+                "snapshot_sha256": "0e0dbc41e30ce901cb220bc7b61d0cf7ce1697b0f892a216bb4454fa61258e08",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/payments.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/payments.py"
+              }
+            ],
+            "heading_path": "3. 功能描述",
+            "chunk_index": 2,
+            "content_hash": "91d05b677d86a35ae3771973f7bf6cf97893cfdb26ec2fe84286a177d6d7fe29",
+            "text": "# 3. 功能描述\n\n## 3.1 创建支付单 `POST /api/payments`\n\n- 入参：`order_id`、可选 `method`（默认 `WECHAT`，可传 `ALIPAY`）。\n- 若该订单已有 `PENDING` 支付单，直接返回已有支付单（不重复创建）。\n- 否则创建 `payment_no`、`amount=order.pay_amount`、`status=PENDING` 的支付记录。\n\n## 3.2 支付成功 `POST /api/payments/{payment_id}/success`\n\n- 校验支付单存在且订单归属当前用户；\n- 拒绝已支付、已发货、已完成、售后中、已退款、已取消的订单；\n- 支付金额强制改写为服务端订单应付金额；\n- 支付单 `SUCCESS`，订单 `PAID` 并记录 `paid_at`；\n- 扣减 SKU 与商品库存、增加销量、写库存日志、发送站内消息。\n\n## 3.3 支付失败 `POST /api/payments/{payment_id}/fail`\n\n- 仅允许订单仍为 `PENDING_PAYMENT`；\n- 支付单置 `FAILED`，订单保持 `PENDING_PAYMENT`，用户可重新创建支付单重试。\n\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword",
+              "vector",
+              "endpoint_behavior"
+            ],
+            "rrf_score": 0.028850145288501453,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf"
+          },
+          {
+            "chunk_id": "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3",
+            "project_id": "minishop",
+            "doc_id": "STATE-ORDER-001",
+            "module": "order",
+            "doc_type": "flow",
+            "knowledge_type": "WORKFLOW",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/models/models.py#L171-L193; Minishop/backend/app/api/orders.py#L223-L260; Minishop/backend/app/api/payments.py#L77-L118; Minishop/backend/app/api/admin.py#L156-L245; Minishop/backend/app/api/refunds.py#L14-L41; Minishop/backend/app/api/common.py#L114-L125",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/models/models.py#L171-L193",
+                "snapshot_sha256": "84bd973f0a6d923d3dd6e245c10a2a299f8d9ddd4e416a83fe7d695bdd39ce63",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/models/models.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/models/models.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L223-L260",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/payments.py#L77-L118",
+                "snapshot_sha256": "0e0dbc41e30ce901cb220bc7b61d0cf7ce1697b0f892a216bb4454fa61258e08",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/payments.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/payments.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/admin.py#L156-L245",
+                "snapshot_sha256": "15e2b64089522e85d0f22a0032350bdb11164c1f91d5f62566c8ad99f1a6592b",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/admin.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/admin.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/refunds.py#L14-L41",
+                "snapshot_sha256": "797afa1721cc52a427bef36467274ce39a1cdd9ab364155cf9830454c6fd7027",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/refunds.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/refunds.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/common.py#L114-L125",
+                "snapshot_sha256": "4adcca84be8ce74c3e07c5c13444b3956a5f9abf8a0c25a8891e0c983d4a80ee",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/common.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/common.py"
+              }
+            ],
+            "heading_path": "订单状态定义与状态转换",
+            "chunk_index": 0,
+            "content_hash": "51e12206d71d61fcf90436f67690ac1ccd3cebffd4a5db523e85b9728600456e",
+            "text": "\n# 1. 状态列表\n\n| 状态 ID | 状态名称 | 含义 | 终态 | 说明 |\n|---|---|---|---|---|\n| `PENDING_PAYMENT` | 待支付 | 订单已创建，尚未支付 | 否 | 创建订单后的初始状态 |\n| `PAID` | 已支付 | 支付成功，等待发货 | 否 | 支付成功时写入 `paid_at` |\n| `PENDING_SHIPMENT` | 待发货 | 已支付待发货 | 否 | 代码多处引用，但**从未被赋值**，实际不可达 |\n| `SHIPPED` | 已发货 | 管理员已录入物流 | 否 | 写入 `shipped_at` 和 `shipments` |\n| `COMPLETED` | 已完成 | 用户确认收货 | 否 | 写入 `completed_at`；可因退款进入 `REFUNDING` |\n| `CANCELLED` | 已取消 | 待支付订单被取消 | 是 | 写入 `cancelled_at` |\n| `REFUNDING` | 退款中 | 已申请退款，等待审核 | 否 | 由售后模块写入（本批未完整覆盖） |\n| `REFUNDED` | 已退款 | 退款审核通过 | 是 | 库存恢复（见售后模块） |\n\n状态中文映射来源：`Minishop/backend/app/api/common.py#L114-L125`。\n\n# 2. 状态转换\n\n| 当前状态 | 触发事件 | 前置条件 | 目标状态 | 不允许的条件 |\n|---|---|---|---|---|\n| （无） | 创建订单 | 校验通过，地址必填 | `PENDING_PAYMENT` | 商品下架、SKU 失效、库存不足、地址无效、券无效 |\n| `PENDING_PAYMENT` | 支付成功 | 订单属于当前用户；支付单存在 | `PAID` | 订单已取消；订单已是支付后状态 |\n| `PENDING_PAYMENT` | 取消订单 | 订单属于当前用户 | `CANCELLED` | 非待支付状态；非本人（返回 404） |\n| `PENDING_PAYMENT` | 支付失败 | 支付单存在、订单属于当前用户 | `PENDING_PAYMENT` | 非待支付状态（返回 409） |\n| `PAID` | 管理员发货 | 操作者为管理员；填写物流信息 | `SHIPPED` | 非已支付/待发货；非管理员 |\n| `PENDING_SHIPMENT` | 管理员发货 | 同上 | `SHIPPED` | 实际不可达（状态从未被赋值） |\n| `SHIPPED` | 用户确认收货 | 订单属于当前用户 | `COMPLETED` | 非已发货；非本人（返回 404） |\n| `PAID` / `SHIPPED` / `COMPLETED` | 申请退款 | 订单属于当前用户；无历史退款记录 | `REFUNDING` | 待支付、已取消、退款中、已退款；已有退款记录 |\n| `REFUNDING` | 管理员同意退款 | 退款记录为 `PENDING` | `REFUNDED` | 非待审核；重复处理 |\n| `REFUNDING` | 管理员拒绝退款 | 必须填写拒绝原因 | `PAID` | 非待审核；未填原因（400） |\n\n```mermaid\nstateDiagram-v2\n    [*] --> PENDING_PAYMENT: 创建订单\n    PENDING_PAYMENT --> PAID: 支付成功\n    PENDING_PAYMENT --> CANCELLED: 取消订单\n    PAID --> SHIPPED: 管理员发货\n    SHIPPED --> COMPLETED: 确认收货\n    PAID --> REFUNDING: 申请退款\n    SHIPPED --> REFUNDING: 申请退款\n    COMPLETED --> REFUNDING: 申请退款\n    REFUNDING --> REFUNDED: 同意退款\n    REFUNDING --> PAID: 拒绝退款（当前实现）\n    CANCELLED --> [*]\n    REFUNDED --> [*]\n```\n\n# 3. 状态不变量\n\n1. `orders.user_id` 创建后不变，订单只属于一个用户。\n2. `total_amount`、`discount_amount`、`pay_amount` 创建后不再被业务代码修改。\n3. `paid_at` 只在支付成功时写入；`shipped_at` 只在发货时写入；`completed_at` 只在确认收货时写入；`cancelled_at` 只在取消时写入。\n4. 订单使用优惠券时，用户券在订单创建时置 `USED`；取消订单时恢复 `UNUSED`；**退款流程不恢复优惠券**。\n5. 库存只在支付成功时扣减；只在退款成功时恢复（见售后模块）。\n6. `SHIPPED`、`COMPLETED` 状态应存在对应 `shipments` 记录；确认收货后物流单为 `DELIVERED`。\n7. `CANCELLED`、`REFUNDED` 为终态，没有出边；`COMPLETED` 可因退款进入 `REFUNDING`，不是终态。\n8. `PENDING_SHIPMENT` 在数据字典中存在，但没有任何写入路径，不能作为当前有效状态使用。\n\n## 已确认决策（2026-11-11）\n\n- **Q-02**：不引入库存预占；超卖为 Demo 已知限制，支付时库存不足仍成功并以 `max(stock-qty,0)` 截断。\n- **Q-04**：退款被拒应恢复退款前状态（`PAID/SHIPPED/COMPLETED`）；当前统一回 `PAID` 属缺陷，修复需增加 `pre_refund_status` 快照。\n- **Q-08**：`PENDING_SHIPMENT` 未启用，不纳入当前有效状态机。\n- **Q-12**：当前无订单超时自动取消。\n\n# 4. 并发与重复操作约束\n\n| 操作 | 重复/并发行为 |\n|---|---|\n| 创建订单 | 无幂等键；重复提交生成多张订单 |\n| 创建支付单 | 已有 `PENDING` 支付单时复用；否则新建；`FAILED` 后可再建 |\n| 支付成功 | 依赖订单状态判重；并发下缺少行锁，理论上可能重复扣库存 |\n| 支付失败 | 仅待支付可执行；重复执行时订单状态未变，仍可再次置 `FAILED` |\n| 取消订单 | 第二次返回 409（状态已非待支付） |\n| 发货 | 第二次返回 409（状态已 `SHIPPED`） |\n| 确认收货 | 第二次返回 409（状态已 `COMPLETED`） |\n| 申请退款 | 同一订单只允许一条退款记录；已拒绝也不能再次申请 |\n| 退款审核 | 非 `PENDING` 再次审核返回 409 |\n\n# 5. 状态查询与验证方式\n\n## 5.1 接口\n\n```http\nGET /api/orders/{order_id}\nAuthorization: Bearer <token>\n```\n\n响应关键字段：`status`、`status_cn`、`paid_at`、`shipped_at`、`completed_at`、`cancelled_at`、`payment`、`shipment`、`refund`。\n\n## 5.2 数据库\n\n```sql\nSELECT id, order_no, status, total_amount, pay_amount, paid_at, shipped_at, completed_at, cancelled_at\nFROM orders WHERE id = ?;\n\nSELECT id, order_id, status, payment_no, amount, paid_at FROM payments WHERE order_id = ?;\nSELECT id, order_id, company, tracking_number, status, shipped_at FROM shipments WHERE order_id = ?;\nSELECT id, order_id, status, amount, reason, reject_reason FROM refunds WHERE order_id = ?;\n```\n\n## 5.3 派生观察\n\n- 库存与销量：`product_skus.stock`、`products.stock`、`products.sales`\n- 优惠券：`user_coupons.status`、`used_order_id`、`used_at`\n- 库存日志：`inventory_logs` 按 `sku_id` 查询\n- 消息：`messages` 按 `user_id` 查询\n\n# 6. 来源与未决问题\n\n## 来源\n\n- 状态字段：`Minishop/backend/app/models/models.py#L171-L193`\n- 创建订单：`Minishop/backend/app/api/orders.py#L116-L170`\n- 取消/确认：`Minishop/backend/app/api/orders.py#L223-L260`\n- 支付：`Minishop/backend/app/api/payments.py#L77-L118`\n- 发货：`Minishop/backend/app/api/admin.py#L156-L178`\n- 退款申请：`Minishop/backend/app/api/refunds.py#L14-L41`\n- 退款审核：`Minishop/backend/app/api/admin.py#L205-L245`\n\n## 未决问题\n\n1. `PENDING_SHIPMENT` 应启用还是删除？\n2. 退款被拒绝后应恢复到退款前状态（`PAID`/`SHIPPED`/`COMPLETED`），还是统一 `PAID`？当前实现统一 `PAID`，会丢失已发货/已完成事实。\n3. 是否需要订单超时自动取消（`PENDING_PAYMENT → CANCELLED`）？\n4. 是否需要库存预占状态（下单锁定库存）？\n5. 支付成功并发是否需要行锁或幂等键？\n6. 退款成功后优惠券是否应归还？\n7. `REFUNDING` 是否允许发货/确认收货？（当前发货只允许 `PAID/PENDING_SHIPMENT`，确认只允许 `SHIPPED`）\n\n\n# 本次授权技术复核适用性\n\n核对订单、支付、发货和退款路由；COMPLETED 有退款出边，修正 Mermaid 终态矛盾；退款拒绝当前回 PAID，目标恢复原状态。\n\n本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword",
+              "vector"
+            ],
+            "rrf_score": 0.03036576949620428,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf"
+          }
+        ],
+        "warnings": [],
+        "profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+        "limitations": [
+          "documentation:CONFLICT-001",
+          "documentation:CONFLICT-002",
+          "documentation:CONFLICT-003",
+          "documentation:CONFLICT-004",
+          "documentation:CONFLICT-005",
+          "documentation:CONFLICT-006",
+          "documentation:CONFLICT-007",
+          "documentation:CONFLICT-008",
+          "documentation:CONFLICT-009",
+          "documentation:CONFLICT-010",
+          "documentation:Q-01",
+          "documentation:Q-03",
+          "documentation:Q-04",
+          "documentation:Q-05",
+          "documentation:Q-06",
+          "documentation:Q-08",
+          "documentation:Q-09",
+          "documentation:Q-10",
+          "documentation:Q-12",
+          "documentation:Q-13",
+          "documentation:Q-15",
+          "embedding:not_completed",
+          "implementation:CONFLICT-001",
+          "implementation:CONFLICT-003",
+          "implementation:CONFLICT-005",
+          "implementation:CONFLICT-006",
+          "implementation:CONFLICT-007",
+          "implementation:CONFLICT-008",
+          "implementation:CONFLICT-009",
+          "implementation:CONFLICT-010",
+          "implementation:Q-01",
+          "implementation:Q-04",
+          "implementation:Q-05",
+          "implementation:Q-06",
+          "implementation:Q-09",
+          "implementation:Q-10",
+          "implementation:Q-11",
+          "implementation:Q-13",
+          "implementation:Q-14",
+          "implementation:Q-15",
+          "knowledge_gap:GAP-001",
+          "knowledge_gap:GAP-002",
+          "knowledge_gap:GAP-003",
+          "knowledge_gap:GAP-004",
+          "knowledge_gap:GAP-008",
+          "knowledge_gap:GAP-009",
+          "knowledge_gap:GAP-010",
+          "knowledge_gap:GAP-011",
+          "knowledge_gap:GAP-012",
+          "knowledge_gap:GAP-013",
+          "knowledge_gap:GAP-014",
+          "publication:not_completed",
+          "retrieval_acceptance:not_completed",
+          "review_acceptance:not_completed",
+          "review_baseline:not_selected_for_release",
+          "runtime_index:not_completed",
+          "source_repository_verification:not_run; use --source-root"
+        ],
+        "pack_hash": "15a398bd62bca6b279e2ae1c85a3e24f9fd293eb6a5f11018d7418f6d74c5590"
+      },
+      "recovery": {
+        "reused_outputs": [],
+        "attempt": 1
+      },
+      "budget": {
+        "limits": {
+          "review_tokens": 60000,
+          "review_cost": 2.0,
+          "batch_cost": 60.0,
+          "daily_cost": 500.0
+        },
+        "exhausted": true,
+        "accounted_tokens": 47817,
+        "estimated_cost": 0.9323469999999999,
+        "uncertain_calls": 0,
+        "scope": "chat requests; conservative reservations, configured estimated prices; not provider billing"
+      }
+    },
+    "created_at": "2026-11-12T10:06:45.670383+00:00",
+    "finished_at": "2026-11-12T10:10:16.108083+00:00",
+    "timings": {
+      "queue_ms": 2,
+      "execution_ms": 210434,
+      "model_call_ms": 222226
+    }
+  },
+  "model_errors": [
+    {
+      "role": "jury_a",
+      "operation": "vote",
+      "error": "attempt 1 failed: BUDGET_EXCEEDED"
+    },
+    {
+      "role": "jury_a",
+      "operation": "vote",
+      "error": "attempt 1 failed: BUDGET_EXCEEDED"
+    },
+    {
+      "role": "chief_blind",
+      "operation": "arbitration",
+      "error": "attempt 1 failed: BUDGET_EXCEEDED"
+    },
+    {
+      "role": "chief_blind",
+      "operation": "arbitration",
+      "error": "BUDGET_EXCEEDED: 剩余预算不足以覆盖本次调用，未发起供应商请求"
+    }
+  ]
+}

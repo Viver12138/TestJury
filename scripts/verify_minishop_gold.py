@@ -5,6 +5,7 @@ overridden with fixture identities; this verifies business rules, not JWT behavi
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import os
@@ -20,11 +21,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--dataset', type=Path, default=ROOT / 'datasets/minishop/v3')
+    parser.add_argument('--output', type=Path, default=ROOT / 'evidence/M2/minishop_gold_source_verification.json')
+    args = parser.parse_args()
     binding = yaml.safe_load((ROOT / 'kb_content/_delivery/source_binding.yaml').read_text(encoding='utf-8'))
     archive = ROOT / binding['snapshot_archive']['path']
     assert hashlib.sha256(archive.read_bytes()).hexdigest() == binding['snapshot_archive']['sha256']
-    dataset = ROOT / 'datasets/minishop/v3'
+    dataset = args.dataset
     manifest = json.loads((dataset / 'manifest.json').read_text(encoding='utf-8'))
+    for name, checksum in manifest['files'].items():
+        path = (dataset / name).resolve()
+        assert path.parent == dataset.resolve()
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == checksum
     rows = [json.loads(line) for line in (dataset / 'review.jsonl').read_text(encoding='utf-8').splitlines()]
     families = list(dict.fromkeys(row['family'] for row in rows))
     with tempfile.TemporaryDirectory(prefix='minishop_gold_', dir=ROOT / '.tmp') as temp:
@@ -99,6 +108,8 @@ def main():
                         if family=='create_effect':
                             assert body['data']['status']=='PENDING_PAYMENT'
                             assert db.get(m.ProductSku,1).stock==10 and db.query(m.CartItem).count()==1
+                            assert db.query(m.CartItem).one().quantity == 1
+                            observed.append({'database_assertion': 'cart quantity unchanged', 'quantity': 1})
                     elif family in {'threshold','preview'}:
                         request['user_coupon_id']=7
                         if family=='preview': request.pop('address_id')
@@ -150,8 +161,9 @@ def main():
            'dataset_version':manifest['version'],'dataset_files':manifest['files'],'cases':results,
            'passed':all(r['passed'] for r in results),'limitations':['fixture authentication, not JWT testing',
            'business-fact probes, not independent review-quality labels'],'application_database_modified':False}
-    output=ROOT/'evidence/M2/minishop_gold_source_verification.json'
-    output.write_text(json.dumps(proof,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    output = args.output
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(proof,ensure_ascii=False,indent=2)+'\n',encoding='utf-8', newline='\n')
     print(json.dumps({'passed':proof['passed'],'families':len(results),
                       'failed':[r['family'] for r in results if not r['passed']]},ensure_ascii=False))
     return 0 if proof['passed'] else 1

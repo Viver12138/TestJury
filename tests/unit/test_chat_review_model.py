@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
 
@@ -117,9 +118,50 @@ async def test_review_parses_issues_and_drops_decision_fields() -> None:
 
     request = adapter.requests[0]
     assert "评审标准" in request.messages[1].content
-    assert "TC-1" in request.messages[1].content
+    assert "TC-1" not in request.messages[1].content
     assert request.temperature == ModelRegistry.load(MODELS_PATH).role("chief_blind").temperature
     assert request.max_tokens == ModelRegistry.load(MODELS_PATH).role("chief_blind").max_output_tokens
+
+
+async def test_management_labels_are_hidden_in_all_model_stages_but_business_ids_remain():
+    case = {"case_id": "LABEL-negative-DO-NOT-REVIEW", "case_version": 987654321,
+            "product_version": "1.0.0", "title": "Can this order be paid?",
+            "steps": [{"index": 1, "action": "Pay order_id=12345", "expected": "status=PAID"}]}
+    original = copy.deepcopy(case)
+    model, adapter = _model(json.dumps({"overall": {"comment": "ok"}, "issues": []}))
+    await model.review("chief_blind", case)
+    adapter.content = json.dumps({"validity": "reject", "severity": None, "reason": "unsupported"})
+    await model.vote("chief_blind", {"description": "question title", "case": case})
+    adapter.content = json.dumps({"decisions": [{"candidate_id": "c1", "chief_decision": "reject",
+                                               "chief_reason": "unsupported"}]})
+    await model.arbitrate([{"candidate_id": "c1", "description": "question title", "case": case}], None)
+    assert case == original
+    for request in adapter.requests:
+        material = request.messages[-1].content
+        assert case["case_id"] not in material and "987654321" not in material
+        assert "order_id=12345" in material and "1.0.0" in material
+
+
+@pytest.mark.parametrize("kb_quote, expected", [
+    ("服务端必须按商品单价计算订单金额", "grounded"),
+    ("这段引文不在知识片段中，不得升级证据", "insufficient"),
+])
+async def test_kb_quote_is_retained_for_audit_without_upgrading_unverified_text(kb_quote, expected):
+    issue = {"scope": "step", "step_index": 1, "dimension": "business", "severity": "major",
+             "category": "规则冲突", "evidence_quote": "响应金额为零", "rationale": "金额与规则不符",
+             "suggestion": "按商品单价计算", "kb_grounded": True, "kb_refs": ["r1"], "evidence_refs": ["r1"],
+             "kb_quote": kb_quote, "evidence_type": "business_rule", "evidence_strength": "strong",
+             "evidence_status": "grounded"}
+    case = {"steps": [{"index": 1, "action": "创建订单", "expected": "响应金额为零"}],
+            "_knowledge_pack": {"baseline": {"type": "current_implementation"}, "build_version": "test",
+                                "evidence": [{"chunk_id": "r1", "doc_id": "RULE-1", "knowledge_type": "BUSINESS_RULE",
+                                              "evidence_level": "E2", "heading_path": "金额规则",
+                                              "text": "服务端必须按商品单价计算订单金额"}]}}
+    model, _ = _model(json.dumps({"overall": {"comment": "金额冲突"}, "issues": [issue]}, ensure_ascii=False))
+    opinion = await model.review("chief_blind", case)
+    assert opinion.issues[0]["kb_quote"] == kb_quote
+    assert opinion.issues[0]["evidence_status"] == expected
+    assert opinion.issues[0]["kb_grounded"] == (expected == "grounded")
 
 
 @pytest.mark.asyncio

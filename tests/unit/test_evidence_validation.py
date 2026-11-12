@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from app.llm.evidence import quote_in_case, verify_evidence
 
 
@@ -75,6 +77,18 @@ def test_missing_quote_never_grounded() -> None:
     assert result.status == "ungrounded"
     assert result.evidence_support_status == "unsupported"
     assert "evidence_quote_missing" in result.warnings
+
+
+@pytest.mark.parametrize("quote", [None, "用例中没有出现的操作", "短", "opaque-negative-case-label"])
+def test_valid_knowledge_cannot_ground_an_absent_case_quote_or_management_label(quote):
+    case = {**CASE, "case_id": "opaque-negative-case-label"}
+    knowledge = {"chunk_id": "kb-1", "text": "每次点击发现按钮会获得随机物品", "evidence_level": "E2",
+                 "knowledge_type": "BUSINESS_RULE"}
+    result = verify_evidence(_issue(evidence_quote=quote, kb_grounded=True, kb_refs=["kb-1"],
+                                   kb_quote=knowledge["text"], evidence_type="business_rule"),
+                             case, allowed_kb_refs={"kb-1"}, knowledge_evidence=[knowledge])
+    assert result.status == "insufficient" and not result.kb_grounded
+    assert result.validation_status == "needs_review"
 
 
 def test_inference_with_quote_is_ungrounded() -> None:

@@ -1,0 +1,107 @@
+FF...................................................................... [ 16%]
+........................................................................ [ 33%]
+................................F....................................... [ 50%]
+........................................................................ [ 67%]
+........................................................................ [ 84%]
+...................................................................      [100%]
+================================== FAILURES ===================================
+___________________________ test_clean_copy_passes ____________________________
+
+workdir = WindowsPath('C:/Users/admin/Desktop/评审团/.testwork/8fde72da7c9c')
+repo_copy = <function repo_copy.<locals>._copy at 0x000001775C8C6FC0>
+
+    def test_clean_copy_passes(workdir: Path, repo_copy) -> None:
+        root = repo_copy(workdir / "clean")
+        result = _run_checker(root)
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: -- docs: 失败（1 错误）
+E
+E         [NOTE] docs: 决策阶段分布: M0=55（BIZ-001,BIZ-002,BIZ-003,BIZ-004,BIZ-005,BIZ-007,BIZ-008,BIZ-010,D99,D104,D143,D146,D147,D148,D149,D152,D153,D154,D155,D156,D157,D158,D164,D165,D166,D167,D168,D169,D170,D171,D172,D173,D174,D178,D179,D180,D187,D193,D194,D195,D203,D204,D205,D206,D208,D209,D210,D211,D212,D214,D216,D217,D219,D220,D221）；M1=10（D100,D122,D159,D161,D176,D188,D198,D222,D223,D224）；M2=7（D175,D181,D189,D197,D213,D215,D218）；M4=4（BIZ-009,BIZ-013,D137,D138）；M5=17（BIZ-011,BIZ-012,BIZ-014,PD-001,PD-002,D89,D101,D121,D135,D142,D150,D151,D162,D177,D190,D199,D201）；M6=10（D106,D140,D141,D160,D163,D182,D183,D191,D196,D207）；production=12（BIZ-006,BIZ-015,PD-003,PD-004,PD-005,D123,D184,D185,D186,D192,D200,D202）
+E         [ERROR] docs | scripts/README.md | 脚本索引 | 缺少脚本说明: benchmark_queue.py
+E
+E         结果: 失败（14 项检查，1 个错误，0 个警告）
+E
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Users\\admin\\Desktop\\评审团\\.venv\\Scripts\\python.exe', 'C:\\Users\\admin\\Desktop\\评审团\\...202）\n[ERROR] docs | scripts/README.md | 脚本索引 | 缺少脚本说明: benchmark_queue.py\n\n结果: 失败（14 项检查，1 个错误，0 个警告）\n', stderr='').returncode
+
+tests\contract\test_contract_drift.py:39: AssertionError
+_______________________ test_full_contract_check_passes _______________________
+
+workdir = WindowsPath('C:/Users/admin/Desktop/评审团/.testwork/9b24b599ed30')
+repo_copy = <function repo_copy.<locals>._copy at 0x000001775C968CC0>
+
+    def test_full_contract_check_passes(workdir: Path, repo_copy) -> None:
+        root = repo_copy(workdir / "full")
+        result = _run_full_checker(root)
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: -- docs: 失败（1 错误）
+E         -- rubric: 通过（0 错误）
+E         -- verdict-cases: 通过（0 错误）
+E         -- m0-acceptance: 通过（0 错误）
+E         -- execution-plan: 通过（0 错误）
+E         -- knowledge: 通过（0 错误）
+E
+E         [NOTE] docs: 决策阶段分布: M0=55（BIZ-001,BIZ-002,BIZ-003,BIZ-004,BIZ-005,BIZ-007,BIZ-008,BIZ-010,D99,D104,D143,D146,D147,D148,D149,D152,D153,D154,D155,D156,D157,D158,D164,D165,D166,D167,D168,D169,D170,D171,D172,D173,D174,D178,D179,D180,D187,D193,D194,D195,D203,D204,D205,D206,D208,D209,D210,D211,D212,D214,D216,D217,D219,D220,D221）；M1=10（D100,D122,D159,D161,D176,D188,D198,D222,D223,D224）；M2=7（D175,D181,D189,D197,D213,D215,D218）；M4=4（BIZ-009,BIZ-013,D137,D138）；M5=17（BIZ-011,BIZ-012,BIZ-014,PD-001,PD-002,D89,D101,D121,D135,D142,D150,D151,D162,D177,D190,D199,D201）；M6=10（D106,D140,D141,D160,D163,D182,D183,D191,D196,D207）；production=12（BIZ-006,BIZ-015,PD-003,PD-004,PD-005,D123,D184,D185,D186,D192,D200,D202）
+E         [NOTE] rubric: Rubric 状态为 'draft'：按 rubric/README 与 docs/08 §7，生产模式必须使用 published 版本
+E         [NOTE] verdict-cases: verdict 用例 36 条，规则 30 条，不变量 8 条，属性抽样 3200 次
+E         [NOTE] m0-acceptance: M0 条件 10 项 / 契约项 5 项 / 用例 40 条 / CI Job 5 个
+E         [NOTE] execution-plan: 执行台账：open 待决 9 项，验证项 13 项
+E         [NOTE] knowledge: 37 documents; 57 formal release blockers; offline content audit, runtime activation not queried
+E         [ERROR] docs | scripts/README.md | 脚本索引 | 缺少脚本说明: benchmark_queue.py
+E         [WARN] knowledge | kb_content/ | source | Git source .gitignore: changed; original bytes preserved in verified snapshot archive
+E         [WARN] knowledge | kb_content/ | source | Git source data/minishop.db: missing; original bytes preserved in verified snapshot archive
+E
+E         结果: 失败（32 项检查，1 个错误，2 个警告）
+E
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Users\\admin\\Desktop\\评审团\\.venv\\Scripts\\python.exe', 'C:\\Users\\admin\\Desktop\\评审团\\...inishop.db: missing; original bytes preserved in verified snapshot archive\n\n结果: 失败（32 项检查，1 个错误，2 个警告）\n", stderr='').returncode
+
+tests\contract\test_contract_drift.py:45: AssertionError
+________________ test_contract_checks_pass_without_model_keys _________________
+
+    def test_contract_checks_pass_without_model_keys() -> None:
+        process = subprocess.run(
+            [sys.executable, "scripts/check_contracts.py"],
+            cwd=REPO_ROOT,
+            env=_clean_env(),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=180,
+        )
+        output = process.stdout + process.stderr
+>       assert process.returncode == 0, output
+E       AssertionError: -- docs: 失败（1 错误）
+E         -- rubric: 通过（0 错误）
+E         -- verdict-cases: 通过（0 错误）
+E         -- m0-acceptance: 通过（0 错误）
+E         -- execution-plan: 通过（0 错误）
+E         -- knowledge: 通过（0 错误）
+E
+E         [NOTE] docs: 决策阶段分布: M0=55（BIZ-001,BIZ-002,BIZ-003,BIZ-004,BIZ-005,BIZ-007,BIZ-008,BIZ-010,D99,D104,D143,D146,D147,D148,D149,D152,D153,D154,D155,D156,D157,D158,D164,D165,D166,D167,D168,D169,D170,D171,D172,D173,D174,D178,D179,D180,D187,D193,D194,D195,D203,D204,D205,D206,D208,D209,D210,D211,D212,D214,D216,D217,D219,D220,D221）；M1=10（D100,D122,D159,D161,D176,D188,D198,D222,D223,D224）；M2=7（D175,D181,D189,D197,D213,D215,D218）；M4=4（BIZ-009,BIZ-013,D137,D138）；M5=17（BIZ-011,BIZ-012,BIZ-014,PD-001,PD-002,D89,D101,D121,D135,D142,D150,D151,D162,D177,D190,D199,D201）；M6=10（D106,D140,D141,D160,D163,D182,D183,D191,D196,D207）；production=12（BIZ-006,BIZ-015,PD-003,PD-004,PD-005,D123,D184,D185,D186,D192,D200,D202）
+E         [NOTE] rubric: Rubric 状态为 'draft'：按 rubric/README 与 docs/08 §7，生产模式必须使用 published 版本
+E         [NOTE] verdict-cases: verdict 用例 36 条，规则 30 条，不变量 8 条，属性抽样 3200 次
+E         [NOTE] m0-acceptance: M0 条件 10 项 / 契约项 5 项 / 用例 40 条 / CI Job 5 个
+E         [NOTE] execution-plan: 执行台账：open 待决 9 项，验证项 13 项
+E         [NOTE] knowledge: 37 documents; 57 formal release blockers; offline content audit, runtime activation not queried
+E         [ERROR] docs | scripts/README.md | 脚本索引 | 缺少脚本说明: benchmark_queue.py
+E         [WARN] knowledge | kb_content/ | source | Git source .gitignore: changed; original bytes preserved in verified snapshot archive
+E         [WARN] knowledge | kb_content/ | source | Git source data/minishop.db: missing; original bytes preserved in verified snapshot archive
+E
+E         结果: 失败（32 项检查，1 个错误，2 个警告）
+E
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Users\\admin\\Desktop\\评审团\\.venv\\Scripts\\python.exe', 'scripts/check_contracts.py'], re...inishop.db: missing; original bytes preserved in verified snapshot archive\n\n结果: 失败（32 项检查，1 个错误，2 个警告）\n", stderr='').returncode
+
+tests\m0\test_ci_smoke.py:38: AssertionError
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  C:\Users\admin\Desktop\评审团\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/contract/test_contract_drift.py::test_clean_copy_passes - Assert...
+FAILED tests/contract/test_contract_drift.py::test_full_contract_check_passes
+FAILED tests/m0/test_ci_smoke.py::test_contract_checks_pass_without_model_keys
+3 failed, 424 passed, 1 warning in 124.61s (0:02:04)

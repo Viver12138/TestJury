@@ -2,6 +2,47 @@ from app.llm.base import ReviewOpinion
 from app.pipeline.fusion import fuse
 
 
+def test_http_errors_merge_only_with_matching_message_code_source_and_quote():
+    base = {"step_index": 1, "dimension": "business", "severity": "major", "category": "规则冲突",
+            "evidence_quote": "提交他人地址却预期创建成功", "kb_grounded": True, "kb_refs": ["ownership"],
+            "evidence_status": "grounded"}
+    first = {**base, "rationale": "外部地址应拒绝", "suggestion": "改为HTTP 400，错误信息为收货地址不存在。"}
+    second = {**base, "rationale": "所属主体不一致会触发校验失败",
+              "suggestion": "HTTP 400，响应提示“收货地址不存在”，订单不增加。"}
+    def opinions(item):
+        return [ReviewOpinion("chief_blind", "", [first]), ReviewOpinion("jury_a", "", [item])]
+    assert len(fuse("r", {}, opinions(second))) == 1
+    # Even identical rationale must not hide an incompatible proposed correction.
+    for patch in ({"suggestion": "HTTP 409，错误信息为收货地址不存在"},
+                  {"suggestion": "HTTP 400，错误信息为优惠券不存在"}):
+        assert len(fuse("r", {}, opinions({**first, **patch}))) == 2
+    for patch in ({"kb_refs": ["another-rule"]}, {"evidence_quote": "另一个请求的预期"}, {"kb_grounded": False}):
+        assert len(fuse("r", {}, opinions({**second, **patch}))) == 2
+
+
+def test_selector_arguments_are_not_fixes_and_distinct_objects_remain_separate():
+    from app.pipeline.fusion import _correction_assertions
+
+    assert _correction_assertions("查询inventory_logs(sku_id=1)，断言change_quantity=-2。") == {("change_quantity", "-2")}
+    assert _correction_assertions("改为orders(id=10).status保持PAID。") == {("orders(id=10).status", "PAID")}
+    base = {"step_index": 1, "dimension": "business", "severity": "major", "category": "规则冲突",
+            "evidence_quote": "两个订单状态都为SHIPPED", "kb_grounded": True, "kb_refs": ["state-rule"],
+            "rationale": "订单状态预期错误", "evidence_status": "grounded"}
+    left = {**base, "suggestion": "orders(id=10).status=PAID"}
+    right = {**base, "suggestion": "orders(id=11).status=PAID"}
+    assert len(fuse("r", {}, [ReviewOpinion("chief_blind", "", [left]), ReviewOpinion("jury_a", "", [right])])) == 2
+
+
+def test_two_shared_numeric_corrections_allow_consistent_extra_observations():
+    base = {"step_index": 1, "dimension": "business", "severity": "major", "category": "规则冲突",
+            "evidence_quote": "达到门槛却拒绝优惠券", "kb_grounded": True, "kb_refs": ["threshold"],
+            "evidence_status": "grounded"}
+    left = {**base, "rationale": "门槛包含等号", "suggestion": "discount_amount=10; pay_amount=90"}
+    right = {**base, "rationale": "优惠资格判断方向不正确",
+             "suggestion": "discount_amount=10; pay_amount=90; total_amount=100"}
+    assert len(fuse("r", {}, [ReviewOpinion("chief_blind", "", [left]), ReviewOpinion("jury_a", "", [right])])) == 1
+
+
 def test_same_step_and_category_does_not_merge_distinct_business_errors():
     base = {"scope": "step", "step_index": 1, "dimension": "business", "severity": "major",
             "category": "规则冲突", "evidence_status": "grounded"}

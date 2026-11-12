@@ -1,0 +1,308 @@
+{
+  "actor_type": "ai",
+  "authorization": "design/changes/2026-11-12-delegated-development.md",
+  "source_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+  "source_quantity_verification": "evidence/M2/minishop_gold_source_quantity_verification.json",
+  "items": [
+    {
+      "id": "G-001-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "b791f2aede21db9eeb0a03adefa5b65fd6e47cd9139764b8b3c9d3deaa678c15",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-001-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "7dcfc0ecb476ee76e1d05915da2f90aa7ba356c4a4623df7b288ae83a31a6c47",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-002-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-002"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "2c70ebe96716833f1a37cb9136450bb95d686d656dace2a3d48627f00f1f38c7",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-002-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-002"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "3551fb40d549fa7f0ccc26f1a7254a2bd3999f7cb64b2da0d300eacdb920911f",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-003-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-003"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "f90928261fc106324278280f79a67c1afc23b487f99ce3078abfdca0a73ef46b",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-003-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-003"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "3dac6125d460284251849920dd665278b925ec8f0557bad30e39949bab537b27",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-004-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-004"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "05cc0a4f49e501ccf29584c77855f44329e6f71a2e6217fa398cbfe5b89d35ac",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-004-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-004"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "e0dfd0314de762087fe81d33e95c91c11de687fce7e9134c5b1c78a31bc727d1",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-005-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-005"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "3cd4bbbf1c1af8af0afaf5f68f221042d2e6fce668c3e9f6c91ac494e9319d31",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-005-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-005"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "654a6289ba6e6a575007063f0d46d7a4669b77139f7835b112ba1eea545f0c6b",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-006-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-006"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "64a2d8abbc54153f10779727fd0d2884029b5751bfdc40ff9ec8d26200d086d6",
+      "decision": "revised",
+      "reason": "标题承诺验证购物车变化，v3只断言记录存在遗漏数量不变；正反例均补quantity=1，反例仅保留有意植入的下单扣库存错误。"
+    },
+    {
+      "id": "G-006-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-006"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "bf01a67a31bbcf68b6b8780f43e820f2633c6407cfceb774b9d7fc0ec71a1906",
+      "decision": "revised",
+      "reason": "标题承诺验证购物车变化，v3只断言记录存在遗漏数量不变；正反例均补quantity=1，反例仅保留有意植入的下单扣库存错误。"
+    },
+    {
+      "id": "G-007-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-007"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "84407f35a14c3f22036ca5e4b12e057f87b76962c7ef20ac166b8193b9a44ea8",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-007-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-007"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "573a7ae617e744a9fd035ecbf7cdebaf11133c87ed89caa2956eac7093af67e2",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-008-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-008"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "55f3e721ab89b7ad3da2afe09cd0165558386c5569a3059a3694f63da51a7d6d",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-008-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-008"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "c9c8b63b39108f35050dd9ce82aa1cd0e405ce3c4b5b60693555fae2b4f99ef7",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-009-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-009"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "95ab1384cd3effa7e54ce006b8088ac051efff0a3d0796246ffb9894ea9cadb7",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-009-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-009"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "89e89675459aae465980da7315ab1c8e5cbc46a7d25bab8faed0eaa63a7d031e",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-010-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-010"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "70b331c6cc078a736ca0597eb88eb34d6a19c543d47f9771127cfe194abe2300",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-010-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-010"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "c7ae58769b409cd991ceb959b3dbd5126c34837b3601f59099fe222b892e95cd",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-011-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-011"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "643013917b3473b18fc1f56dab8f597b3ccdf4448d8e69552a2e52cb1ea44a02",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-011-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-011"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "36bef0b53d5b291a145bf532cfc2b2b6d2fd3e43760ab2da71931689f3c37e22",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-012-positive",
+      "source_doc_ids": [
+        "STATE-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "245d7be7231069cdc6b03f276dbd852652f42815c5b7963b29d4cb7bb49cff4f",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-012-negative",
+      "source_doc_ids": [
+        "STATE-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "33fd72db692f6b343b3ede502135f4d49620837ce00a497be201da4cd59ee12f",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-013-positive",
+      "source_doc_ids": [
+        "STATE-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "b01f5604e3accc46226bf64ca0b5b42e5836150692348fccf98706a7a29620bb",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-013-negative",
+      "source_doc_ids": [
+        "STATE-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "2496b3afb25b4537beb2232f613756e64523df93c406d7628ff6ca7b95ec02e1",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-014-positive",
+      "source_doc_ids": [
+        "API-ORDER-003"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "7164730e3c8eff212dd7bbbf68a5f93d234c1d5810b8f81f59c899fb108eae27",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-014-negative",
+      "source_doc_ids": [
+        "API-ORDER-003"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "448015dba3c8f977e1ea8d708adf999d5e5b5eea82208bc18d3d311899372b31",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-015-positive",
+      "source_doc_ids": [
+        "REQ-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "dec269a57ab71e7901cecb89e5ef62ed1d74fbf9ac4dfd3e4efad8bd0960b739",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    },
+    {
+      "id": "G-015-negative",
+      "source_doc_ids": [
+        "REQ-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "dba45a80c347aeef22eac7620a29ba5de72011103f941b027d70d23c2b26d964",
+      "decision": "carried_forward",
+      "reason": "业务场景、标签及划分沿用v3；更新复核记录位置。"
+    }
+  ]
+}

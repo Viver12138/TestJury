@@ -1,0 +1,418 @@
+{
+  "actor": "codex-delegated-reviewer",
+  "actor_type": "ai",
+  "independent_human_validation": false,
+  "authorization": "design/changes/2026-11-12-delegated-development.md",
+  "source_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+  "source_execution_evidence": "evidence/M2/minishop_gold_source_quantity_verification.json",
+  "source_execution_sha256": "4e5a2990e3dc4765b0f1d35c517d3c6490bc92dbe3e23ab373b6a2b545f7dc29",
+  "dataset_version": "minishop-gold-3",
+  "scope": "all 30 authored cases; delegated diagnostic adjudication",
+  "original_reports_mutated": false,
+  "gold_labels_mutated": false,
+  "report_hash_format": "UTF-8 with LF line endings",
+  "counts": {
+    "valid": 15,
+    "duplicate": 13,
+    "valid_unlabeled_gold_defect": 2,
+    "unsupported_requirement": 6
+  },
+  "records": [
+    {
+      "case_id": "G-001-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-001-negative.json",
+      "report_sha256": "a7751c6abf67388917f85374e6797fd7c1984acec4a2080c3a6bed1817ce33dc",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "显式夹具单价100、数量2、无券，服务端应付金额为200；客户端0.01不得覆盖。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-001-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-001-positive.json",
+      "report_sha256": "8bfee089c90d4187254dfd6f00e1dbd643c3e1c234dd7dcf429f875cbe63e241",
+      "decisions": []
+    },
+    {
+      "case_id": "G-002-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-002-negative.json",
+      "report_sha256": "9551f655aded457bae0f60aca7fa5cbf27ad6850f1e0c8f5358eafdabc6fb10a",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "B使用A的地址应返回400且不创建订单。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "duplicate_of": 1,
+          "reason": "引用、错误预期和修正均对应相同地址归属冲突；额外查询建议不构成新问题。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-002-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-002-positive.json",
+      "report_sha256": "65f9b2c6428ed57d008f6415d6f71b460e9b6196fbdb0cabe7c0075ce19e1396",
+      "decisions": []
+    },
+    {
+      "case_id": "G-003-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-003-negative.json",
+      "report_sha256": "606b08a8a283be87d5efaaee2176f5f6338824b968c2ec9d467a9096727c771b",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "库存1、请求数量2应返回409且不建单，201预期与冻结源码不符。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "duplicate_of": 1,
+          "reason": "重复同一库存不足拒绝规则与同一错误预期。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-003-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-003-positive.json",
+      "report_sha256": "3bf2c992513270e1589c830f0c22cd2276fc14f83ec6301a865dbf0e5578cc5e",
+      "decisions": []
+    },
+    {
+      "case_id": "G-004-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-004-negative.json",
+      "report_sha256": "b81cb652a38df5fb948b05ec174f6e3236ef2568d5607d1185f516ac05a09b44",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "B使用A的用户券应返回400优惠券不存在，不得创建订单或抵扣。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "duplicate_of": 1,
+          "reason": "重复同一用户券归属冲突；建议增加可选的券状态查询不是独立缺陷。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-004-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-004-positive.json",
+      "report_sha256": "b0fc5b0ca2416589f70d831db4f04b868200af6a698422336cc587dd3b5d18d9",
+      "decisions": []
+    },
+    {
+      "case_id": "G-005-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-005-negative.json",
+      "report_sha256": "8592cc737635c8b0a79d9a047dfbb540e89d88f9bcc83a07649fc105ca812884",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "金额等于门槛100即可用券，预览应成功且优惠10、应付90。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "duplicate_of": 1,
+          "reason": "重复同一门槛包含等号的规则和同一错误409预期。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-005-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-005-positive.json",
+      "report_sha256": "ae271a7ce2b37e24fdfbb3eaee4eabee8a20cd6d2ed64720ab16da2d523b3086",
+      "decisions": []
+    },
+    {
+      "case_id": "G-006-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-006-negative.json",
+      "report_sha256": "c0a171a4b16ab7be545dcd2fff404a11afbd7e9398e0b5ac93808f0fa06f040b",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "创建订单不扣库存，夹具库存10应保持10，库存9预期错误。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "duplicate_of": 1,
+          "reason": "重复同一创建订单扣库存冲突。"
+        },
+        {
+          "issue_no": 3,
+          "decision": "valid_unlabeled_gold_defect",
+          "reason": "与正例相同，标题要求验证购物车不变却只断言存在；补数量1断言后保留原库存冲突。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-006-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-006-positive.json",
+      "report_sha256": "f140bfe890433cba786fd8e735add9324f1a18b85bb765bfab8f435538cb97b4",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid_unlabeled_gold_defect",
+          "reason": "标题明确验证购物车变化，规则禁止修改购物车项；仅断言存在无法发现数量变化。已查询购物车且夹具数量1，应补数量不变断言。旧版正例标签漏标此缺陷。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "duplicate_of": 1,
+          "reason": "同一数量不变断言缺失，仅引用范围不同。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-007-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-007-negative.json",
+      "report_sha256": "67113d76ffd7188a0b261dd542087017dbbeeae8a3515195c3a844d3458b27a3",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "取消应归还优惠券并回退模板计数；USED与计数1的预期错误。自动引用未通过，业务真值由冻结源码及RULE-ORDER-007交叉验证；不改写原报告的need_human。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "duplicate_of": 1,
+          "reason": "重复同一券归还规则；新增used_at/cancelled_at观测建议不构成另一个已知业务冲突。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-007-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-007-positive.json",
+      "report_sha256": "7e6b343f6f52e52e103e18ecb7a56583e14baa7baddcbfa156b1741870c6929c",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "unsupported_requirement",
+          "reason": "现有status=UNUSED、used_order_id=0及计数回退已能验证券归还目的；用例未承诺验证所有审计字段。要求额外查询used_at属于可选覆盖增强，不能仅因知识列出该字段就判本条用例major。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-008-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-008-negative.json",
+      "report_sha256": "0297cc48977293b08c75793b4cfda17fb1c0191b9fb036028aadaef63cb0ba0f",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "失败支付保留PENDING_PAYMENT，重新创建支付应201；取消和409预期错误。原引用校验未通过，AI以RULE-ORDER-008及源码执行结果复核，不提升原自动证据等级。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "duplicate_of": 1,
+          "reason": "同一状态与重试冲突，引用的用例原文为第1项子串；不因引用长度不同形成新根因。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-008-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-008-positive.json",
+      "report_sha256": "4739e990f1712e800dfe10f0d5edcfb323d25daa4c2cef6ec425af358a73d874",
+      "decisions": []
+    },
+    {
+      "case_id": "G-009-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-009-negative.json",
+      "report_sha256": "e0b9e759ed79d649b002425fab633919fab77d4c521370030cfc0fd4ef894788",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "数量2支付成功后库存各8、销量2并写-2日志，库存销量不变预期错误。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "duplicate_of": 1,
+          "reason": "重复同一支付成功库存销量与日志副作用冲突。"
+        },
+        {
+          "issue_no": 3,
+          "decision": "unsupported_requirement",
+          "reason": "case_id中的negative表示评审负例身份，不约束业务场景正反向；编号是管理标识，不能据此要求改变业务意图或用例编号。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-009-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-009-positive.json",
+      "report_sha256": "15b87cfa68da27762f0c870aecb9c45172d13ceb87332041fc03b084f4c620ba",
+      "decisions": []
+    },
+    {
+      "case_id": "G-010-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-010-negative.json",
+      "report_sha256": "15572a985e9019b1b71b74cb3cd8e6a5890374fa08446d240a10dc12d88bad85",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "待支付订单不可发货，应409并保持PENDING_PAYMENT；成功变SHIPPED的断言错误。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-010-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-010-positive.json",
+      "report_sha256": "0d9e232d656ca1b0a479363325e976c41dc6f142f5902b653099888229c0bc76",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "unsupported_requirement",
+          "reason": "冻结源码探针已观察到完全相同的409文案；检索片段没提供文案不代表用例文案错误。原系统将该项保留为disputed，AI复核不要求放宽正确断言。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-011-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-011-negative.json",
+      "report_sha256": "af371eee07916c6476604ab060e626bfbc51835e8283d8bccf22a8dab2d167fd",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "详情拒绝403、取消拒绝404，取消也403的预期与冻结实现不符。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "duplicate_of": 1,
+          "reason": "重复同一个取消状态码错误，仅截取更短的用例引用。"
+        },
+        {
+          "issue_no": 3,
+          "decision": "unsupported_requirement",
+          "reason": "问句标题能清楚表达要比较的行为，判定标准由步骤预期提供；预期错误已单独提出，标题不需要重复答案，改成陈述句是风格偏好，不能另判blocker。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-011-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-011-positive.json",
+      "report_sha256": "9c4df10723510b047eaf78b1a51e32f8aa167a6bea246dda6bf56b8eb8548af1",
+      "decisions": []
+    },
+    {
+      "case_id": "G-012-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-012-negative.json",
+      "report_sha256": "d67d2d64549f1f645c2970f6551078a23ed8e9126d7e6f1c2f9fb4a4b89e87c1",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "冻结源码支付成功进入PAID，PENDING_SHIPMENT没有赋值路径；预期错误。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "duplicate_of": 1,
+          "reason": "重复相同的支付后状态冲突，自动引用失败不改变业务根因；保留原降级状态。"
+        },
+        {
+          "issue_no": 3,
+          "decision": "unsupported_requirement",
+          "reason": "问句标题明确比较两个状态，判断标准由步骤预期给出；不能把标题改写风格当独立缺陷。"
+        },
+        {
+          "issue_no": 4,
+          "decision": "unsupported_requirement",
+          "reason": "测试框架的数据库查询和快照能力声明不要求每条用例都使用；本条响应与详情查询可验证目标状态，不必增加数据库操作。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-012-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-012-positive.json",
+      "report_sha256": "4da18d2da5eb86088684961d89dc4672dea7a829eadae776a458998f4a9c1738",
+      "decisions": []
+    },
+    {
+      "case_id": "G-013-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-013-negative.json",
+      "report_sha256": "9c150123dc9a970ceb1b262ae99575e60c5b52c85484b67b49b5b4b9b799427e",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "当前实现退款拒绝后恢复PAID；恢复原COMPLETED是目标修复要求，不适用于current_implementation基线。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-013-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-013-positive.json",
+      "report_sha256": "62fdb114f7e4861921c280d5c7c13976b56809bfa7f6206fc424f3ff4248995e",
+      "decisions": []
+    },
+    {
+      "case_id": "G-014-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-014-negative.json",
+      "report_sha256": "26eeb6e00f8ffad3ddb72603ef545c3705d4a0535bff5655c54bf8b27415b090",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "冻结详情接口仅在存在记录时返回payment/shipment/refund键；三个键存在且null的预期错误。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "duplicate_of": 1,
+          "reason": "重复同一缺省与null混淆，证据校验降级不形成新问题；附带标题改写不是必要修复。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-014-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-014-positive.json",
+      "report_sha256": "ddfdea06b04e9be34e425620715bf435ec92a3174a4b7ae649b8a95b8e91c930",
+      "decisions": []
+    },
+    {
+      "case_id": "G-015-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-015-negative.json",
+      "report_sha256": "677138f25f8691658f4e9c8c49422ef9957b2175804f7920c56ebf3a5c7c4df9",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "预览不占用优惠券，券应保持UNUSED；需求行为片段已提供直接证据，USED预期错误。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "duplicate_of": 1,
+          "reason": "重复同一预览占券冲突，引用为第1项子串，不能按引用长度当作独立问题。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-015-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-015-positive.json",
+      "report_sha256": "2b6185a02770a7a8388481d568231195c4fa5e69f442c4eb75a453c5a9f1dd61",
+      "decisions": []
+    }
+  ],
+  "limitations": [
+    "Reviewer is the developer and dataset author, not independent blind adjudication",
+    "Truth of a defect does not upgrade failed automated quotation checks",
+    "Report issues may be disputed/need_human; counts are not all adopted issues"
+  ]
+}

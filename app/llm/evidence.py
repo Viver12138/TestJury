@@ -25,7 +25,6 @@ def _norm(text: str) -> str:
 
 def case_corpus(case: dict[str, Any]) -> str:
     parts: list[str] = [
-        str(case.get("case_id") or ""),
         str(case.get("title") or ""),
         str(case.get("module") or ""),
     ]
@@ -112,7 +111,7 @@ def verify_evidence(
     if claimed_grounded and not valid_kb_refs:
         warnings.append("kb_grounded_without_valid_refs")
 
-    invalid_citation = bool(invalid_evidence_refs or invalid_kb_refs)
+    invalid_citation = bool(invalid_evidence_refs or invalid_kb_refs or (valid_kb_refs and not quote_ok))
     if valid_kb_refs and knowledge_evidence is not None:
         documents = {c["chunk_id"]: c for c in knowledge_evidence}
         kb_quote = issue.get("kb_quote")
@@ -134,6 +133,7 @@ def verify_evidence(
 
     if invalid_citation:
         status = "insufficient"
+        kb_grounded = False
     elif valid_kb_refs and evidence_type in (
         EvidenceType.BUSINESS_RULE.value,
         EvidenceType.REQUIREMENT.value,

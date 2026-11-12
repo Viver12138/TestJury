@@ -9,7 +9,7 @@ from app.knowledge.evaluation import load_dataset
 ROOT = Path(__file__).resolve().parents[2]
 
 
-@pytest.mark.parametrize("version", ["v1", "v2", "v3"])
+@pytest.mark.parametrize("version", ["v1", "v2", "v3", "v4"])
 def test_authored_gold_is_frozen_and_family_disjoint(version):
     manifest, data = load_dataset(ROOT / "datasets/minishop" / version)
     assert len(data["review.jsonl"]) == 30

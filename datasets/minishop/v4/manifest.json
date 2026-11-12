@@ -1,0 +1,25 @@
+{
+  "version": "minishop-gold-4",
+  "annotation_type": "delegated_ai",
+  "author": "codex-delegated-reviewer",
+  "authorization": "design/changes/2026-11-12-delegated-development.md",
+  "source_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+  "baseline": "current_implementation",
+  "split_unit": "scenario_family",
+  "limitations": [
+    "代理编写并复核的种子黄金集，不是独立人工盲标",
+    "当前仅MiniShop order与冻结源码基线",
+    "不能以离线检索分数代替真实模型评审效果",
+    "沿用已见过的场景族并根据诊断修订，不是独立盲测集；v1/v2/v3和原始结果保留"
+  ],
+  "files": {
+    "retrieval.jsonl": "bfef25226dfdd7644800fe1c0754fb30f451a2e1de124971e6154319782ee95f",
+    "review.jsonl": "69999d177f72cf98655e65feaa84e5e4fd607f4ec03f6345761c5ab65aaf0cd0"
+  },
+  "counts": {
+    "retrieval": 18,
+    "review": 30
+  },
+  "supersedes": "minishop-gold-3",
+  "revision_reason": "Complete cart quantity observation promised by G-006 scope; retain original diagnoses"
+}

@@ -1,0 +1,693 @@
+{
+  "id": "G-007-positive",
+  "mode": "live",
+  "split": "regression",
+  "build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+  "code_fingerprint": "e29585b1afc75845a0a489386e242f637df97d23167cc5c7fc799a026bf18e39",
+  "evaluation_budget": {
+    "review_tokens": 60000,
+    "review_cost": 2.0,
+    "batch_cost": 60.0,
+    "daily_cost": 500.0
+  },
+  "dataset_version": "minishop-gold-3",
+  "dataset_files": {
+    "retrieval.jsonl": "bfef25226dfdd7644800fe1c0754fb30f451a2e1de124971e6154319782ee95f",
+    "review.jsonl": "e28ccaeb34632659948ac82bc2af40b9bb3e43ad1c9023ef3fbd20f33d745948"
+  },
+  "annotation_type": "delegated_ai",
+  "status": "done",
+  "error": null,
+  "expected_count": 0,
+  "reported_count": 1,
+  "matched_count": 0,
+  "report": {
+    "review_id": "4b819a57-8ecf-4a0a-baa7-ddf3c6a1253e",
+    "case_id": "G-007-positive",
+    "case_version": 3,
+    "module": "order",
+    "test_type": "functional",
+    "test_type_source": "request",
+    "generation": 1,
+    "parent_review_id": null,
+    "status": "done",
+    "stage": "render",
+    "ai_verdict": "conditional",
+    "human_status": "pending",
+    "report_schema_version": "report-1.0",
+    "degraded": true,
+    "degraded_reasons": [
+      "arbitration_skipped"
+    ],
+    "participants": [
+      "chief_blind:qwen3.8-max",
+      "jury_a:deepseek-flash"
+    ],
+    "topology": "dual",
+    "review_participants": [
+      {
+        "participant_id": "p-01",
+        "role_id": "chief_blind",
+        "status": "active",
+        "model": "qwen3.8-max",
+        "actual_model": "qwen3.8-max"
+      },
+      {
+        "participant_id": "p-02",
+        "role_id": "jury_a",
+        "status": "active",
+        "model": "deepseek-flash",
+        "actual_model": "deepseek-flash"
+      },
+      {
+        "participant_id": "p-03",
+        "role_id": "jury_b",
+        "status": "absent",
+        "model": "kimi-k3.1-pro",
+        "actual_model": null
+      }
+    ],
+    "review_completeness": {
+      "blind": "2/2",
+      "vote": "2/2",
+      "arbitration": "skipped",
+      "arbitration_required": false,
+      "stages_completed": [
+        "input_check",
+        "kb_retrieve",
+        "blind_review",
+        "fusion",
+        "vote",
+        "verdict",
+        "render"
+      ],
+      "stages_skipped": [
+        "preprocess",
+        "arbitration"
+      ],
+      "stages_failed": [],
+      "stages_pending": [],
+      "complete": true,
+      "full_participation": false
+    },
+    "input_quality": {
+      "hard_errors": [],
+      "soft_issues": []
+    },
+    "versions": {
+      "kb": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+      "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+      "kb_build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+      "rubric": "0.2.0",
+      "prompts": {
+        "preprocess": "p-m0-pre-01",
+        "chief_blind": "p-m0-chief-01",
+        "jury_a": "p-m0-jury-a-01",
+        "jury_b": "p-m0-jury-b-01",
+        "vote": "p-m0-vote-01",
+        "arbitration": "p-m0-arb-01"
+      },
+      "retrieval_config": "161fcb22",
+      "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+      "model_config": "7e35c71d",
+      "models": {
+        "chief_blind": "qwen3.8-max",
+        "jury_a": "deepseek-flash",
+        "jury_b": "kimi-k3.1-pro",
+        "vote": "qwen3.8-max",
+        "arbitration": "qwen3.8-max",
+        "preprocess": "deepseek-flash"
+      },
+      "price_config": "price-unverified-2026-11"
+    },
+    "summary": {
+      "total_issues": 1,
+      "blocker": 0,
+      "major": 1,
+      "suggestion": 0
+    },
+    "issues": [
+      {
+        "issue_no": 1,
+        "candidate_id": "73f5e116-64dc-49ea-9e26-533520eef6ac",
+        "step_index": 1,
+        "dimension": "business",
+        "severity": "major",
+        "category": "覆盖缺失",
+        "evidence_quote": "HTTP 200；订单CANCELLED，券UNUSED、used_order_id=0，模板used_quantity=0",
+        "rationale": "第 1 步存在「覆盖缺失」问题：标题测试目的是取消后已用券如何处理，规则要求归还时同时把 used_at 置空，本步骤只断言 status 与 used_order_id，未覆盖 used_at（推断：该字段同样是券归还的可见副作用）",
+        "suggestion": "在第 1 步的只读查询与预期中补充 user_coupons(id=7).used_at，预期为空（或 None），与 status、used_order_id 同批断言。",
+        "kb_grounded": true,
+        "kb_refs": [
+          "a3af34e93c12ab692ad90dbf1bb366e9543c434849545072686b161766d1628a"
+        ],
+        "evidence_type": "business_rule",
+        "evidence_strength": "medium",
+        "evidence_status": "grounded",
+        "evidence_refs": [
+          {
+            "ref_id": "a3af34e93c12ab692ad90dbf1bb366e9543c434849545072686b161766d1628a",
+            "verified": true
+          }
+        ],
+        "evidence_support_status": "supported",
+        "validation_status": "passed",
+        "proposed_by": [
+          "jury_a"
+        ],
+        "votes": {
+          "chief_blind": {
+            "validity": "accept",
+            "severity": "suggestion"
+          },
+          "jury_a": {
+            "validity": "accept",
+            "severity": "major"
+          }
+        },
+        "vote_summary": {
+          "support": 2,
+          "reject": 0,
+          "not_assessed": 0,
+          "uncertain": 0,
+          "support_ratio": 1.0,
+          "severity_distribution": {
+            "blocker": 0,
+            "major": 1,
+            "suggestion": 1
+          },
+          "severity_disputed": false,
+          "vote_completeness": "2/2"
+        },
+        "confidence": null,
+        "confidence_source": "uncalibrated",
+        "model_confidence": null,
+        "decision_status": null,
+        "status": "adopted",
+        "chief_decision": "adopt",
+        "chief_reason": null,
+        "human_verdict": null
+      }
+    ],
+    "human_review_items": [],
+    "kb_gaps": [],
+    "attachments": [],
+    "scope": {
+      "feature_point": "取消待支付订单之后使用过的优惠券如何处理？",
+      "scope_version": null,
+      "provided": true,
+      "coverage_claims_allowed": false,
+      "note": "v1 仅做单条用例评审，不输出功能点整体覆盖率"
+    },
+    "decision_summary": {
+      "human_status": "pending",
+      "latest_decision": null,
+      "history_count": 0
+    },
+    "appendix": {
+      "raw_opinions": {
+        "chief_blind": {
+          "summary": "用例与取消回券规则一致，前置和断言可判定。",
+          "issues": []
+        },
+        "jury_a": {
+          "summary": "用例与取消归还券规则一致，可执行；仅未断言 used_at 清空。",
+          "issues": [
+            {
+              "scope": "step",
+              "step_index": 1,
+              "dimension": "business",
+              "severity": "suggestion",
+              "category": "覆盖缺失",
+              "evidence_quote": "HTTP 200；订单CANCELLED，券UNUSED、used_order_id=0，模板used_quantity=0",
+              "rationale": "标题测试目的是取消后已用券如何处理，规则要求归还时同时把 used_at 置空，本步骤只断言 status 与 used_order_id，未覆盖 used_at（推断：该字段同样是券归还的可见副作用）。",
+              "suggestion": "在第 1 步的只读查询与预期中补充 user_coupons(id=7).used_at，预期为空（或 None），与 status、used_order_id 同批断言。",
+              "kb_grounded": true,
+              "kb_refs": [
+                "a3af34e93c12ab692ad90dbf1bb366e9543c434849545072686b161766d1628a"
+              ],
+              "evidence_refs": [
+                "a3af34e93c12ab692ad90dbf1bb366e9543c434849545072686b161766d1628a"
+              ],
+              "evidence_type": "business_rule",
+              "evidence_strength": "medium",
+              "evidence_status": "grounded",
+              "model_evidence_status": "grounded",
+              "evidence_support_status": "supported",
+              "validation_status": "passed",
+              "parse_warnings": [],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            }
+          ]
+        }
+      },
+      "disagreements": [],
+      "model_runs": [
+        {
+          "role": "chief_blind",
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "latency_ms": 95231,
+          "tokens": {
+            "request": 4774,
+            "response": 3492
+          },
+          "cost_estimate": 0.305,
+          "parse_warnings": []
+        },
+        {
+          "role": "jury_a",
+          "model": "deepseek-flash",
+          "status": "ok",
+          "latency_ms": 9443,
+          "tokens": {
+            "request": 4685,
+            "response": 1839
+          },
+          "cost_estimate": 0.008363,
+          "parse_warnings": []
+        },
+        {
+          "role": "chief_blind",
+          "operation": "vote",
+          "candidate_no": 1,
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 39253,
+          "tokens": {
+            "request": 2875,
+            "response": 1297
+          },
+          "cost_estimate": 0.13532,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 39254
+            }
+          ],
+          "provider": null,
+          "request_hash": "8637f04a18c3fbeea35bb1dd8c3a6b36fec5a1edd08c2b85ab974dc194617246",
+          "response_hash": "9c783bd83359844718b55c084a6e65aed182405f6d0bd597512410ce9626c75a",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "jury_a",
+          "operation": "vote",
+          "candidate_no": 1,
+          "model": "deepseek-flash",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 5714,
+          "tokens": {
+            "request": 2710,
+            "response": 764
+          },
+          "cost_estimate": 0.004238,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 5714
+            }
+          ],
+          "provider": null,
+          "request_hash": "7c9f993a2ed5f653bcf9e0fcc2b3a2bcf18dd4f0a5b563a927df9e6a430e7a84",
+          "response_hash": "23e51d289b81d02818e4736e4ead4d96dafd56762b854cd107c5bf2033cd61bf",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        }
+      ],
+      "normalized_case": {
+        "case_id": "G-007-positive",
+        "case_version": 3,
+        "module": "order",
+        "test_type": "functional",
+        "title": "取消待支付订单之后使用过的优惠券如何处理？",
+        "priority": null,
+        "source": "manual",
+        "preconditions": [
+          "A 已登录；A 的订单 10 为PENDING_PAYMENT，使用用户券7；券USED且used_order_id=10，模板used_quantity=1",
+          "每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。",
+          "用户券7关联模板7，模板无其他订单使用。"
+        ],
+        "steps": [
+          {
+            "index": 1,
+            "action": "API POST /api/orders/10/cancel；只读查询 orders(id=10).status、user_coupons(id=7).status/used_order_id 和关联 coupons.used_quantity",
+            "expected": "HTTP 200；订单CANCELLED，券UNUSED、used_order_id=0，模板used_quantity=0"
+          }
+        ],
+        "test_data": {
+          "fixture": "A 已登录；A 的订单 10 为PENDING_PAYMENT，使用用户券7；券USED且used_order_id=10，模板used_quantity=1；每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。；用户券7关联模板7，模板无其他订单使用。",
+          "isolation": "独立测试库"
+        },
+        "attachments": [],
+        "raw_text": null,
+        "kb_hint": null,
+        "project_id": "minishop",
+        "review_baseline": "current_implementation",
+        "product_version": "1.0.0",
+        "platform": "api"
+      },
+      "knowledge_pack": {
+        "build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+        "content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+        "retriever_version": "hybrid-bm25-rrf-4",
+        "project_id": "minishop",
+        "module": "order",
+        "baseline": {
+          "type": "current_implementation",
+          "product_version": "1.0.0",
+          "source_ref": "https://github.com/Viver12138/minishop.git",
+          "source_version": "e354437069504381f10a54d9c14baed755f3ba56"
+        },
+        "as_of": "2026-11-12",
+        "query": "取消待支付订单之后使用过的优惠券如何处理？\nA 已登录；A 的订单 10 为PENDING_PAYMENT，使用用户券7；券USED且used_order_id=10，模板used_quantity=1\n每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。\n用户券7关联模板7，模板无其他订单使用。\nAPI POST /api/orders/10/cancel；只读查询 orders(id=10).status、user_coupons(id=7).status/used_order_id 和关联 coupons.used_quantity HTTP 200；订单CANCELLED，券UNUSED、used_order_id=0，模板used_quantity=0",
+        "evidence": [
+          {
+            "chunk_id": "3d1b29a2deeacce324a503ff9e060c87eb7762f67752ab8b9fc92447d3d343c8",
+            "project_id": "minishop",
+            "doc_id": "API-ORDER-004",
+            "module": "order",
+            "doc_type": "design",
+            "knowledge_type": "INTERFACE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L223-L260",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L223-L260",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "2. 请求方式与路径",
+            "chunk_index": 1,
+            "content_hash": "56030d1bc3165056b3ba2d2795cecd45edd756381ccdc34caa9d3e9f4d26e446",
+            "text": "# 2. 请求方式与路径\n\n```http\nPOST /api/orders/{order_id}/cancel\nPOST /api/orders/{order_id}/confirm\nAuthorization: Bearer <JWT>\n```\n\n无请求体。\n\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "interface_contract"
+            ],
+            "rrf_score": 0.0,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf"
+          },
+          {
+            "chunk_id": "922b12ee2c543c28f86c0678f5808e2d1fdd6ebacc9499a040ff76b34e551c22",
+            "project_id": "minishop",
+            "doc_id": "REQ-ORDER-004",
+            "module": "order",
+            "doc_type": "requirement",
+            "knowledge_type": "REQUIREMENT",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/README.md#L57-L58; Minishop/backend/app/api/orders.py#L223-L244",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/README.md#L57-L58",
+                "snapshot_sha256": "7d78ca14a2c5114628fca82b05aafb2c615114f2b554b52a49a00fe5c27f1ede",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "README.md",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/README.md"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L223-L244",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "3. 功能描述",
+            "chunk_index": 2,
+            "content_hash": "eec0b40f7c43a94a10d8e9752d510d6954cd348baf0d45bf4722bc304dba16a1",
+            "text": "# 3. 功能描述\n\n`POST /api/orders/{order_id}/cancel`：\n\n- 将订单状态置 `CANCELLED`，记录 `cancelled_at`；\n- 若订单使用了优惠券，将用户券恢复为 `UNUSED`，清空 `used_order_id` 与 `used_at`，并把券模板的 `used_quantity` 减 1（不小于 0）；\n- 不处理库存（下单本就没有扣减）；\n- 不处理支付单（若已创建 `PENDING` 支付单，记录保留）。\n\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword",
+              "vector",
+              "endpoint_behavior"
+            ],
+            "rrf_score": 0.03021353930031804,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf"
+          },
+          {
+            "chunk_id": "a3af34e93c12ab692ad90dbf1bb366e9543c434849545072686b161766d1628a",
+            "project_id": "minishop",
+            "doc_id": "RULE-ORDER-007",
+            "module": "order",
+            "doc_type": "rule",
+            "knowledge_type": "BUSINESS_RULE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L223-L244",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L223-L244",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "只有待支付订单可以取消并归还优惠券",
+            "chunk_index": 0,
+            "content_hash": "ec838a8512b05ae63f5f9c558087235489ee14a8f2dd67352805f4861b660ccc",
+            "text": "\n# 1. 规则陈述\n\n只有订单所有者可以取消状态为 `PENDING_PAYMENT` 的订单；取消后订单进入 `CANCELLED` 终态，已占用的优惠券必须恢复为可用，券模板已使用数量回退 1。\n\n# 2. 适用范围\n\n- `POST /api/orders/{order_id}/cancel`\n- 产品版本 `1.0.0`\n\n# 3. 前置条件\n\n- 用户已登录；\n- 订单存在且 `user_id` 等于当前用户；\n- 订单状态为 `PENDING_PAYMENT`。\n\n# 4. 触发条件\n\n用户对待支付订单提交取消请求。\n\n# 5. 规则结果\n\n- 订单 `status = CANCELLED`，`cancelled_at` 为当前时间；\n- 若 `user_coupon_id` 非 0：\n  - 用户券 `status = UNUSED`；\n  - `used_order_id = 0`；\n  - `used_at = None`；\n  - 券模板 `used_quantity = max(used_quantity - 1, 0)`；\n- 不修改库存、销量、支付记录；\n- 订单不可恢复。\n\n# 6. 边界与例外\n\n- 非本人订单返回 **404**（不是 403），避免暴露订单存在性。\n- 状态不是 `PENDING_PAYMENT` 时返回 409 `只有待支付订单可以取消`。\n- 已创建但未支付的支付单不会被关闭，仍保留 `PENDING` 状态；后续调用支付成功会因订单已取消返回 409。\n- 券归还后如果券已过期，查询“我的优惠券”时会动态显示为 `EXPIRED`，但数据库状态仍是 `UNUSED`。\n- 若券模板已被删除或数据异常，代码对 `used_quantity` 的回退做了不小于 0 的保护。\n\n# 7. 反例或禁止行为\n\n- 禁止取消已支付及之后状态的订单。\n- 禁止用户取消他人订单。\n- 禁止在取消时恢复库存（下单未扣库存）。\n- 禁止把取消当作退款使用。\n\n# 8. 验证方式\n\n1. 待支付订单取消，确认状态、`cancelled_at`。\n2. 取消后查询用户券，确认 `UNUSED`、`used_order_id=0`。\n3. 取消后再次下单使用同一张券，确认可用。\n4. 已支付订单取消，确认 409。\n5. 用户 B 取消用户 A 的订单，确认 404。\n6. 取消前后查询 SKU 库存，确认不变。\n\n# 9. 来源依据\n\n- `Minishop/backend/app/api/orders.py#L223-L244`：取消逻辑、券归还、状态校验。\n- `Minishop/backend/app/api/payments.py#L89-L90`：取消订单拒绝支付。\n\n# 10. 未决问题\n\n- 取消时是否应同步关闭 `PENDING` 支付单？\n- 券归还后有效期是否顺延？\n- 是否需要管理员代取消能力？\n- 是否需要超时自动取消？\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword",
+              "vector"
+            ],
+            "rrf_score": 0.03278688524590164,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf"
+          },
+          {
+            "chunk_id": "5065e4f23f4640edf96f092aa9f57a44e8f68526f84344c5ffe5d9bdaf8b0356",
+            "project_id": "minishop",
+            "doc_id": "RULE-ORDER-006",
+            "module": "order",
+            "doc_type": "rule",
+            "knowledge_type": "BUSINESS_RULE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L116-L170; Minishop/backend/app/api/common.py#L19-L20",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L116-L170",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/common.py#L19-L20",
+                "snapshot_sha256": "4adcca84be8ce74c3e07c5c13444b3956a5f9abf8a0c25a8891e0c983d4a80ee",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/common.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/common.py"
+              }
+            ],
+            "heading_path": "创建订单的落库内容与副作用边界",
+            "chunk_index": 0,
+            "content_hash": "283d2426b2f7b5a3372f7b69c62835d9080d6bf83ec022d98dce08a6a2dd514c",
+            "text": "\n# 1. 规则陈述\n\n创建订单时，系统写入状态为 `PENDING_PAYMENT` 的订单与订单明细、保存地址和商品快照、占用优惠券；但**不扣减库存、不清空购物车、不创建支付单**。\n\n# 2. 适用范围\n\n- `POST /api/orders`\n- 产品版本 `1.0.0`\n\n# 3. 前置条件\n\n- 已通过 `RULE-ORDER-001` ~ `RULE-ORDER-005` 的全部校验；\n- `address_id` 有效且归属当前用户。\n\n# 4. 触发条件\n\n创建订单校验全部通过并提交事务。\n\n# 5. 规则结果\n\n## 订单主表\n\n- `order_no`：`YYYYMMDDHHMMSS` + 6 位随机数，唯一索引；\n- `status = PENDING_PAYMENT`；\n- `total_amount`、`discount_amount`、`pay_amount` 为服务端计算值；\n- `receiver_name`、`phone`、`address_snapshot` 为地址快照；\n- `user_coupon_id` 为所用用户券 ID，未用券为 0；\n- 时间字段：`created_at` 自动生成，其余完成时间字段为空。\n\n## 订单明细\n\n每一项保存 `product_id`、`sku_id`、商品名称快照、规格快照、成交单价、数量、小计。\n\n## 优惠券\n\n- 用户券 `status = USED`；\n- `used_order_id = 新订单 ID`；\n- `used_at` 为当前时间；\n- 券模板 `used_quantity += 1`。\n\n## 不发生的副作用\n\n- 不修改 `product_skus.stock`；\n- 不修改 `products.stock`、`products.sales`；\n- 不删除或修改购物车项；\n- 不创建支付记录；\n- 不发送站内消息。\n\n# 6. 边界与例外\n\n- 无幂等键：相同请求重复提交会创建多张订单，各自占用各自的券（若同一张券第二次提交，会因券已 `USED` 返回 409）。\n- 订单号随机后缀理论上可能碰撞，数据库唯一索引会拒绝，但接口未捕获该异常，可能返回 500。\n- 未使用优惠券时，`user_coupon_id=0`，不产生券占用。\n- 事务包含订单、明细、券更新；若中途异常，依赖数据库事务回滚。\n\n# 7. 反例或禁止行为\n\n- 禁止在创建订单阶段扣库存或占库存（当前没有实现，也不应被用例假设为已实现）。\n- 禁止在创建订单阶段清空购物车。\n- 禁止把订单金额在落库后再次按商品现价重算。\n\n# 8. 验证方式\n\n1. 创建订单后查询 `orders`、`order_items`、`user_coupons`、`coupons.used_quantity`。\n2. 对比创建前后 SKU 库存、商品销量、购物车记录，确认均未变化。\n3. 重复提交同一请求（无券），确认生成两张订单。\n4. 使用同一张券连续提交两次，第二次预期 409。\n5. 查询订单详情，核对地址快照与商品名称/规格快照。\n\n# 9. 来源依据\n\n- `Minishop/backend/app/api/orders.py#L116-L170`：创建订单、明细、券占用。\n- `Minishop/backend/app/api/common.py#L19-L20`：订单号生成规则。\n- `Minishop/backend/app/api/payments.py#L15-L36`：库存扣减发生在支付成功，而非下单。\n\n# 10. 未决问题\n\n- 下单后是否应清空购物车？\n- 是否需要幂等键防止重复下单？\n- 券占用与订单创建是否需要在同一事务中强制成功？\n\n> 已确认（2026-11-11，Q-03）：下单不清空购物车；立即购买=加购，同 SKU 累加，重复操作可能导致数量翻倍/超库存 400。\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword",
+              "vector"
+            ],
+            "rrf_score": 0.0304147465437788,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf"
+          }
+        ],
+        "warnings": [],
+        "profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+        "limitations": [
+          "documentation:CONFLICT-001",
+          "documentation:CONFLICT-002",
+          "documentation:CONFLICT-003",
+          "documentation:CONFLICT-004",
+          "documentation:CONFLICT-005",
+          "documentation:CONFLICT-006",
+          "documentation:CONFLICT-007",
+          "documentation:CONFLICT-008",
+          "documentation:CONFLICT-009",
+          "documentation:CONFLICT-010",
+          "documentation:Q-01",
+          "documentation:Q-03",
+          "documentation:Q-04",
+          "documentation:Q-05",
+          "documentation:Q-06",
+          "documentation:Q-08",
+          "documentation:Q-09",
+          "documentation:Q-10",
+          "documentation:Q-12",
+          "documentation:Q-13",
+          "documentation:Q-15",
+          "embedding:not_completed",
+          "implementation:CONFLICT-001",
+          "implementation:CONFLICT-003",
+          "implementation:CONFLICT-005",
+          "implementation:CONFLICT-006",
+          "implementation:CONFLICT-007",
+          "implementation:CONFLICT-008",
+          "implementation:CONFLICT-009",
+          "implementation:CONFLICT-010",
+          "implementation:Q-01",
+          "implementation:Q-04",
+          "implementation:Q-05",
+          "implementation:Q-06",
+          "implementation:Q-09",
+          "implementation:Q-10",
+          "implementation:Q-11",
+          "implementation:Q-13",
+          "implementation:Q-14",
+          "implementation:Q-15",
+          "knowledge_gap:GAP-001",
+          "knowledge_gap:GAP-002",
+          "knowledge_gap:GAP-003",
+          "knowledge_gap:GAP-004",
+          "knowledge_gap:GAP-008",
+          "knowledge_gap:GAP-009",
+          "knowledge_gap:GAP-010",
+          "knowledge_gap:GAP-011",
+          "knowledge_gap:GAP-012",
+          "knowledge_gap:GAP-013",
+          "knowledge_gap:GAP-014",
+          "publication:not_completed",
+          "retrieval_acceptance:not_completed",
+          "review_acceptance:not_completed",
+          "review_baseline:not_selected_for_release",
+          "runtime_index:not_completed",
+          "source_repository_verification:not_run; use --source-root"
+        ],
+        "pack_hash": "0754e350226f38bb174f9df50fe98e363c716bf606603c371d3d7c4c7fcf90a4"
+      },
+      "recovery": {
+        "reused_outputs": [],
+        "attempt": 1
+      },
+      "budget": {
+        "limits": {
+          "review_tokens": 60000,
+          "review_cost": 2.0,
+          "batch_cost": 60.0,
+          "daily_cost": 500.0
+        },
+        "exhausted": false,
+        "accounted_tokens": 22436,
+        "estimated_cost": 0.45292099999999996,
+        "uncertain_calls": 0,
+        "scope": "chat requests; conservative reservations, configured estimated prices; not provider billing"
+      }
+    },
+    "created_at": "2026-11-12T09:42:36.209181+00:00",
+    "finished_at": "2026-11-12T09:44:51.313733+00:00",
+    "timings": {
+      "queue_ms": 1,
+      "execution_ms": 135102,
+      "model_call_ms": 149641
+    }
+  },
+  "model_errors": []
+}

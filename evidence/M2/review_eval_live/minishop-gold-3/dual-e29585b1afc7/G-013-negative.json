@@ -1,0 +1,905 @@
+{
+  "id": "G-013-negative",
+  "mode": "live",
+  "split": "frozen",
+  "build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+  "code_fingerprint": "e29585b1afc75845a0a489386e242f637df97d23167cc5c7fc799a026bf18e39",
+  "evaluation_budget": {
+    "review_tokens": 60000,
+    "review_cost": 2.0,
+    "batch_cost": 60.0,
+    "daily_cost": 500.0
+  },
+  "dataset_version": "minishop-gold-3",
+  "dataset_files": {
+    "retrieval.jsonl": "bfef25226dfdd7644800fe1c0754fb30f451a2e1de124971e6154319782ee95f",
+    "review.jsonl": "e28ccaeb34632659948ac82bc2af40b9bb3e43ad1c9023ef3fbd20f33d745948"
+  },
+  "annotation_type": "delegated_ai",
+  "status": "done",
+  "error": null,
+  "expected_count": 1,
+  "reported_count": 1,
+  "matched_count": 1,
+  "report": {
+    "review_id": "9cf4fe9e-3580-41dd-a58a-6b4b8ebca55d",
+    "case_id": "G-013-negative",
+    "case_version": 3,
+    "module": "order",
+    "test_type": "functional",
+    "test_type_source": "request",
+    "generation": 1,
+    "parent_review_id": null,
+    "status": "done",
+    "stage": "render",
+    "ai_verdict": "blocked",
+    "human_status": "pending",
+    "report_schema_version": "report-1.0",
+    "degraded": true,
+    "degraded_reasons": [
+      "arbitration_skipped"
+    ],
+    "participants": [
+      "chief_blind:qwen3.8-max",
+      "jury_a:deepseek-flash"
+    ],
+    "topology": "dual",
+    "review_participants": [
+      {
+        "participant_id": "p-01",
+        "role_id": "chief_blind",
+        "status": "active",
+        "model": "qwen3.8-max",
+        "actual_model": "qwen3.8-max"
+      },
+      {
+        "participant_id": "p-02",
+        "role_id": "jury_a",
+        "status": "active",
+        "model": "deepseek-flash",
+        "actual_model": "deepseek-flash"
+      },
+      {
+        "participant_id": "p-03",
+        "role_id": "jury_b",
+        "status": "absent",
+        "model": "kimi-k3.1-pro",
+        "actual_model": null
+      }
+    ],
+    "review_completeness": {
+      "blind": "2/2",
+      "vote": "2/2",
+      "arbitration": "skipped",
+      "arbitration_required": false,
+      "stages_completed": [
+        "input_check",
+        "kb_retrieve",
+        "blind_review",
+        "fusion",
+        "vote",
+        "verdict",
+        "render"
+      ],
+      "stages_skipped": [
+        "preprocess",
+        "arbitration"
+      ],
+      "stages_failed": [],
+      "stages_pending": [],
+      "complete": true,
+      "full_participation": false
+    },
+    "input_quality": {
+      "hard_errors": [],
+      "soft_issues": []
+    },
+    "versions": {
+      "kb": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+      "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+      "kb_build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+      "rubric": "0.2.0",
+      "prompts": {
+        "preprocess": "p-m0-pre-01",
+        "chief_blind": "p-m0-chief-01",
+        "jury_a": "p-m0-jury-a-01",
+        "jury_b": "p-m0-jury-b-01",
+        "vote": "p-m0-vote-01",
+        "arbitration": "p-m0-arb-01"
+      },
+      "retrieval_config": "161fcb22",
+      "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+      "model_config": "7e35c71d",
+      "models": {
+        "chief_blind": "qwen3.8-max",
+        "jury_a": "deepseek-flash",
+        "jury_b": "kimi-k3.1-pro",
+        "vote": "qwen3.8-max",
+        "arbitration": "qwen3.8-max",
+        "preprocess": "deepseek-flash"
+      },
+      "price_config": "price-unverified-2026-11"
+    },
+    "summary": {
+      "total_issues": 1,
+      "blocker": 1,
+      "major": 0,
+      "suggestion": 0
+    },
+    "issues": [
+      {
+        "issue_no": 1,
+        "candidate_id": "6a5665e9-678d-4ca5-993e-35e8fb8225f8",
+        "step_index": 1,
+        "dimension": "business",
+        "severity": "blocker",
+        "category": "规则冲突",
+        "evidence_quote": "拒绝退款返回HTTP 200；orders(id=10).status=COMPLETED（当前实现基线）",
+        "rationale": "第 1 步存在「规则冲突」问题：review_baseline为current_implementation，知识库E2明确当前实现中REFUNDING拒绝退款后订单回到PAID；COMPLETED属于目标恢复原状态，不是当前实现基线，预期与依据直接冲突",
+        "suggestion": "将预期改为orders(id=10).status=PAID，并注明当前实现已知缺陷；若验证恢复COMPLETED，应切换为目标基线并单独说明。",
+        "kb_grounded": true,
+        "kb_refs": [
+          "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3"
+        ],
+        "evidence_type": "business_rule",
+        "evidence_strength": "strong",
+        "evidence_status": "grounded",
+        "evidence_refs": [
+          {
+            "ref_id": "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3",
+            "verified": true
+          }
+        ],
+        "evidence_support_status": "supported",
+        "validation_status": "needs_review",
+        "proposed_by": [
+          "chief_blind",
+          "jury_a"
+        ],
+        "votes": {
+          "chief_blind": {
+            "validity": "accept",
+            "severity": "blocker"
+          },
+          "jury_a": {
+            "validity": "accept",
+            "severity": "blocker"
+          }
+        },
+        "vote_summary": {
+          "support": 2,
+          "reject": 0,
+          "not_assessed": 0,
+          "uncertain": 0,
+          "support_ratio": 1.0,
+          "severity_distribution": {
+            "blocker": 2,
+            "major": 0,
+            "suggestion": 0
+          },
+          "severity_disputed": false,
+          "vote_completeness": "2/2"
+        },
+        "confidence": null,
+        "confidence_source": "uncalibrated",
+        "model_confidence": null,
+        "decision_status": null,
+        "status": "adopted",
+        "chief_decision": "adopt",
+        "chief_reason": null,
+        "human_verdict": null
+      }
+    ],
+    "human_review_items": [
+      {
+        "issue_no": 1,
+        "reason": "need_human",
+        "priority": "normal"
+      }
+    ],
+    "kb_gaps": [],
+    "attachments": [],
+    "scope": {
+      "feature_point": "已完成订单申请退款被拒绝后，当前代码返回什么状态？",
+      "scope_version": null,
+      "provided": true,
+      "coverage_claims_allowed": false,
+      "note": "v1 仅做单条用例评审，不输出功能点整体覆盖率"
+    },
+    "decision_summary": {
+      "human_status": "pending",
+      "latest_decision": null,
+      "history_count": 0
+    },
+    "appendix": {
+      "raw_opinions": {
+        "chief_blind": {
+          "summary": "当前实现拒绝退款统一回PAID，用例预期COMPLETED与基线冲突。",
+          "issues": [
+            {
+              "scope": "step",
+              "step_index": 1,
+              "dimension": "business",
+              "severity": "blocker",
+              "category": "规则冲突",
+              "evidence_quote": "拒绝退款返回HTTP 200；orders(id=10).status=COMPLETED（当前实现基线）",
+              "rationale": "review_baseline为current_implementation，知识库E2明确当前实现中REFUNDING拒绝退款后订单回到PAID；COMPLETED属于目标恢复原状态，不是当前实现基线，预期与依据直接冲突。",
+              "suggestion": "将预期改为orders(id=10).status=PAID，并注明当前实现已知缺陷；若验证恢复COMPLETED，应切换为目标基线并单独说明。",
+              "kb_grounded": true,
+              "kb_refs": [
+                "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3"
+              ],
+              "evidence_refs": [
+                "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3"
+              ],
+              "evidence_type": "business_rule",
+              "evidence_strength": "strong",
+              "evidence_status": "grounded",
+              "model_evidence_status": "conflicted",
+              "evidence_support_status": "supported",
+              "validation_status": "needs_review",
+              "parse_warnings": [
+                "model_conflict_unverified"
+              ],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            }
+          ]
+        },
+        "jury_a": {
+          "summary": "基线选当前实现，但期望订单状态写成目标值COMPLETED；当前实现拒绝退款后统一回PAID，预期与实际冲突。",
+          "issues": [
+            {
+              "scope": "step",
+              "step_index": 1,
+              "dimension": "business",
+              "severity": "blocker",
+              "category": "规则冲突",
+              "evidence_quote": "拒绝退款返回HTTP 200；orders(id=10).status=COMPLETED（当前实现基线）",
+              "rationale": "知识包明确：当前实现中管理员拒绝退款会把订单由 REFUNDING 改回 PAID（属已知缺陷 Q-04：目标应恢复退款前状态 COMPLETED）。本例标注 baseline=current_implementation，却断言 status=COMPLETED，与 E2 权威依据直接冲突，按基线执行必然判失败或得出错误结论。",
+              "suggestion": "若评审当前实现，期望改为 orders(id=10).status=PAID，并在备注中说明 Q-04 目标应为 COMPLETED；若要验证目标行为，应将 review_baseline 改为 target_specification 并单独管理该缺陷。",
+              "kb_grounded": true,
+              "kb_refs": [
+                "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3"
+              ],
+              "evidence_refs": [
+                "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3"
+              ],
+              "evidence_type": "business_rule",
+              "evidence_strength": "strong",
+              "evidence_status": "grounded",
+              "model_evidence_status": "grounded",
+              "evidence_support_status": "supported",
+              "validation_status": "passed",
+              "parse_warnings": [],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            },
+            {
+              "scope": "case",
+              "step_index": null,
+              "dimension": "business",
+              "severity": "suggestion",
+              "category": "意图不符",
+              "evidence_quote": "已完成订单申请退款被拒绝后，当前代码返回什么状态？",
+              "rationale": "标题为开放式提问，未声明判定基准（当前实现值还是目标值），与步骤中写死单一预期不一致，读者无法从标题判断应接受 PAID 还是 COMPLETED。",
+              "suggestion": "改为陈述式标题，例如“已完成订单退款被拒，当前实现订单状态回到 PAID（缺陷：目标应为 COMPLETED）”，使测试目的与判定基准一致。",
+              "kb_grounded": false,
+              "kb_refs": [],
+              "evidence_refs": [],
+              "evidence_type": "inference",
+              "evidence_strength": "weak",
+              "evidence_status": "ungrounded",
+              "model_evidence_status": "ungrounded",
+              "evidence_support_status": "unsupported",
+              "validation_status": "passed",
+              "parse_warnings": [],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            }
+          ]
+        }
+      },
+      "disagreements": [],
+      "model_runs": [
+        {
+          "role": "chief_blind",
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "latency_ms": 85793,
+          "tokens": {
+            "request": 7162,
+            "response": 3417
+          },
+          "cost_estimate": 0.34826,
+          "parse_warnings": [
+            "evidence:0:model_conflict_unverified"
+          ]
+        },
+        {
+          "role": "jury_a",
+          "model": "deepseek-flash",
+          "status": "ok",
+          "latency_ms": 13258,
+          "tokens": {
+            "request": 7057,
+            "response": 2288
+          },
+          "cost_estimate": 0.011633,
+          "parse_warnings": []
+        },
+        {
+          "role": "chief_blind",
+          "operation": "vote",
+          "candidate_no": 1,
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 14598,
+          "tokens": {
+            "request": 5964,
+            "response": 521
+          },
+          "cost_estimate": 0.15054,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 14599
+            }
+          ],
+          "provider": null,
+          "request_hash": "294ad00214a73129076c5af0f8c9ed140dff33fb868fae1a09cdbac8045891ac",
+          "response_hash": "6acda92afe47168d1913430442cf3e2c26e509d725311a263912ec47ffaf2033",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "jury_a",
+          "operation": "vote",
+          "candidate_no": 1,
+          "model": "deepseek-flash",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 3464,
+          "tokens": {
+            "request": 5568,
+            "response": 444
+          },
+          "cost_estimate": 0.006456,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 18063
+            }
+          ],
+          "provider": null,
+          "request_hash": "2b008cca8fd700abda2243fa4df2e9a84cda6474e3989f3d7ebbc27f6b458ec0",
+          "response_hash": "02b13a76edff1b13386f653ef81b44ddf03c6375e8faee1ba6ce34a8ab5afec1",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "chief_blind",
+          "operation": "vote",
+          "candidate_no": 2,
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 14350,
+          "tokens": {
+            "request": 1242,
+            "response": 463
+          },
+          "cost_estimate": 0.05262,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 14350
+            }
+          ],
+          "provider": null,
+          "request_hash": "2480ecbbc6616d5f04ec2f2349fc599794c394a2d58ff350a9593754f1676028",
+          "response_hash": "b561686cedadf1099bebaa41c37f355ab2f6976446792e6e53fa9455a1896ece",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "jury_a",
+          "operation": "vote",
+          "candidate_no": 2,
+          "model": "deepseek-flash",
+          "status": "ok",
+          "error_code": null,
+          "error": null,
+          "latency_ms": 4122,
+          "tokens": {
+            "request": 1213,
+            "response": 659
+          },
+          "cost_estimate": 0.002531,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 22185
+            }
+          ],
+          "provider": null,
+          "request_hash": "6a73ce7071b5bcda30916c89d7df6e6b51b2e92375c40a6eadff2f723e30caf9",
+          "response_hash": "98e65e3f8e154c7af94592fe90016ba0c7bf061fdec1364390e1c38031b5a581",
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        }
+      ],
+      "normalized_case": {
+        "case_id": "G-013-negative",
+        "case_version": 3,
+        "module": "order",
+        "test_type": "functional",
+        "title": "已完成订单申请退款被拒绝后，当前代码返回什么状态？",
+        "priority": null,
+        "source": "manual",
+        "preconditions": [
+          "A已登录；订单10属于A，原状态COMPLETED；首次退款申请记录30为PENDING，订单REFUNDING；管理员已登录",
+          "每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。",
+          "退款30属于订单10；本例直接准备REFUNDING数据库快照，不评审退款申请步骤。"
+        ],
+        "steps": [
+          {
+            "index": 1,
+            "action": "管理员 POST /api/admin/refunds/30/reject，reject_reason=不满足条件；只读查询 orders(id=10).status",
+            "expected": "拒绝退款返回HTTP 200；orders(id=10).status=COMPLETED（当前实现基线）"
+          }
+        ],
+        "test_data": {
+          "fixture": "A已登录；订单10属于A，原状态COMPLETED；首次退款申请记录30为PENDING，订单REFUNDING；管理员已登录；每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。；退款30属于订单10；本例直接准备REFUNDING数据库快照，不评审退款申请步骤。",
+          "isolation": "独立测试库"
+        },
+        "attachments": [],
+        "raw_text": null,
+        "kb_hint": null,
+        "project_id": "minishop",
+        "review_baseline": "current_implementation",
+        "product_version": "1.0.0",
+        "platform": "api"
+      },
+      "knowledge_pack": {
+        "build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+        "content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+        "retriever_version": "hybrid-bm25-rrf-4",
+        "project_id": "minishop",
+        "module": "order",
+        "baseline": {
+          "type": "current_implementation",
+          "product_version": "1.0.0",
+          "source_ref": "https://github.com/Viver12138/minishop.git",
+          "source_version": "e354437069504381f10a54d9c14baed755f3ba56"
+        },
+        "as_of": "2026-11-12",
+        "query": "已完成订单申请退款被拒绝后，当前代码返回什么状态？\nA已登录；订单10属于A，原状态COMPLETED；首次退款申请记录30为PENDING，订单REFUNDING；管理员已登录\n每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。\n退款30属于订单10；本例直接准备REFUNDING数据库快照，不评审退款申请步骤。\n管理员 POST /api/admin/refunds/30/reject，reject_reason=不满足条件；只读查询 orders(id=10).status 拒绝退款返回HTTP 200；orders(id=10).status=COMPLETED（当前实现基线）",
+        "evidence": [
+          {
+            "chunk_id": "a5ed18096bef843a29d2d0a188b0dfc5143092c5f9272d5459b5325de06575f3",
+            "project_id": "minishop",
+            "doc_id": "STATE-ORDER-001",
+            "module": "order",
+            "doc_type": "flow",
+            "knowledge_type": "WORKFLOW",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/models/models.py#L171-L193; Minishop/backend/app/api/orders.py#L223-L260; Minishop/backend/app/api/payments.py#L77-L118; Minishop/backend/app/api/admin.py#L156-L245; Minishop/backend/app/api/refunds.py#L14-L41; Minishop/backend/app/api/common.py#L114-L125",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/models/models.py#L171-L193",
+                "snapshot_sha256": "84bd973f0a6d923d3dd6e245c10a2a299f8d9ddd4e416a83fe7d695bdd39ce63",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/models/models.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/models/models.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L223-L260",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/payments.py#L77-L118",
+                "snapshot_sha256": "0e0dbc41e30ce901cb220bc7b61d0cf7ce1697b0f892a216bb4454fa61258e08",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/payments.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/payments.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/admin.py#L156-L245",
+                "snapshot_sha256": "15e2b64089522e85d0f22a0032350bdb11164c1f91d5f62566c8ad99f1a6592b",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/admin.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/admin.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/refunds.py#L14-L41",
+                "snapshot_sha256": "797afa1721cc52a427bef36467274ce39a1cdd9ab364155cf9830454c6fd7027",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/refunds.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/refunds.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/common.py#L114-L125",
+                "snapshot_sha256": "4adcca84be8ce74c3e07c5c13444b3956a5f9abf8a0c25a8891e0c983d4a80ee",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/common.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/common.py"
+              }
+            ],
+            "heading_path": "订单状态定义与状态转换",
+            "chunk_index": 0,
+            "content_hash": "51e12206d71d61fcf90436f67690ac1ccd3cebffd4a5db523e85b9728600456e",
+            "text": "\n# 1. 状态列表\n\n| 状态 ID | 状态名称 | 含义 | 终态 | 说明 |\n|---|---|---|---|---|\n| `PENDING_PAYMENT` | 待支付 | 订单已创建，尚未支付 | 否 | 创建订单后的初始状态 |\n| `PAID` | 已支付 | 支付成功，等待发货 | 否 | 支付成功时写入 `paid_at` |\n| `PENDING_SHIPMENT` | 待发货 | 已支付待发货 | 否 | 代码多处引用，但**从未被赋值**，实际不可达 |\n| `SHIPPED` | 已发货 | 管理员已录入物流 | 否 | 写入 `shipped_at` 和 `shipments` |\n| `COMPLETED` | 已完成 | 用户确认收货 | 否 | 写入 `completed_at`；可因退款进入 `REFUNDING` |\n| `CANCELLED` | 已取消 | 待支付订单被取消 | 是 | 写入 `cancelled_at` |\n| `REFUNDING` | 退款中 | 已申请退款，等待审核 | 否 | 由售后模块写入（本批未完整覆盖） |\n| `REFUNDED` | 已退款 | 退款审核通过 | 是 | 库存恢复（见售后模块） |\n\n状态中文映射来源：`Minishop/backend/app/api/common.py#L114-L125`。\n\n# 2. 状态转换\n\n| 当前状态 | 触发事件 | 前置条件 | 目标状态 | 不允许的条件 |\n|---|---|---|---|---|\n| （无） | 创建订单 | 校验通过，地址必填 | `PENDING_PAYMENT` | 商品下架、SKU 失效、库存不足、地址无效、券无效 |\n| `PENDING_PAYMENT` | 支付成功 | 订单属于当前用户；支付单存在 | `PAID` | 订单已取消；订单已是支付后状态 |\n| `PENDING_PAYMENT` | 取消订单 | 订单属于当前用户 | `CANCELLED` | 非待支付状态；非本人（返回 404） |\n| `PENDING_PAYMENT` | 支付失败 | 支付单存在、订单属于当前用户 | `PENDING_PAYMENT` | 非待支付状态（返回 409） |\n| `PAID` | 管理员发货 | 操作者为管理员；填写物流信息 | `SHIPPED` | 非已支付/待发货；非管理员 |\n| `PENDING_SHIPMENT` | 管理员发货 | 同上 | `SHIPPED` | 实际不可达（状态从未被赋值） |\n| `SHIPPED` | 用户确认收货 | 订单属于当前用户 | `COMPLETED` | 非已发货；非本人（返回 404） |\n| `PAID` / `SHIPPED` / `COMPLETED` | 申请退款 | 订单属于当前用户；无历史退款记录 | `REFUNDING` | 待支付、已取消、退款中、已退款；已有退款记录 |\n| `REFUNDING` | 管理员同意退款 | 退款记录为 `PENDING` | `REFUNDED` | 非待审核；重复处理 |\n| `REFUNDING` | 管理员拒绝退款 | 必须填写拒绝原因 | `PAID` | 非待审核；未填原因（400） |\n\n```mermaid\nstateDiagram-v2\n    [*] --> PENDING_PAYMENT: 创建订单\n    PENDING_PAYMENT --> PAID: 支付成功\n    PENDING_PAYMENT --> CANCELLED: 取消订单\n    PAID --> SHIPPED: 管理员发货\n    SHIPPED --> COMPLETED: 确认收货\n    PAID --> REFUNDING: 申请退款\n    SHIPPED --> REFUNDING: 申请退款\n    COMPLETED --> REFUNDING: 申请退款\n    REFUNDING --> REFUNDED: 同意退款\n    REFUNDING --> PAID: 拒绝退款（当前实现）\n    CANCELLED --> [*]\n    REFUNDED --> [*]\n```\n\n# 3. 状态不变量\n\n1. `orders.user_id` 创建后不变，订单只属于一个用户。\n2. `total_amount`、`discount_amount`、`pay_amount` 创建后不再被业务代码修改。\n3. `paid_at` 只在支付成功时写入；`shipped_at` 只在发货时写入；`completed_at` 只在确认收货时写入；`cancelled_at` 只在取消时写入。\n4. 订单使用优惠券时，用户券在订单创建时置 `USED`；取消订单时恢复 `UNUSED`；**退款流程不恢复优惠券**。\n5. 库存只在支付成功时扣减；只在退款成功时恢复（见售后模块）。\n6. `SHIPPED`、`COMPLETED` 状态应存在对应 `shipments` 记录；确认收货后物流单为 `DELIVERED`。\n7. `CANCELLED`、`REFUNDED` 为终态，没有出边；`COMPLETED` 可因退款进入 `REFUNDING`，不是终态。\n8. `PENDING_SHIPMENT` 在数据字典中存在，但没有任何写入路径，不能作为当前有效状态使用。\n\n## 已确认决策（2026-11-11）\n\n- **Q-02**：不引入库存预占；超卖为 Demo 已知限制，支付时库存不足仍成功并以 `max(stock-qty,0)` 截断。\n- **Q-04**：退款被拒应恢复退款前状态（`PAID/SHIPPED/COMPLETED`）；当前统一回 `PAID` 属缺陷，修复需增加 `pre_refund_status` 快照。\n- **Q-08**：`PENDING_SHIPMENT` 未启用，不纳入当前有效状态机。\n- **Q-12**：当前无订单超时自动取消。\n\n# 4. 并发与重复操作约束\n\n| 操作 | 重复/并发行为 |\n|---|---|\n| 创建订单 | 无幂等键；重复提交生成多张订单 |\n| 创建支付单 | 已有 `PENDING` 支付单时复用；否则新建；`FAILED` 后可再建 |\n| 支付成功 | 依赖订单状态判重；并发下缺少行锁，理论上可能重复扣库存 |\n| 支付失败 | 仅待支付可执行；重复执行时订单状态未变，仍可再次置 `FAILED` |\n| 取消订单 | 第二次返回 409（状态已非待支付） |\n| 发货 | 第二次返回 409（状态已 `SHIPPED`） |\n| 确认收货 | 第二次返回 409（状态已 `COMPLETED`） |\n| 申请退款 | 同一订单只允许一条退款记录；已拒绝也不能再次申请 |\n| 退款审核 | 非 `PENDING` 再次审核返回 409 |\n\n# 5. 状态查询与验证方式\n\n## 5.1 接口\n\n```http\nGET /api/orders/{order_id}\nAuthorization: Bearer <token>\n```\n\n响应关键字段：`status`、`status_cn`、`paid_at`、`shipped_at`、`completed_at`、`cancelled_at`、`payment`、`shipment`、`refund`。\n\n## 5.2 数据库\n\n```sql\nSELECT id, order_no, status, total_amount, pay_amount, paid_at, shipped_at, completed_at, cancelled_at\nFROM orders WHERE id = ?;\n\nSELECT id, order_id, status, payment_no, amount, paid_at FROM payments WHERE order_id = ?;\nSELECT id, order_id, company, tracking_number, status, shipped_at FROM shipments WHERE order_id = ?;\nSELECT id, order_id, status, amount, reason, reject_reason FROM refunds WHERE order_id = ?;\n```\n\n## 5.3 派生观察\n\n- 库存与销量：`product_skus.stock`、`products.stock`、`products.sales`\n- 优惠券：`user_coupons.status`、`used_order_id`、`used_at`\n- 库存日志：`inventory_logs` 按 `sku_id` 查询\n- 消息：`messages` 按 `user_id` 查询\n\n# 6. 来源与未决问题\n\n## 来源\n\n- 状态字段：`Minishop/backend/app/models/models.py#L171-L193`\n- 创建订单：`Minishop/backend/app/api/orders.py#L116-L170`\n- 取消/确认：`Minishop/backend/app/api/orders.py#L223-L260`\n- 支付：`Minishop/backend/app/api/payments.py#L77-L118`\n- 发货：`Minishop/backend/app/api/admin.py#L156-L178`\n- 退款申请：`Minishop/backend/app/api/refunds.py#L14-L41`\n- 退款审核：`Minishop/backend/app/api/admin.py#L205-L245`\n\n## 未决问题\n\n1. `PENDING_SHIPMENT` 应启用还是删除？\n2. 退款被拒绝后应恢复到退款前状态（`PAID`/`SHIPPED`/`COMPLETED`），还是统一 `PAID`？当前实现统一 `PAID`，会丢失已发货/已完成事实。\n3. 是否需要订单超时自动取消（`PENDING_PAYMENT → CANCELLED`）？\n4. 是否需要库存预占状态（下单锁定库存）？\n5. 支付成功并发是否需要行锁或幂等键？\n6. 退款成功后优惠券是否应归还？\n7. `REFUNDING` 是否允许发货/确认收货？（当前发货只允许 `PAID/PENDING_SHIPMENT`，确认只允许 `SHIPPED`）\n\n\n# 本次授权技术复核适用性\n\n核对订单、支付、发货和退款路由；COMPLETED 有退款出边，修正 Mermaid 终态矛盾；退款拒绝当前回 PAID，目标恢复原状态。\n\n本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword",
+              "vector"
+            ],
+            "rrf_score": 0.03278688524590164,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf"
+          },
+          {
+            "chunk_id": "4f92eb36dcc3857c07964ae77e4a367064e0d8736e88888dfd64ce7a84852e7d",
+            "project_id": "minishop",
+            "doc_id": "RULE-ORDER-010",
+            "module": "order",
+            "doc_type": "rule",
+            "knowledge_type": "BUSINESS_RULE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/admin.py#L156-L178; Minishop/backend/app/api/orders.py#L247-L260",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/admin.py#L156-L178",
+                "snapshot_sha256": "15e2b64089522e85d0f22a0032350bdb11164c1f91d5f62566c8ad99f1a6592b",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/admin.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/admin.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L247-L260",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "发货与确认收货的状态约束",
+            "chunk_index": 0,
+            "content_hash": "e21a9e72d30bc117b3d7501492af5d19bfd96f8dde9d9a8d3aca7b041711c03f",
+            "text": "\n# 1. 规则陈述\n\n只有管理员可以对状态为 `PAID` 或 `PENDING_SHIPMENT` 的订单发货；只有订单所有者可以对状态为 `SHIPPED` 的订单确认收货。发货写入物流单并通知用户，确认收货把订单置为 `COMPLETED` 且物流单置为 `DELIVERED`。\n\n# 2. 适用范围\n\n- `POST /api/admin/orders/{order_id}/ship`\n- `POST /api/orders/{order_id}/confirm`\n- 产品版本 `1.0.0`\n\n# 3. 前置条件\n\n- 发货：当前用户 `role=ADMIN`；订单存在；订单状态为 `PAID` 或 `PENDING_SHIPMENT`。\n- 确认收货：当前用户是订单所有者；订单状态为 `SHIPPED`。\n\n# 4. 触发条件\n\n管理员提交物流公司/运单号，或用户提交确认收货请求。\n\n# 5. 规则结果\n\n## 发货\n\n- 订单 `status = SHIPPED`，`shipped_at` 为当前时间；\n- 若不存在物流单：创建 `shipments` 记录，状态默认 `SHIPPED`；\n- 若已存在物流单：更新 `company`、`tracking_number`、`status=SHIPPED`、`shipped_at`；\n- 给订单用户写入“订单已发货”站内消息。\n\n## 确认收货\n\n- 订单 `status = COMPLETED`，`completed_at` 为当前时间；\n- 对应物流单 `status = DELIVERED`；\n- 不发送站内消息。\n\n# 6. 边界与例外\n\n- `PENDING_SHIPMENT` 在代码中没有任何赋值点，实际只有 `PAID` 可发货。\n- `company` 和 `tracking_number` 在 Schema 中必填，但没有非空校验，空字符串可发货。\n- 非管理员调用发货接口返回 403 `需要管理员权限`。\n- 非订单所有者确认收货返回 404 `订单不存在`。\n- 重复发货：订单已 `SHIPPED` 时再次发货返回 409。\n- 重复确认收货：订单已 `COMPLETED` 时再次确认返回 409。\n- 已取消、待支付、退款中的订单不能发货。\n- 已发货订单申请退款会使订单进入 `REFUNDING`；退款被拒绝后代码把订单改回 `PAID`，会丢失 `SHIPPED` 状态（见冲突 C-10）。\n\n# 7. 反例或禁止行为\n\n- 禁止跳过支付直接发货。\n- 禁止普通用户调用发货接口。\n- 禁止对未发货订单确认收货。\n- 禁止把 `PENDING_SHIPMENT` 当作已实现状态来设计用例（当前不可达）。\n- 禁止用空运单号作为“有效发货”的验收依据，除非项目确认允许。\n\n# 8. 验证方式\n\n1. 对 `PAID` 订单发货，确认状态、物流信息、消息。\n2. 对 `PENDING_PAYMENT` 订单发货，预期 409。\n3. 普通用户调用发货，预期 403。\n4. `SHIPPED` 订单确认收货，确认状态与物流单状态。\n5. 对 `PAID` 订单确认收货，预期 409。\n6. 重复发货/重复确认，预期 409。\n7. 传空字符串物流信息，确认当前行为（已知边界）。\n\n# 9. 来源依据\n\n- `Minishop/backend/app/api/admin.py#L156-L178`：发货状态校验、物流单 upsert、消息。\n- `Minishop/backend/app/api/orders.py#L247-L260`：确认收货状态校验与物流单状态。\n- `Minishop/backend/app/models/models.py#L233-L243`：物流单字段与状态。\n\n# 10. 未决问题\n\n- 是否应拒绝空物流公司/空运单号？\n- `PENDING_SHIPMENT` 应启用还是删除？\n- 退款被拒绝后是否应恢复原状态（`SHIPPED`/`COMPLETED`）而不是统一 `PAID`？\n- 是否需要自动确认收货？\n\n> 已确认（2026-11-11，Q-04/Q-08/Q-11）：退款拒绝应恢复退款前状态；`PENDING_SHIPMENT` 未启用；后端应拒绝空物流信息。\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword",
+              "vector"
+            ],
+            "rrf_score": 0.03076923076923077,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf"
+          },
+          {
+            "chunk_id": "fd445cb4375ebe0f23eddbc06fcc974a5ddac48b758eb2ebbc2a66ca2433d525",
+            "project_id": "minishop",
+            "doc_id": "TEST-DATA",
+            "module": null,
+            "doc_type": "design",
+            "knowledge_type": "TEST_SPEC",
+            "rule_status": "reviewed",
+            "evidence_level": "E3",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/seed/seed.py#L38-L151; Minishop/data/minishop.db; Minishop/e2e_test.py",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/seed/seed.py#L38-L151",
+                "snapshot_sha256": "beb34f1d8f012a4b8fbbf5f5da9da3339f1140f8a19ad0385c24751d5d511ade",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/seed/seed.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/seed/seed.py"
+              },
+              {
+                "source_ref": "Minishop/data/minishop.db",
+                "snapshot_sha256": "964c30d3305f73899505f64c41d866640509c9e7c61b2203079a645247ece98f",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "data/minishop.db",
+                "content_commit": null,
+                "git_comparison": "missing",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/data/minishop.db"
+              },
+              {
+                "source_ref": "Minishop/e2e_test.py",
+                "snapshot_sha256": "95b6122d5891d2a291aadb7f89deac25e24ced60a023bb5b88852283468cb8d0",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "e2e_test.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/e2e_test.py"
+              }
+            ],
+            "heading_path": "4. 数据准备配方",
+            "chunk_index": 3,
+            "content_hash": "b701341ab354a7ddb3feac5c93c210660795ae7c765642ef2a82b6308201d431",
+            "text": "# 4. 数据准备配方\n\n## 4.1 正常可支付订单\n\n1. 登录 `user`；\n2. 创建地址；\n3. 查询机械键盘 SKU；\n4. 预览 → 创建订单；\n5. 记录 `order_id`、`pay_amount`；\n6. 不支付，作为 `PENDING_PAYMENT` 基线。\n\n## 4.2 已支付订单\n\n在 4.1 基础上：\n\n1. `POST /api/payments`；\n2. `POST /api/payments/{id}/success`；\n3. 断言订单 `PAID`，记录支付前后库存。\n\n## 4.3 已发货订单\n\n在 4.2 基础上：\n\n1. 使用 `admin` token；\n2. `POST /api/admin/orders/{id}/ship`，填写物流信息；\n3. 断言 `SHIPPED`。\n\n## 4.4 已完成订单\n\n在 4.3 基础上：\n\n1. `POST /api/orders/{id}/confirm`；\n2. 断言 `COMPLETED`。\n\n## 4.5 退款相关订单（跨模块）\n\n在 4.2 基础上调用 `POST /api/refunds`，订单进入 `REFUNDING`；本批不覆盖退款审核细节。\n\n## 4.6 库存边界数据\n\n- 售罄：无线鼠标，库存 0；\n- 边界：蓝牙耳机，库存 1；\n- 多规格：运动鞋，白 39/40 库存 1，其余 2。\n\n## 4.7 优惠券数据\n\n- 无券：不传 `user_coupon_id`；\n- 未达门槛：用“满5000减500”买 399 元商品；\n- 恰好达门槛：用“满1000减100”买总价恰好 1000 元；\n- 已使用：先下一单用掉，再复用到另一单；\n- 已过期：当前库“新人满100减10”已过期；\n- 停用：当前库“满50减5”为 DISABLED，无法领取；\n- 他人券：用户 A 领取，用户 B 使用 A 的用户券 ID。\n\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword",
+              "vector"
+            ],
+            "rrf_score": 0.02664576802507837,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf"
+          },
+          {
+            "chunk_id": "f9af98c5af8154c91b3968497a0e2f123459399a54fa2cf489488a6ce77d72d5",
+            "project_id": "minishop",
+            "doc_id": "TEST-SPEC-PROJECT-001",
+            "module": null,
+            "doc_type": "design",
+            "knowledge_type": "TEST_SPEC",
+            "rule_status": "reviewed",
+            "evidence_level": "E3",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "TestJury_项目知识库数据规范_v1.0.md#testing-standard-template; Minishop/README.md#L99-L107; Minishop/e2e_test.py",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "TestJury_项目知识库数据规范_v1.0.md#testing-standard-template",
+                "internal_path": "TestJury_项目知识库数据规范_v1.0.md",
+                "sha256": "8e8e216bcefa2af33d460389821663ce13ee7dee2887cf3b776eee9282c08844"
+              },
+              {
+                "source_ref": "Minishop/README.md#L99-L107",
+                "snapshot_sha256": "7d78ca14a2c5114628fca82b05aafb2c615114f2b554b52a49a00fe5c27f1ede",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "README.md",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/README.md"
+              },
+              {
+                "source_ref": "Minishop/e2e_test.py",
+                "snapshot_sha256": "95b6122d5891d2a291aadb7f89deac25e24ced60a023bb5b88852283468cb8d0",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "e2e_test.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/e2e_test.py"
+              }
+            ],
+            "heading_path": "1. 测试范围与原则",
+            "chunk_index": 0,
+            "content_hash": "a88c793fa79470a4183ba9b1c128fbebacc3de1b4a5dda27ab422decbd21369f",
+            "text": "# 1. 测试范围与原则\n\n## 范围\n\n本规范适用于 `order` 试点模块及其前置依赖（登录、商品查询、购物车、地址、优惠券）的测试用例设计与评审。\n\n## 原则\n\n1. **显式选择评审基线**：选择 `current_implementation` 时，用冻结源码和可复核 API/数据观察描述当前行为；选择 `target_specification` 时，用已确认的目标规则判断预期。当前实现中的缺陷不能覆盖目标规则，页面文案或常识不能代替依据。\n2. **可判定**：每条预期结果必须能落到 HTTP 状态码、`code`/`message`、字段值、数据库记录或页面可见状态。\n3. **前置显式**：不得用“已登录”“有库存”等模糊描述，必须写明账号、角色、地址、订单状态、券状态、库存值。\n4. **数据可复现**：优先使用独立库或独立用户，避免依赖执行顺序和历史残留。\n5. **区分事实与推断**：知识库没有依据的行为，应标注“待确认”，不得写成强制预期。\n6. **已知缺陷不反推规则**：当前实现缺陷（如单规格商品无法加购）应作为缺陷/限制记录，不应被写成“正确业务规则”。\n\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword",
+              "vector"
+            ],
+            "rrf_score": 0.026540946394272742,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf"
+          }
+        ],
+        "warnings": [],
+        "profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+        "limitations": [
+          "documentation:CONFLICT-001",
+          "documentation:CONFLICT-002",
+          "documentation:CONFLICT-003",
+          "documentation:CONFLICT-004",
+          "documentation:CONFLICT-005",
+          "documentation:CONFLICT-006",
+          "documentation:CONFLICT-007",
+          "documentation:CONFLICT-008",
+          "documentation:CONFLICT-009",
+          "documentation:CONFLICT-010",
+          "documentation:Q-01",
+          "documentation:Q-03",
+          "documentation:Q-04",
+          "documentation:Q-05",
+          "documentation:Q-06",
+          "documentation:Q-08",
+          "documentation:Q-09",
+          "documentation:Q-10",
+          "documentation:Q-12",
+          "documentation:Q-13",
+          "documentation:Q-15",
+          "embedding:not_completed",
+          "implementation:CONFLICT-001",
+          "implementation:CONFLICT-003",
+          "implementation:CONFLICT-005",
+          "implementation:CONFLICT-006",
+          "implementation:CONFLICT-007",
+          "implementation:CONFLICT-008",
+          "implementation:CONFLICT-009",
+          "implementation:CONFLICT-010",
+          "implementation:Q-01",
+          "implementation:Q-04",
+          "implementation:Q-05",
+          "implementation:Q-06",
+          "implementation:Q-09",
+          "implementation:Q-10",
+          "implementation:Q-11",
+          "implementation:Q-13",
+          "implementation:Q-14",
+          "implementation:Q-15",
+          "knowledge_gap:GAP-001",
+          "knowledge_gap:GAP-002",
+          "knowledge_gap:GAP-003",
+          "knowledge_gap:GAP-004",
+          "knowledge_gap:GAP-008",
+          "knowledge_gap:GAP-009",
+          "knowledge_gap:GAP-010",
+          "knowledge_gap:GAP-011",
+          "knowledge_gap:GAP-012",
+          "knowledge_gap:GAP-013",
+          "knowledge_gap:GAP-014",
+          "publication:not_completed",
+          "retrieval_acceptance:not_completed",
+          "review_acceptance:not_completed",
+          "review_baseline:not_selected_for_release",
+          "runtime_index:not_completed",
+          "source_repository_verification:not_run; use --source-root"
+        ],
+        "pack_hash": "6e4274977bc4a46a922bdc6b80c32c74a84281ea982d133666a131ab7844c273"
+      },
+      "recovery": {
+        "reused_outputs": [],
+        "attempt": 1
+      },
+      "budget": {
+        "limits": {
+          "review_tokens": 60000,
+          "review_cost": 2.0,
+          "batch_cost": 60.0,
+          "daily_cost": 500.0
+        },
+        "exhausted": false,
+        "accounted_tokens": 35998,
+        "estimated_cost": 0.57204,
+        "uncertain_calls": 0,
+        "scope": "chat requests; conservative reservations, configured estimated prices; not provider billing"
+      }
+    },
+    "created_at": "2026-11-12T10:12:14.936979+00:00",
+    "finished_at": "2026-11-12T10:14:16.803894+00:00",
+    "timings": {
+      "queue_ms": 1,
+      "execution_ms": 121864,
+      "model_call_ms": 135585
+    }
+  },
+  "model_errors": []
+}

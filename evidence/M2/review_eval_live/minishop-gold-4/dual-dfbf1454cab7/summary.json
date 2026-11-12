@@ -1,0 +1,29 @@
+{
+  "mode": "live",
+  "build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+  "cases": 8,
+  "dataset_version": "minishop-gold-4",
+  "code_fingerprint": "dfbf1454cab7355ba34552c47ce8b4630d6588d9fe4fc6547e6aad27386e1c91",
+  "reports": 8,
+  "expected_issues": 5,
+  "matched_issues": 5,
+  "diagnostic_recall": 1.0,
+  "clean_cases": 3,
+  "clean_cases_with_reported_issues": 0,
+  "reported_issues": 9,
+  "topology": "dual",
+  "evaluation_budget": {
+    "review_tokens": 60000,
+    "review_cost": 2.0,
+    "batch_cost": 60.0,
+    "daily_cost": 500.0
+  },
+  "fully_assessed_cases": 8,
+  "budget_exhausted_cases": 0,
+  "independent_human_validation": false,
+  "limitations": [
+    "category-level diagnostic matching",
+    "authored seed set, not blind independent gold",
+    "mock runs verify plumbing only"
+  ]
+}

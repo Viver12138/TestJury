@@ -1,7 +1,7 @@
-"""问题融合（M0 规则分桶版；向量/rerank 在 M3 接入）。
+"""按问题位置、原文、知识来源和修正断言保守合并候选。
 
-M0 只做规则键分桶：`(step_index ± STEP_TOLERANCE, category)`；
-同一桶合并为一条候选，保留 `merged_from` 与 `proposed_by`。
+同一步骤与分类只是搜索范围；不同修正值或不同对象保持独立。
+合并后保留 `merged_from` 与 `proposed_by`。
 候选的标准化描述只描述现象，不带严重级倾向（防投票锚定，docs/12 §7）。
 """
 
@@ -23,8 +23,48 @@ SEVERITY_BY_RANK = {0: "suggestion", 1: "major", 2: "blocker"}
 
 
 def _correction_assertions(text: str) -> set[tuple[str, str]]:
-    return {(field, str(Decimal(value).normalize())) for field, value in re.findall(
-        r"\b([a-zA-Z_][a-zA-Z0-9_.]*)\s*=\s*(-?\d+(?:\.\d+)?)", text)}
+    # Selectors identify an object; their arguments are not corrected values.
+    selectors = [m.span() for m in re.finditer(r"[a-zA-Z_][a-zA-Z0-9_.]*\([^()\n]*\)", text)]
+    pattern = (r"(?<![a-zA-Z0-9_.])([a-zA-Z_][a-zA-Z0-9_.]*(?:\([^()\n]*\))?(?:\.[a-zA-Z0-9_]+)*)\s*"
+               r"(?:=|应为|改为|仍为|保持(?:为)?)\s*"
+               r"(-?\d+(?:\.\d+)?|[A-Z][A-Z0-9_]*|null|None|true|false)(?![a-zA-Z0-9_.])")
+    result = set()
+    for match in re.finditer(pattern, text):
+        if any(start < match.start() < end for start, end in selectors):
+            continue
+        field, value = match.groups()
+        field = re.sub(r"\s+", "", field)
+        value = str(Decimal(value).normalize()) if re.fullmatch(r"-?\d+(?:\.\d+)?", value) else value
+        result.add((field, value))
+    return result
+
+
+def _http_error_signature(text: str) -> tuple[set[str], set[str]]:
+    codes = set(re.findall(r"(?<![a-zA-Z0-9_])HTTP\s*([45]\d{2})(?!\d)", text, re.IGNORECASE))
+    messages = re.findall(r'[“「"]([^”」"\n]{4,120})[”」"]', text)
+    messages += re.findall(r'(?:错误信息|message)\s*(?:为|是|=|[:：])\s*([^；;，,。\n]+)', text)
+    normalized = {re.sub(r"\s+", "", m.strip('“”「」" ')) for m in messages}
+    return codes, normalized
+
+
+def _same_http_error(left: str, right: str) -> bool:
+    left_codes, left_messages = _http_error_signature(left)
+    right_codes, right_messages = _http_error_signature(right)
+    return (len(left_codes) == 1 and left_codes == right_codes
+            and bool(left_messages) and left_messages == right_messages)
+
+
+def _conflicting_http_errors(left: str, right: str) -> bool:
+    left_codes, left_messages = _http_error_signature(left)
+    right_codes, right_messages = _http_error_signature(right)
+    return bool(left_codes and right_codes and (
+        left_codes != right_codes or (left_messages and right_messages and left_messages != right_messages)))
+
+
+def _different_selected_objects(left: str, right: str) -> bool:
+    return (left != right and '(' in left + right
+            and re.sub(r'\([^()]*\)', '', left) == re.sub(r'\([^()]*\)', '', right))
+
 
 
 def _canonical_claims(issue: dict[str, Any]) -> list[dict[str, Any]]:
@@ -129,17 +169,23 @@ def fuse(
                 if changed and other_changed:
                     corrections, other_corrections = changed, other_changed
                 same_correction = bool(corrections & other_corrections)
-                identical_corrections = bool(corrections) and corrections == other_corrections
-                conflicting_corrections = any(field == other_field and value != other_value
-                                              for field, value in corrections
-                                              for other_field, other_value in other_corrections)
+                identical_corrections = bool(corrections) and (
+                    corrections == other_corrections or (len(corrections & other_corrections) >= 2
+                        and (corrections <= other_corrections or other_corrections <= corrections)))
+                conflicting_corrections = any(
+                    (field == other_field and value != other_value) or _different_selected_objects(field, other_field)
+                    for field, value in corrections for other_field, other_value in other_corrections)
+                conflicting_corrections = conflicting_corrections or _conflicting_http_errors(
+                    str(issue.get("suggestion") or ""), str(other.get("suggestion") or ""))
                 same_supported_rule = (issue.get("kb_grounded") and other.get("kb_grounded")
                                        and bool(set(issue.get("kb_refs") or []) & set(other.get("kb_refs") or [])))
                 if (issue.get("dimension") == other.get("dimension")
                         and issue.get("evidence_quote") == other.get("evidence_quote")
                         and not conflicting_corrections
                         and (overlap >= 0.65 or (same_supported_rule and (
-                            identical_corrections or (same_correction and containment >= 0.5))))):
+                            identical_corrections
+                            or _same_http_error(str(issue.get("suggestion") or ""), str(other.get("suggestion") or ""))
+                            or (same_correction and containment >= 0.5))))):
                     found = group
                     break
             if found is None:
