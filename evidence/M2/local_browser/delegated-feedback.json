@@ -1,0 +1,47 @@
+{
+  "feedback_id": "feedback-42cf3a92-b150-4d61-9df3-db045442d186",
+  "review_id": "dc4682bd-bda7-4b22-bdcf-0721623a5dd0",
+  "reviewer": "local-reviewer",
+  "created_at": "2026-11-12T15:16:18.873789+08:00",
+  "actor_type": "service",
+  "annotation_type": "service_feedback",
+  "issues": [
+    {
+      "issue_no": 1,
+      "verdict": "adopted",
+      "note": "用户授权AI技术复核：冻结源码按SKU单价100乘数量2计算200，客户端0.01不参与计算；该错误预期确实成立。"
+    },
+    {
+      "issue_no": 2,
+      "verdict": "rejected",
+      "note": "用户授权AI技术复核：与问题1指向同一操作、同一错误金额预期和同一知识规则，属于重复报告，应合并，不计为第二个独立缺陷。"
+    }
+  ],
+  "versions": {
+    "kb": "kb-runtime-8683584cd4ebf696e6c78e5e12e73f9b30108f1e851d8edae761f6de064e9b92",
+    "models": {
+      "vote": "qwen3.8-max",
+      "jury_a": "deepseek-flash",
+      "jury_b": "kimi-k3.1-pro",
+      "preprocess": "deepseek-flash",
+      "arbitration": "qwen3.8-max",
+      "chief_blind": "qwen3.8-max"
+    },
+    "rubric": "0.2.0",
+    "prompts": {
+      "vote": "p-m0-vote-01",
+      "jury_a": "p-m0-jury-a-01",
+      "jury_b": "p-m0-jury-b-01",
+      "preprocess": "p-m0-pre-01",
+      "arbitration": "p-m0-arb-01",
+      "chief_blind": "p-m0-chief-01"
+    },
+    "model_config": "7e35c71d",
+    "price_config": "price-unverified-2026-11",
+    "kb_build_version": "kb-runtime-8683584cd4ebf696e6c78e5e12e73f9b30108f1e851d8edae761f6de064e9b92",
+    "retrieval_config": "ce45cb63",
+    "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+    "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813"
+  },
+  "gold_admission": "not_admitted"
+}

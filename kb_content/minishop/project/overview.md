@@ -8,33 +8,33 @@ source_type: OTHER
 source_ref: Minishop/README.md#L1-L158; Minishop/backend/app/main.py#L11-L15
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E2
-status: in_review
+status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（技术负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - overview
-  - ecommerce
-  - sut
+- overview
+- ecommerce
+- sut
 related_ids:
-  - PROJECT-MODULES
-  - PROJECT-VERSIONS
-  - PROJECT-ROLES
-  - TEST-ENV
+- PROJECT-MODULES
+- PROJECT-VERSIONS
+- PROJECT-ROLES
+- TEST-ENV
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: changes_applied_pending_reapproval
-change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过）"
+review_status: delegated_review_completed
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 ---
 
 # 1. 产品定位
@@ -113,6 +113,13 @@ MiniShop 是一个轻量级综合电商平台 Demo，作为 WHartTest 测试平�
 - 端到端脚本：`Minishop/e2e_test.py`
 - README.md#L124-L154 目录树与实际不符（components/、router/、database/ 不存在；路由在 App.tsx#L63-L101，数据库为 database.py 文件），引用路径以代码为准。
 - 本知识库入口：`kb_content/minishop/README.md`
+
+
+# 本次授权技术复核适用性
+
+核对 README 与 main.py 原始定位；仅退款已实现，不把 TestJury 接入宣称成原始产品需求。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

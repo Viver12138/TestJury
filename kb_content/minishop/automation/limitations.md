@@ -5,36 +5,37 @@ knowledge_type: AUTOMATION
 project_id: minishop
 module_id: null
 source_type: AUTOMATION_DOC
-source_ref: Minishop/e2e_test.py; Minishop/frontend/src/pages/product/ProductDetail.tsx#L45-L77; Minishop/frontend/src/pages/order/OrderConfirm.tsx#L19-L62; Minishop/backend/app/seed/seed.py#L12-L25
+source_ref: Minishop/e2e_test.py; Minishop/frontend/src/pages/product/ProductDetail.tsx#L45-L77;
+  Minishop/frontend/src/pages/order/OrderConfirm.tsx#L19-L62; Minishop/backend/app/seed/seed.py#L12-L25
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E3
 status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（技术负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
 updated_at: 2026-11-12
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - automation
-  - limitations
-  - ui
-  - flaky
+- automation
+- limitations
+- ui
+- flaky
 related_ids:
-  - AUTO-FRAMEWORK
-  - AUTO-LOCATOR
-  - EXP-ORDER-001
+- AUTO-FRAMEWORK
+- AUTO-LOCATOR
+- EXP-ORDER-001
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: approved_after_review
-change_reason: "2026-11-12 人工复核回写（审核结论：通过）"
+review_status: delegated_review_completed
+change_reason: 用户授权 AI 复核：修正 sessionStorage 与脚本退出语义；保留历史签署
 ---
 
 # 1. 总体结论
@@ -47,7 +48,7 @@ change_reason: "2026-11-12 人工复核回写（审核结论：通过）"
 
 | 限制 | 影响 | 规避/建议 |
 |---|---|---|
-| `e2e_test.py` 不返回非零退出码 | 有 FAIL 也可能被 CI 判为成功 | 改造为 pytest，或解析输出并显式 `exit(1)` |
+| `e2e_test.py` 的 check() 失败但正常到达末尾时仍退出 0；未捕获异常会非零退出 | 有 FAIL 也可能被 CI 判为成功 | 改造为 pytest，或解析输出并显式 `exit(1)` |
 | `requests` 未在 requirements 声明 | 新环境执行脚本失败 | 加入测试依赖或单独 requirements-dev |
 | 硬编码 base URL / 端口 | 环境变化即失败 | 用环境变量 |
 | 无 setup/teardown | 数据残留、顺序依赖 | fixtures + 独立库 |
@@ -62,7 +63,7 @@ change_reason: "2026-11-12 人工复核回写（审核结论：通过）"
 |---|---|---|
 | 单规格商品无法加购 | `ProductDetail.tsx#L45-L68`：`currentSku` 仅在已选规格时计算，而单规格商品没有规格可选 | 无法通过详情页购买 iPhone、咖啡等 8/9 个商品；UI 主流程只能选运动鞋，或改用 API 加购 |
 | 商品图 SVG 非法 | `seed.py#L12-L25`：`font-family` 引号嵌套破坏 XML，且 data URL 未编码 | 任何“图片可见/加载成功”的断言都会失败；不要以图片为断言点 |
-| 结算页依赖 `sessionStorage` | `OrderConfirm.tsx#L21-L24` | 直接访问 `/orders/confirm` 或刷新会丢失商品；UI 自动化必须从购物车点击进入 |
+| 结算页依赖 `sessionStorage` | `OrderConfirm.tsx#L21-L24` | 同标签页普通刷新保留商品；新会话或没有 checkout_items 时直达无商品，自动化需先准备结算数据 |
 
 ## 3.2 稳定性限制
 

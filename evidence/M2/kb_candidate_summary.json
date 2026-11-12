@@ -1,0 +1,233 @@
+{
+  "candidates": [
+    {
+      "status": "candidate",
+      "publication_status": "unpublished",
+      "formal_admission": "blocked",
+      "documents": 21,
+      "review_baseline": {
+        "type": "current_implementation",
+        "product_version": "1.0.0",
+        "source_ref": "https://github.com/Viver12138/minishop.git",
+        "source_version": "e354437069504381f10a54d9c14baed755f3ba56"
+      },
+      "kb_content_version": "kb-fbf3ac32a2a68733b2fc241505f9abb453ee15be74b543f405d1a1c56d2c3613",
+      "kb_build_version": "kb-build-5d8843cca54ee3be13ee52119a9f7410dbb71c536b444bb6963d55e3ed5faab3",
+      "parser_fingerprint": "208e430a9d51927f0e7e86254ec96fc2da937955bc8930d0b253b5a1e770b527",
+      "excluded_documents": [
+        {
+          "doc_id": "AUTO-FRAMEWORK",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "EXP-ORDER-001",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "API-ORDER-003",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "PROJECT-ENVIRONMENTS",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "PROJECT-OVERVIEW",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "PROJECT-PLATFORMS",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "PROJECT-ROLES",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "PROJECT-VERSIONS",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "REQ-ORDER-001",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "RULE-ORDER-001",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "RULE-ORDER-002",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "RULE-ORDER-008",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "TEST-SPEC-PROJECT-001",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "TEST-ENV",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "FLOW-ORDER-001",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "STATE-ORDER-001",
+          "reasons": [
+            "pending_review"
+          ]
+        }
+      ],
+      "chunks": 125
+    },
+    {
+      "status": "candidate",
+      "publication_status": "unpublished",
+      "formal_admission": "blocked",
+      "documents": 21,
+      "review_baseline": {
+        "type": "target_specification",
+        "product_version": "1.0.0",
+        "source_ref": "kb_content/_delivery/_build/review_input_rows.json",
+        "source_version": "967ce3de226a674ea563bb1a385f0ebb878da5b046301d9bc3e0ca0beb60951d"
+      },
+      "kb_content_version": "kb-fbf3ac32a2a68733b2fc241505f9abb453ee15be74b543f405d1a1c56d2c3613",
+      "kb_build_version": "kb-build-1ff61b54a5c3d3c27dc98e9aceddcb5ccbbfb600ac7d333ab69b39c88900a3bd",
+      "parser_fingerprint": "208e430a9d51927f0e7e86254ec96fc2da937955bc8930d0b253b5a1e770b527",
+      "excluded_documents": [
+        {
+          "doc_id": "AUTO-FRAMEWORK",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "EXP-ORDER-001",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "API-ORDER-003",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "PROJECT-ENVIRONMENTS",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "PROJECT-OVERVIEW",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "PROJECT-PLATFORMS",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "PROJECT-ROLES",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "PROJECT-VERSIONS",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "REQ-ORDER-001",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "RULE-ORDER-001",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "RULE-ORDER-002",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "RULE-ORDER-008",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "TEST-SPEC-PROJECT-001",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "TEST-ENV",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "FLOW-ORDER-001",
+          "reasons": [
+            "pending_review"
+          ]
+        },
+        {
+          "doc_id": "STATE-ORDER-001",
+          "reasons": [
+            "pending_review"
+          ]
+        }
+      ],
+      "chunks": 125
+    }
+  ],
+  "baseline_isolation_verified": true
+}

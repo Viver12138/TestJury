@@ -3,7 +3,7 @@
 > 项目标识：`minishop`
 > 产品版本：`1.0.0`
 > 知识快照：来源 2026-11-11；复核回写 2026-11-12
-> 状态：**24 份 approved / 13 份 in_review（待复审）**
+> 状态：**21 份 approved / 16 份 in_review（待复审）**
 > 试点模块：`order`
 
 ## 1. 项目一句话说明
@@ -66,11 +66,11 @@ MiniShop 是一个用于测试平台联调和用例评审的轻量级综合电�
 
 ## 6. 证据与审核状态
 
-- 2026-11-12 已应用人工复核：**24 份 `approved`、13 份 `in_review`**；13 份已完成修改但仍待复审，复审前不进入正式评审候选集；
+- 2026-11-12 已应用人工复核：**21 份 `approved`、16 份 `in_review`**；16 份已完成修改但仍待复审，复审前不进入正式评审候选集；
 - 所有文档填写了 `reviewer`/`reviewed_at`，并追加“复核记录”；
 - 业务规则来自代码实际行为，`evidence_level: E2`；
 - 测试/自动化规范为 `E3`，风险线索为 `E4`；
-- 来源没有正式 PRD，也没有 Git 仓库，这两项限制已登记为知识缺口。
+- 正式 PRD 待核验；GitHub 源码已绑定完整提交，原数据库和全部 80 项资料已有受控快照；原始审核工作簿已取得，77 行业务数据与既有记录完全一致。
 
 ## 7. 交付与自检
 
@@ -86,9 +86,10 @@ MiniShop 是一个用于测试平台联调和用例评审的轻量级综合电�
 | 最终报告 | [`../_delivery/06_final_report.md`](../_delivery/06_final_report.md) |
 | 独立审核报告 | [`../_delivery/07_audit_report_2026-11-12.md`](../_delivery/07_audit_report_2026-11-12.md) |
 | 人工复核回写报告 | [`../_delivery/08_review_application_2026-11-12.md`](../_delivery/08_review_application_2026-11-12.md) |
+| 当前整改与验证 | [`../_delivery/09_contract_remediation_2026-11-12.md`](../_delivery/09_contract_remediation_2026-11-12.md) |
 | 知识缺口 | [`_governance/knowledge_gaps.yaml`](_governance/knowledge_gaps.yaml) |
 | 知识冲突 | [`_governance/conflicts.yaml`](_governance/conflicts.yaml) |
 | 待确认（机读） | [`_governance/pending_confirmation.yaml`](_governance/pending_confirmation.yaml) |
 | 发布记录 | [`_governance/release_notes.md`](_governance/release_notes.md) |
 
-自检结果：37 份文档、86 个行号锚点，0 错误、0 警告、0 来源漂移；`approved=24`、`in_review=13`。24 份已批准文档可进入检索；13 份待复审文档仍会被 `status=approved` 过滤。
+自检结果：37 份文档、原快照 86 个行号锚点；旧检查的零错误/零警告不代表发布验收完成。`approved=21`、`in_review=16`；原始 80 项来源及数据库已完整归档，离线候选为 21 份，16 份待复审文档被排除。正式检索仍未启用，当前验证见 `../_delivery/09_contract_remediation_2026-11-12.md`。

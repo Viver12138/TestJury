@@ -93,6 +93,10 @@ class Settings(BaseSettings):
     report_schema_version: str = "report-1.0"
     kb_content_dir: Path = REPO_ROOT / "kb_content"
     retrieval_config_version: str | None = None
+    knowledge_enabled: bool = False
+    knowledge_vector_enabled: bool = False
+    knowledge_delegated_acceptance: bool = False
+    knowledge_acceptance_dir: Path = REPO_ROOT / "evidence" / "M2" / "acceptance"
 
     # ── 检索 / 融合（M0 仅参与版本号计算） ──
     retrieval_query_max: int = 12
@@ -134,16 +138,18 @@ class Settings(BaseSettings):
     test_type_default_policy: Literal["strict", "compat"] = "strict"
     test_type_compat_callers: str = ""
 
-    # ── 预算（M0 记录，不在本轮强制） ──
-    review_budget_tokens: int = 60000
-    review_budget_cost: float = 2.0
-    batch_budget_cost: float = 60.0
-    daily_budget_cost: float = 500.0
+    # ── 聊天调用预算：调用前保守预留，按配置价格估算 ──
+    review_budget_tokens: int = Field(default=60000, ge=1)
+    review_budget_cost: float = Field(default=2.0, gt=0, allow_inf_nan=False)
+    batch_budget_cost: float = Field(default=60.0, gt=0, allow_inf_nan=False)
+    daily_budget_cost: float = Field(default=500.0, gt=0, allow_inf_nan=False)
 
     # ── Webhook ──
+    webhook_enabled: bool = False
+    webhook_allowed_hosts: str = ""
     webhook_secret: str = "change-me"
-    webhook_max_retries: int = 5
-    webhook_timeout_seconds: int = 10
+    webhook_max_retries: int = Field(default=5, ge=1, le=10)
+    webhook_timeout_seconds: int = Field(default=10, ge=1, le=120)
 
     # ── 开发引导 ──
     bootstrap_api_keys: str = ""
@@ -159,6 +165,8 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _guard_production(self) -> Settings:
+        if self.webhook_enabled and (len(self.webhook_secret) < 32 or not self.webhook_allowed_hosts.strip()):
+            raise ValueError("完成通知需要允许列表和至少32字符的签名密钥")
         if self.app_env is AppEnv.PROD:
             if self.storage_backend == "memory":
                 raise ValueError("生产环境禁止 STORAGE_BACKEND=memory")
@@ -169,6 +177,11 @@ class Settings(BaseSettings):
         return self
 
     # ── 派生属性 ──
+
+    @property
+    def review_roles(self) -> tuple[str, ...]:
+        return {"single": ("chief_blind",), "dual": ("chief_blind", "jury_a"),
+                "multi": ("chief_blind", "jury_a", "jury_b")}[self.review_topology]
 
     @property
     def is_production(self) -> bool:

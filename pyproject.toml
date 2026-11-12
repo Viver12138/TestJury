@@ -32,6 +32,9 @@ dev = ["pytest>=8.2", "pytest-asyncio>=0.24", "ruff>=0.6", "mypy>=1.10"]
 [tool.setuptools.packages.find]
 include = ["app*"]
 
+[tool.setuptools.package-data]
+app = ["web/*.html"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"

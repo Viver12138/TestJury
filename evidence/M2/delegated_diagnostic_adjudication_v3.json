@@ -1,0 +1,120 @@
+{
+  "actor": "codex-delegated-reviewer",
+  "actor_type": "ai",
+  "independent_human_validation": false,
+  "authorization": "design/changes/2026-11-12-delegated-development.md",
+  "source_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+  "source_execution_evidence": "evidence/M2/minishop_gold_source_verification.json",
+  "dataset_version": "minishop-gold-3",
+  "scope": "six dev cases; diagnostic adjudication, not independent precision acceptance",
+  "code_fingerprint": "d920136a7736321fb1bae7929321033a289ad7119329e91a8f87fa2563406a70",
+  "subsequent_changes_not_evaluated_here": [
+    "explicit fixture/seed policy clarification",
+    "persistent checkpoints"
+  ],
+  "original_reports_mutated": false,
+  "gold_labels_mutated": false,
+  "records": [
+    {
+      "case_id": "G-001-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-d920136a7736/G-001-positive.json",
+      "report_sha256": "99a7203ee5572d04c8fb543a96d95d298d53c166e9108ebd27a121f7f2d2ba90",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "unsupported",
+          "reason": "显式夹具已声明SKU与价格；默认演示种子可能变化不否定本用例准备的数据。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-001-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-d920136a7736/G-001-negative.json",
+      "report_sha256": "cb6e9217a7c041104ee7d16276a3548b6032df9010e6fbd1a86652c4948f36b5",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "客户端0.01应被忽略，服务端100×2得到200。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "same_root_consequence",
+          "reason": "金额不自洽是第1项错误应付金额的直接结果，修正pay_amount后消失。"
+        },
+        {
+          "issue_no": 3,
+          "decision": "unsupported_requirement",
+          "reason": "标题没有要求持久化一致性验证，已有响应金额断言可验证选价规则。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-008-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-d920136a7736/G-008-positive.json",
+      "report_sha256": "0b9c855fe3a2a96fceb29af948b9849384385d6b0b647fef1952b8d7bee61c83",
+      "decisions": []
+    },
+    {
+      "case_id": "G-008-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-d920136a7736/G-008-negative.json",
+      "report_sha256": "25fc5951ce05b140eae6bcf5b58fc6fe982a0d887952486032914e39bef3f79f",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "支付失败订单仍待支付，CANCELLED断言错误。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "valid_related_consequence",
+          "reason": "重新支付应允许，409断言错误；与第1项同一失败支付规则，需保留两个被纠正的观察点。"
+        },
+        {
+          "issue_no": 3,
+          "decision": "duplicate",
+          "reason": "重复第1项，且附加cancelled_at查询不是必要修复。"
+        },
+        {
+          "issue_no": 4,
+          "decision": "duplicate",
+          "reason": "重复第2项；不能因引用校验结果不同而视为不同根因。"
+        },
+        {
+          "issue_no": 5,
+          "decision": "unsupported_requirement",
+          "reason": "结构化fixture与前置描述重复是序列化表达，不影响操作执行或判定；现有单条用例政策明确排除此类文案建议。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-015-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-d920136a7736/G-015-positive.json",
+      "report_sha256": "119b8398c5b0451f88279f95d938fd9be8206dfbff166765920b20112dadbd5b",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "scope_policy_disagreement",
+          "reason": "检查更多券副作用字段可提高回归强度，但用例已检查状态、订单与库存；现有范围未要求每个内部字段。保留为可选增强，不能凭此单项宣称黄金集或模型一定错误。"
+        }
+      ]
+    },
+    {
+      "case_id": "G-015-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-3/dual-d920136a7736/G-015-negative.json",
+      "report_sha256": "b113e06f0d110c70eab7be1ecb514109d5de662dc4dd0059138e6a0a54820e4e",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "冻结源码预览不占券；USED预期与当前实现基线冲突。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "reason": "重复第1项；正确修复仍为券UNUSED，原始意见保留。"
+        }
+      ]
+    }
+  ]
+}

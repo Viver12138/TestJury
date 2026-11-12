@@ -8,34 +8,33 @@ source_type: OTHER
 source_ref: Minishop/backend/app/api/payments.py#L39-L118
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E2
 status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（产品负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
-change_reason: 2026-11-12 审核整改：前置条件补充支付单存在性与归属校验（404 路径）
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 tags:
-  - order
-  - payment
-  - idempotency
-  - duplicate_payment
+- order
+- payment
+- idempotency
+- duplicate_payment
 related_ids:
-  - REQ-ORDER-002
-  - RULE-ORDER-009
-  - API-ORDER-005
+- REQ-ORDER-002
+- RULE-ORDER-009
+- API-ORDER-005
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: approved_after_review
-change_reason: "2026-11-12 人工复核回写（审核结论：通过）"
+review_status: delegated_review_completed
 ---
 
 # 1. 规则陈述
@@ -85,7 +84,8 @@ change_reason: "2026-11-12 人工复核回写（审核结论：通过）"
 
 - 支付成功**不校验支付单当前状态**，`FAILED` 支付单在订单仍待支付时也能被标记成功。
 - `method` 无枚举校验，任意字符串可传入；默认 `WECHAT`。
-- 同一订单可存在多条支付记录（失败后重试），但订单只有一个 `payment` 单对象关系，详情展示哪条记录不确定。
+- 同一订单可存在多条支付记录（失败后重试），但订单只有一个 `payment` 单对象关系且未排序。Q-05 原复核记录在 FAILED + SUCCESS 场景观察到返回第一条 FAILED 并产生 SAWarning；不得把未排序关系当作稳定选择契约。
+- 目标行为（Q-05 已确认）：订单详情展示成功/最新支付记录。当前源码尚未落实该目标，应作为已确认缺陷记录。
 - “重复支付保护”依赖订单状态，不是支付单状态；并发下两个请求可能都读到 `PENDING_PAYMENT`，缺少数据库行锁。
 - 创建支付单的“幂等”只覆盖已存在 `PENDING` 支付单的情况，不覆盖 `FAILED`。
 
@@ -115,11 +115,20 @@ change_reason: "2026-11-12 人工复核回写（审核结论：通过）"
 # 10. 未决问题
 
 - 是否应校验 `payment.status`，禁止 `FAILED -> SUCCESS`？
-- 多支付记录下，订单详情应展示哪一条？
+- 多支付记录的展示规则已经由 Q-05 裁决；关系修复与回归验证仍待完成。
 - 是否需要支付幂等键与并发锁？
 - `method` 是否应限定为 `WECHAT` / `ALIPAY`？
 
 > 已确认（2026-11-11，Q-05）：订单详情应展示成功/最新支付；当前 `Order.payment` 单对象关系为确定性缺陷（恒返回第一条 FAILED 并抛 SAWarning）。
+
+> 2026-11-12 整改说明：以上是原复核的场景观察，不能推导 SQL 无排序时对任意数据均“恒返回第一条”。本轮同步当前实现与目标规则后退回 `in_review`；原审核记录保留为历史，不代表本次正文已复审。
+
+
+# 本次授权技术复核适用性
+
+核对支付门禁、金额取 order.pay_amount、PENDING 复用及失败重试；没有支付状态与并发行锁保障；多支付选择不是排序契约。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

@@ -58,6 +58,9 @@ _COPY_ITEMS = (
     "scripts",
     "evidence",
     "config",
+    "app",
+    "kb_content",
+    "TestJury_项目知识库数据规范_v1.0.md",
     ".github",
     "README.md",
 )
@@ -136,8 +139,7 @@ def report_schema_version() -> str:
 def postgres_dsn() -> str:
     if not available():
         pytest.skip(
-            "PostgreSQL 不可用；请先执行 "
-            "docker compose -f deploy/docker-compose.yml up -d postgres"
+            "需要显式指定独立测试库；运行 python scripts/verify_isolated.py 自动创建并清理"
         )
     return dsn()
 

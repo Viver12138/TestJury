@@ -1,0 +1,51 @@
+..........F..                                                            [100%]
+================================== FAILURES ===================================
+______ test_report_finalization_rolls_back_when_review_task_insert_fails ______
+
+migrated_database = 'postgresql://testjury:testjury@127.0.0.1:55432/testjury_verify_883eecda4e42'
+
+    @pytest.mark.postgres
+    async def test_report_finalization_rolls_back_when_review_task_insert_fails(migrated_database):
+        app = create_app(make_settings(storage_backend="postgres", database_url=migrated_database), run_worker=False)
+        actor = Principal("rollback-test", ActorType.SERVICE, frozenset({"reviewer"}), None)
+        try:
+            await app.state.review_service.submit(review_payload(), actor)
+            job = await app.state.worker.claim_next()
+            with pytest.raises(ValueError):
+>               await app.state.storage.finalize_report(
+                    job.id, fencing_token=job.fencing_token,
+                    fields={"status": "done", "report_json": {"issues": []}}, issues=[],
+                    review_tasks=[ReviewTaskRecord(id=new_id(), review_id=job.id, review_level="case"),
+                                  ReviewTaskRecord(id="invalid-uuid", review_id=job.id, review_level="case")])
+
+tests\integration\test_model_budget.py:123: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+app\storage\postgres.py:1025: in finalize_report
+    await self._insert_review_task(conn, task)
+app\storage\postgres.py:1269: in _insert_review_task
+    await conn.execute("""INSERT INTO human_review_tasks
+.venv\Lib\site-packages\asyncpg\connection.py:380: in execute
+    _, status, _ = await self._execute(
+.venv\Lib\site-packages\asyncpg\connection.py:1904: in _execute
+    result, _ = await self.__execute(
+.venv\Lib\site-packages\asyncpg\connection.py:2003: in __execute
+    result, stmt = await self._do_execute(
+.venv\Lib\site-packages\asyncpg\connection.py:2066: in _do_execute
+    result = await executor(stmt, None)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+>   return await waiter
+E   asyncpg.exceptions.CheckViolationError: new row for relation "human_review_tasks" violates check constraint "human_review_tasks_review_level_check"
+E   DETAIL:  Failing row contains (49a29ec3-e609-48f7-80a1-bf63fb45bb95, 0770c539-c920-4108-8552-49949bbe7f14, null, case, normal, null, pending, null, null, auto, null, 0, 2026-11-12 08:27:36.135767+00, null, null).
+
+asyncpg/protocol/protocol.pyx:197: CheckViolationError
+---------------------------- Captured stdout setup ----------------------------
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T08:27:34.558927Z"}
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T08:27:36.064792Z"}
+----------------------------- Captured log setup ------------------------------
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+=========================== short test summary info ===========================
+FAILED tests/integration/test_model_budget.py::test_report_finalization_rolls_back_when_review_task_insert_fails
+1 failed, 12 passed in 10.09s

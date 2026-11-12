@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="6" time="11.595" timestamp="2026-11-12T15:47:26.998368+08:00" hostname="DESKTOP-KK9PD6J"><testcase classname="tests.integration.test_checkpoint_recovery" name="test_memory_recovery_reuses_successful_models_and_stable_candidates" time="0.095" /><testcase classname="tests.integration.test_checkpoint_recovery" name="test_postgres_recovery_reuses_successful_models_and_stable_candidates" time="1.930" /><testcase classname="tests.integration.test_checkpoint_recovery" name="test_checkpoints_reject_stale_owner_changed_inputs_and_corrupt_outputs" time="0.158" /><testcase classname="tests.migration.test_migrations" name="test_empty_database_migrates_and_rolls_back" time="6.826"><failure message="AssertionError: assert '0006_stage_checkpoints' == '0005_m2_knowledge'&#10;  &#10;  - 0005_m2_knowledge&#10;  + 0006_stage_checkpoints">clean_database = 'postgresql://testjury:testjury@127.0.0.1:55432/testjury_verify_45d6756af4f5'
+
+    def test_empty_database_migrates_and_rolls_back(clean_database: str) -&gt; None:
+        upgrade = run_alembic("upgrade", "head")
+        assert upgrade.returncode == 0, upgrade.stdout + upgrade.stderr
+    
+        assert {"vector", "pgcrypto", "pg_trgm"} &lt;= asyncio.run(_extensions())
+        tables = asyncio.run(_tables())
+        assert CORE_TABLES &lt;= tables
+        assert "review_attachments" in tables
+        assert asyncio.run(_alembic_version()) == "0006_stage_checkpoints"
+        assert "stage_checkpoints" in tables
+        assert {"knowledge_builds", "knowledge_vectors", "knowledge_active", "knowledge_events"} &lt;= tables
+    
+        # 回滚 0004：只撤销脱敏审计列
+        downgrade_0004 = run_alembic("downgrade", "0003_m1_audit_evidence")
+        assert downgrade_0004.returncode == 0, downgrade_0004.stdout + downgrade_0004.stderr
+        assert asyncio.run(_alembic_version()) == "0003_m1_audit_evidence"
+    
+        # 回滚 0003：只撤销审计/证据列，不破坏附件表与 M0 核心表
+        downgrade_0003 = run_alembic("downgrade", "0002_m1_review_attachments")
+        assert downgrade_0003.returncode == 0, downgrade_0003.stdout + downgrade_0003.stderr
+        after_0003 = asyncio.run(_tables())
+        assert "review_attachments" in after_0003
+        assert CORE_TABLES &lt;= after_0003
+        assert asyncio.run(_alembic_version()) == "0002_m1_review_attachments"
+    
+        # 再回滚一个 revision：只撤销附件绑定表
+        downgrade_0002 = run_alembic("downgrade", "0001_m0_initial")
+        assert downgrade_0002.returncode == 0, downgrade_0002.stdout + downgrade_0002.stderr
+        after_0002 = asyncio.run(_tables())
+        assert "review_attachments" not in after_0002
+        assert CORE_TABLES &lt;= after_0002
+        assert asyncio.run(_alembic_version()) == "0001_m0_initial"
+    
+        # 再回滚到 base：核心表被撤销
+        downgrade_all = run_alembic("downgrade", "base")
+        assert downgrade_all.returncode == 0, downgrade_all.stdout + downgrade_all.stderr
+        remaining = asyncio.run(_tables())
+        assert CORE_TABLES.isdisjoint(remaining), remaining
+        assert "api_keys" not in remaining
+    
+        rebuild = run_alembic("upgrade", "head")
+        assert rebuild.returncode == 0, rebuild.stdout + rebuild.stderr
+        rebuilt = asyncio.run(_tables())
+        assert CORE_TABLES &lt;= rebuilt
+        assert "review_attachments" in rebuilt
+&gt;       assert asyncio.run(_alembic_version()) == "0005_m2_knowledge"
+E       AssertionError: assert '0006_stage_checkpoints' == '0005_m2_knowledge'
+E         
+E         - 0005_m2_knowledge
+E         + 0006_stage_checkpoints
+
+tests\migration\test_migrations.py:94: AssertionError</failure></testcase><testcase classname="tests.migration.test_migrations" name="test_repeated_upgrade_is_noop" time="2.117" /><testcase classname="tests.unit.test_worker_lifecycle" name="test_worker_pool_claims_multiple_jobs_and_stops_cleanly" time="0.068" /></testsuite></testsuites>

@@ -18,6 +18,8 @@ modules:
     knowledge_status: partial
     coverage: 本批只覆盖登录与鉴权的最小约束，供交易流程准备数据
     owner: minishop_project_team
+    content_stage: partial
+    formal_admission: blocked
 
   - id: catalog
     name: 商品与分类
@@ -26,6 +28,8 @@ modules:
     knowledge_status: partial
     coverage: 本批只覆盖与下单相关的商品可见性、SKU、价格、库存字段
     owner: minishop_project_team
+    content_stage: partial
+    formal_admission: blocked
 
   - id: cart
     name: 购物车
@@ -34,6 +38,8 @@ modules:
     knowledge_status: partial
     coverage: 本批只覆盖下单前的加购与数量约束
     owner: minishop_project_team
+    content_stage: partial
+    formal_admission: blocked
 
   - id: address
     name: 收货地址
@@ -42,6 +48,8 @@ modules:
     knowledge_status: partial
     coverage: 本批只覆盖下单必需的地址归属与快照
     owner: minishop_project_team
+    content_stage: partial
+    formal_admission: blocked
 
   - id: coupon
     name: 优惠券
@@ -50,6 +58,8 @@ modules:
     knowledge_status: partial
     coverage: 本批只覆盖下单用券的资格、门槛与占用/归还
     owner: minishop_project_team
+    content_stage: partial
+    formal_admission: blocked
 
   - id: order
     name: 订单与交易
@@ -58,6 +68,8 @@ modules:
     knowledge_status: pilot
     coverage: 本批试点模块，端到端覆盖
     owner: minishop_project_team
+    content_stage: reviewed_candidate
+    formal_admission: blocked
 
   - id: after_sales
     name: 售后与退款
@@ -66,6 +78,8 @@ modules:
     knowledge_status: later
     coverage: 未纳入本批；仅状态机中登记对订单状态的影响
     owner: minishop_project_team
+    content_stage: scope_only
+    formal_admission: blocked
 
   - id: review
     name: 商品评价
@@ -74,6 +88,8 @@ modules:
     knowledge_status: later
     coverage: 未纳入本批；仅状态机中登记评价前置条件
     owner: minishop_project_team
+    content_stage: scope_only
+    formal_admission: blocked
 
   - id: admin
     name: 管理后台
@@ -82,6 +98,8 @@ modules:
     knowledge_status: partial
     coverage: 本批只覆盖管理员发货与订单可见性
     owner: minishop_project_team
+    content_stage: partial
+    formal_admission: blocked
 
   - id: messaging
     name: 站内消息
@@ -90,6 +108,8 @@ modules:
     knowledge_status: later
     coverage: 未纳入本批
     owner: minishop_project_team
+    content_stage: scope_only
+    formal_admission: blocked
 
   - id: favorite
     name: 商品收藏
@@ -98,6 +118,8 @@ modules:
     knowledge_status: later
     coverage: 未纳入本批
     owner: minishop_project_team
+    content_stage: scope_only
+    formal_admission: blocked
 
   - id: inventory
     name: 库存管理
@@ -106,6 +128,8 @@ modules:
     knowledge_status: later
     coverage: 未纳入本批；下单库存扣减见 RULE-ORDER-009
     owner: minishop_project_team
+    content_stage: scope_only
+    formal_admission: blocked
 
 # 模块依赖（下单链路）
 dependencies:

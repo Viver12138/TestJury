@@ -9,22 +9,32 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Callable
+from dataclasses import asdict
 from typing import Any
 
 from app.core.enums import VoteValidity
 from app.llm.attempts import attempt_log
 from app.llm.base import AdapterError, ReviewModel, VoteDecision
+from app.pipeline.checkpoints import Checkpoints
 from app.storage.models import CandidateRecord, VoteRecord
 
 
-def build_vote_material(candidate: CandidateRecord) -> dict[str, Any]:
-    return {
+def build_vote_material(candidate: CandidateRecord, *, evidence_pack: dict | None = None,
+                        case: dict | None = None) -> dict[str, Any]:
+    material = {
         "candidate_id": candidate.id,
         "candidate_no": candidate.candidate_no,
         "step_index": candidate.step_index,
         "dimension": candidate.dimension,
         "description": candidate.standardized_text,
     }
+    if case is not None:
+        material["case"] = {k: v for k, v in case.items() if not k.startswith("_")}
+    if evidence_pack is not None:
+        material["review_baseline"] = evidence_pack["baseline"]
+        material["knowledge_evidence"] = [c for c in evidence_pack["evidence"] if c["chunk_id"] in candidate.kb_refs]
+    return material
 
 
 async def run_vote(
@@ -34,11 +44,16 @@ async def run_vote(
     roles: list[str],
     *,
     timeout_seconds: int | None = None,
+    evidence_pack: dict | None = None,
+    case: dict | None = None,
+    checkpoints: Checkpoints | None = None,
+    persist_call: Callable[[dict], Awaitable[None]] | None = None,
+    store_raw_model_io: bool = True,
 ) -> tuple[list[VoteRecord], list[dict[str, Any]]]:
     """并行投票；每个候选 × 角色是一次独立调用，超时按该票 failed 处理。"""
 
     async def _one(candidate: CandidateRecord, role: str):
-        material = build_vote_material(candidate)
+        material = build_vote_material(candidate, evidence_pack=evidence_pack, case=case)
         audit: list[dict[str, Any]] = []
         token = attempt_log.set(audit)
         try:
@@ -56,7 +71,7 @@ async def run_vote(
                 role,
                 VoteDecision(
                     validity=VoteValidity.NOT_ASSESSED.value,
-                    reason=f"vote_failed:{exc.code}",
+                    reason=f"vote_failed:{exc}",
                     attempts=list(getattr(exc, "attempts", []) or audit),
                 ),
                 "failed",
@@ -77,9 +92,35 @@ async def run_vote(
         finally:
             attempt_log.reset(token)
 
-    results = await asyncio.gather(
-        *(_one(candidate, role) for candidate in candidates for role in roles)
-    )
+    async def _saved_one(candidate, role):
+        async def execute():
+            _, _, decision, status, error_code = await _one(candidate, role)
+            call = _call_metadata(candidate, role, decision, status, error_code)
+            if persist_call is not None:
+                await persist_call(call)
+            saved = asdict(decision)
+            if not store_raw_model_io:
+                saved.update(raw_request=None, raw_response=None)
+            return {"decision": saved, "status": status, "error_code": error_code}
+
+        if checkpoints is None:
+            result = await execute()
+        else:
+            result = await checkpoints.run(
+                f"vote:{candidate.id}:{role}",
+                build_vote_material(candidate, evidence_pack=evidence_pack, case=case),
+                execute, reusable=lambda value: value["status"] == "ok")
+        return candidate, role, VoteDecision(**result["decision"]), result["status"], result["error_code"]
+
+    tasks = [asyncio.create_task(_saved_one(candidate, role)) for candidate in candidates for role in roles]
+    try:
+        results = await asyncio.gather(*tasks)
+    except BaseException:
+        # A failed persistence/ownership check must not leave sibling calls running.
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        raise
 
     votes: list[VoteRecord] = []
     calls: list[dict[str, Any]] = []
@@ -99,14 +140,19 @@ async def run_vote(
                 reason=decision.reason,
             )
         )
-        calls.append(
-            {
+        calls.append(_call_metadata(candidate, role, decision, status, error_code))
+    return votes, calls
+
+
+def _call_metadata(candidate, role, decision, status, error_code):
+    return {
                 "role": role,
                 "operation": "vote",
                 "candidate_no": candidate.candidate_no,
                 "model": decision.model or "-",
                 "status": status,
                 "error_code": error_code,
+                "error": decision.reason if status != "ok" else None,
                 "latency_ms": decision.latency_ms,
                 "tokens": {
                     "request": decision.input_tokens,
@@ -124,5 +170,3 @@ async def run_vote(
                 "masking_policy_version": getattr(decision, "masking_policy_version", None),
                 "masking_report": getattr(decision, "masking_report", None),
             }
-        )
-    return votes, calls

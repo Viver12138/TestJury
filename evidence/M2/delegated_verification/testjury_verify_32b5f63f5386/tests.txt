@@ -1,0 +1,68 @@
+........................................................................ [ 18%]
+.........................................................F.............. [ 37%]
+........................................................................ [ 55%]
+........................................................................ [ 74%]
+........................................................................ [ 93%]
+...........................                                              [100%]
+================================== FAILURES ===================================
+________ test_batch_items_are_independent_and_partial_failure_visible _________
+
+async_client = <httpx.AsyncClient object at 0x0000029ED42D7410>
+app = <fastapi.applications.FastAPI object at 0x0000029ED46E9450>
+
+    @pytest.mark.asyncio
+    async def test_batch_items_are_independent_and_partial_failure_visible(async_client, app) -> None:
+        cases = [valid_case("TC-BATCH-1"), valid_case("TC-BATCH-2"), valid_case("TC-BATCH-3")]
+        created = await async_client.post(
+            "/v1/review-batches", json=_batch_payload(cases), headers=auth_headers()
+        )
+        assert created.status_code == 202, created.text
+        batch_id = created.json()["batch_id"]
+        assert created.json()["total"] == 3
+    
+        jobs = await app.state.storage.list_jobs(batch_id=batch_id, limit=10)
+        assert len(jobs) == 3
+        assert len({job.id for job in jobs}) == 3
+        assert all(job.generation == 1 for job in jobs)
+    
+        # 两条执行成功，一条失败 → partially_completed，成功结果保留
+        first, second, third = jobs
+        await app.state.storage.update_job(third.id, status="failed", error="mock failure")
+>       assert await app.state.worker.execute(first) == "done"
+E       AssertionError: assert 'fenced_out' == 'done'
+E         
+E         - done
+E         + fenced_out
+
+tests\m0\test_batch_boundary.py:32: AssertionError
+---------------------------- Captured stdout setup ----------------------------
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T07:50:00.351451Z"}
+----------------------------- Captured log setup ------------------------------
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+---------------------------- Captured stdout call -----------------------------
+{"status": 202, "duration_ms": 14.38, "path_template": "/v1/review-batches", "request_id": "req-05880d69289a42a6", "trace_id": "req-05880d69289a42a6", "event": "http_request", "path": "/v1/review-batches", "method": "POST", "level": "info", "logger": "testjury.http", "timestamp": "2026-11-12T07:50:00.370634Z"}
+{"event": "HTTP Request: POST http://test/v1/review-batches \"HTTP/1.1 202 Accepted\"", "level": "info", "logger": "httpx", "timestamp": "2026-11-12T07:50:00.371156Z"}
+{"review_id": "23daffc2-5de1-4e1a-ab44-eb736011558f", "stage": "input_check", "status": "running", "attempt": 1, "event": "review_stage", "level": "info", "logger": "testjury.pipeline", "timestamp": "2026-11-12T07:50:00.383274Z"}
+{"review_id": "23daffc2-5de1-4e1a-ab44-eb736011558f", "stage": "input_check", "status": "succeeded", "attempt": 1, "event": "review_stage", "level": "info", "logger": "testjury.pipeline", "timestamp": "2026-11-12T07:50:00.383471Z"}
+{"review_id": "23daffc2-5de1-4e1a-ab44-eb736011558f", "stage": "preprocess", "status": "skipped", "attempt": 1, "event": "review_stage", "level": "info", "logger": "testjury.pipeline", "timestamp": "2026-11-12T07:50:00.383586Z"}
+{"review_id": "23daffc2-5de1-4e1a-ab44-eb736011558f", "stage": "kb_retrieve", "status": "skipped", "attempt": 1, "event": "review_stage", "level": "info", "logger": "testjury.pipeline", "timestamp": "2026-11-12T07:50:00.383694Z"}
+{"review_id": "23daffc2-5de1-4e1a-ab44-eb736011558f", "stage": "blind_review", "status": "running", "attempt": 1, "event": "review_stage", "level": "info", "logger": "testjury.pipeline", "timestamp": "2026-11-12T07:50:00.383784Z"}
+{"review_id": "23daffc2-5de1-4e1a-ab44-eb736011558f", "worker": "worker-274799fa", "event": "fencing_lost", "level": "warning", "logger": "testjury.worker", "timestamp": "2026-11-12T07:50:00.384566Z"}
+------------------------------ Captured log call ------------------------------
+INFO     testjury.http:observability.py:102 {'status': 202, 'duration_ms': 14.38, 'path_template': '/v1/review-batches', 'request_id': 'req-05880d69289a42a6', 'trace_id': 'req-05880d69289a42a6', 'event': 'http_request', 'path': '/v1/review-batches', 'method': 'POST', 'level': 'info', 'logger': 'testjury.http', 'timestamp': '2026-11-12T07:50:00.370634Z'}
+INFO     httpx:_client.py:1740 HTTP Request: POST http://test/v1/review-batches "HTTP/1.1 202 Accepted"
+INFO     testjury.pipeline:orchestrator.py:128 {'review_id': '23daffc2-5de1-4e1a-ab44-eb736011558f', 'stage': 'input_check', 'status': 'running', 'attempt': 1, 'event': 'review_stage', 'level': 'info', 'logger': 'testjury.pipeline', 'timestamp': '2026-11-12T07:50:00.383274Z'}
+INFO     testjury.pipeline:orchestrator.py:128 {'review_id': '23daffc2-5de1-4e1a-ab44-eb736011558f', 'stage': 'input_check', 'status': 'succeeded', 'attempt': 1, 'event': 'review_stage', 'level': 'info', 'logger': 'testjury.pipeline', 'timestamp': '2026-11-12T07:50:00.383471Z'}
+INFO     testjury.pipeline:orchestrator.py:128 {'review_id': '23daffc2-5de1-4e1a-ab44-eb736011558f', 'stage': 'preprocess', 'status': 'skipped', 'attempt': 1, 'event': 'review_stage', 'level': 'info', 'logger': 'testjury.pipeline', 'timestamp': '2026-11-12T07:50:00.383586Z'}
+INFO     testjury.pipeline:orchestrator.py:128 {'review_id': '23daffc2-5de1-4e1a-ab44-eb736011558f', 'stage': 'kb_retrieve', 'status': 'skipped', 'attempt': 1, 'event': 'review_stage', 'level': 'info', 'logger': 'testjury.pipeline', 'timestamp': '2026-11-12T07:50:00.383694Z'}
+INFO     testjury.pipeline:orchestrator.py:128 {'review_id': '23daffc2-5de1-4e1a-ab44-eb736011558f', 'stage': 'blind_review', 'status': 'running', 'attempt': 1, 'event': 'review_stage', 'level': 'info', 'logger': 'testjury.pipeline', 'timestamp': '2026-11-12T07:50:00.383784Z'}
+WARNING  testjury.worker:worker.py:90 {'review_id': '23daffc2-5de1-4e1a-ab44-eb736011558f', 'worker': 'worker-274799fa', 'event': 'fencing_lost', 'level': 'warning', 'logger': 'testjury.worker', 'timestamp': '2026-11-12T07:50:00.384566Z'}
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  C:\Users\admin\Desktop\评审团\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/m0/test_batch_boundary.py::test_batch_items_are_independent_and_partial_failure_visible
+1 failed, 386 passed, 1 warning in 89.45s (0:01:29)

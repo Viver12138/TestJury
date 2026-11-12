@@ -8,33 +8,33 @@ source_type: AUTOMATION_DOC
 source_ref: Minishop/e2e_test.py#L1-L180; Minishop/frontend/package.json; Minishop/backend/requirements.txt
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E3
-status: in_review
+status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（技术负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - automation
-  - framework
-  - api
-  - ui
+- automation
+- framework
+- api
+- ui
 related_ids:
-  - AUTO-LOCATOR
-  - AUTO-LIMITATIONS
-  - TEST-ENV
+- AUTO-LOCATOR
+- AUTO-LIMITATIONS
+- TEST-ENV
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: changes_applied_pending_reapproval
-change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过）"
+review_status: delegated_review_completed
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 ---
 
 # 1. 自动化框架与版本
@@ -67,7 +67,7 @@ change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过�
 ## 1.3 当前可执行性（2026-11-11 实测）
 
 - 当前种子库（播种于 2026-09-21）中券#1「新人满100减10」已自然过期，可领券仅剩 2 张；`e2e_test.py#L80` 的“可领券>=3”不成立，`#L81` 的 `next(...)` 无默认值会抛 `StopIteration`，脚本中止，后续约 100 行断言不会执行。
-- 脚本无论成功失败都以 0 退出，CI 无法感知失败；执行前需重建种子库或改为动态取券，并补 `sys.exit(1)`。
+- check() 断言失败后若正常执行到末尾仍以 0 退出，CI 无法感知这类失败；未捕获异常（如 StopIteration）会非零退出；执行前需重建种子库或改为动态取券，并补 `sys.exit(1)`。
 
 # 2. 支持的客户端和协议
 
@@ -163,6 +163,13 @@ python e2e_test.py
 5. 将知识库 `RULE-*` 映射为测试标记，形成可追溯矩阵。
 
 以上为建议，不代表仓库已具备。
+
+
+# 本次授权技术复核适用性
+
+核对 e2e_test.py：check(False) 仅计数、正常到达末尾退出 0；未捕获 StopIteration 退出非零。修正恒零描述。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

@@ -8,33 +8,33 @@ source_type: API_SPEC
 source_ref: Minishop/backend/app/api/orders.py#L173-L220; Minishop/backend/app/api/common.py#L142-L184
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E2
-status: in_review
+status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（技术负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - order
-  - query
-  - api
+- order
+- query
+- api
 related_ids:
-  - REQ-ORDER-001
-  - RULE-ORDER-011
-  - API-ORDER-002
-  - API-ORDER-004
+- REQ-ORDER-001
+- RULE-ORDER-011
+- API-ORDER-002
+- API-ORDER-004
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: changes_applied_pending_reapproval
-change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过）"
+review_status: delegated_review_completed
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 ---
 
 # 1. 接口用途
@@ -116,7 +116,7 @@ Authorization: Bearer <JWT>
 
 ## 详情（HTTP 200）
 
-在列表字段基础上，额外包含：
+详情与列表共享基本订单及 items 字段；列表额外计算的 payment_status、shipment_company、shipment_tracking_number 不由详情接口保证。详情另在存在记录时包含：
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
@@ -124,7 +124,7 @@ Authorization: Bearer <JWT>
 | `shipment` | object（仅存在物流单时出现，缺省而非 null） | 物流单：`id`、`company`、`tracking_number`、`status`、`status_cn`、`shipped_at` |
 | `refund` | object（仅存在退款记录时出现，缺省而非 null） | 售后：`id`、`status`、`status_cn`、`amount`、`reason`、`reject_reason` |
 
-注意：`payment` 为单对象关系。SQLAlchemy 2.0.36 实测在存在 FAILED+SUCCESS 两条记录时确定性返回第一条（通常为 FAILED）并抛 `SAWarning: Multiple rows returned with uselist=False`；属已知缺陷（Q-05）。
+注意：`payment` 为单对象关系。历史复核在 FAILED+SUCCESS 场景观察到返回 FAILED 并产生 `SAWarning: Multiple rows returned with uselist=False`。关系没有排序，不能保证固定选择第一条；目标为成功/最新支付（Q-05），冻结源码尚未实现。
 
 # 6. 错误码与异常
 
@@ -167,6 +167,13 @@ Authorization: Bearer <JWT>
 - 多条支付记录时，详情应展示最新/成功支付还是固定第一条？
 - 列表是否需要返回 `payment_status` 的稳定字段（当前仅存在支付记录时出现）？
 - 是否需要管理员专用订单详情包含退款信息（当前管理端详情不含 `refund`）？
+
+
+# 本次授权技术复核适用性
+
+核对 orders.py 列表/详情与 common.py 序列化。缺失 payment/shipment/refund 键不是 null；未排序多支付关系不能保证固定返回第一条。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

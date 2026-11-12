@@ -1,5 +1,7 @@
 # MiniShop 知识库候选发布记录
 
+> 当前为 **21 approved / 16 in_review**；源码绑定已补充，仍未发布、没有 active 构建。下列 candidate-02 为历史快照；当前整改与限制见 `../../_delivery/09_contract_remediation_2026-11-12.md`。
+
 > Release ID：`minishop-kb-2026-11-12-candidate-02`
 > 类型：候选稿（candidate），**未正式发布**
 > 日期：2026-11-12
@@ -85,3 +87,4 @@
 
 - `candidate-01`（2026-11-11）：37 份候选稿，全部 `in_review`、0 approved，完成初次自检与独立审核。
 - `candidate-02`（2026-11-12）：应用人工复核，24 approved / 13 in_review，冲突与待确认完成知识级闭环。
+- `contract-remediation`（2026-11-12）：21 approved / 16 in_review；新增源码绑定、四维治理状态、审核锁与分级候选准入，未正式发布。

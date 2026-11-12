@@ -31,9 +31,9 @@ async def readyz(request: Request) -> JSONResponse:
         checks["database"] = "ok"
         version = await storage.migration_version()
         checks["migration"] = version or "unknown"
-    except Exception as exc:  # pragma: no cover - 真实 DB 故障路径
+    except Exception:  # pragma: no cover - 真实 DB 故障路径
         checks["database"] = "failed"
-        return JSONResponse(status_code=503, content={"status": "unavailable", "checks": checks, "error": str(exc)})
+        return JSONResponse(status_code=503, content={"status": "unavailable", "checks": checks})
 
     queue_depth = await storage.queue_depth()
     checks["queue"] = "ok"

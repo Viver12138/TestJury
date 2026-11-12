@@ -25,8 +25,8 @@ tags:
   - order
   - authz
   - ownership
-  - 403
-  - 404
+  - "403"
+  - "404"
 related_ids:
   - PROJECT-ROLES
   - REQ-ORDER-001

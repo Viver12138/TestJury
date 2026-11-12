@@ -1,0 +1,163 @@
+{
+  "date": "2026-11-12",
+  "reviewer": "codex-delegated-reviewer",
+  "actor_type": "ai",
+  "authorization": "design/changes/2026-11-12-delegated-development.md",
+  "source_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+  "method": "source inspection + document contradiction review; no new human signatures",
+  "documents": [
+    {
+      "doc_id": "AUTO-FRAMEWORK",
+      "path": "kb_content/minishop/automation/framework_overview.md",
+      "previous_hash": "db8ae53e905fa3d7362f74490847b4010d5467dba0aa5c11da5817740036be46",
+      "approved_hash": "41bdfa5e43ac1c57640fd2b628a715c9993d8d49e268f8e7238409b6cec67d2a",
+      "source_ref": "Minishop/e2e_test.py#L1-L180; Minishop/frontend/package.json; Minishop/backend/requirements.txt",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "核对 e2e_test.py：check(False) 仅计数、正常到达末尾退出 0；未捕获 StopIteration 退出非零。修正恒零描述。"
+    },
+    {
+      "doc_id": "EXP-ORDER-001",
+      "path": "kb_content/minishop/expert_knowledge/order/EXP-ORDER-001.md",
+      "previous_hash": "542906969ca27c1d558b0c1413d400432f827a19a8577483a43e629e6c282830",
+      "approved_hash": "cdd09b790d8fb9e5a4c1ef032933bc7a1fac47cbf90252bb48cc32f60251b458",
+      "source_ref": "Minishop/backend/app/api/orders.py; Minishop/backend/app/api/payments.py; Minishop/backend/app/api/admin.py; Minishop/backend/app/api/refunds.py; Minishop/frontend/src/pages/product/ProductDetail.tsx",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "保留 E4 风险线索级别；修正无排序支付选择与 sessionStorage 刷新语义，不据此断言目标行为已实现。"
+    },
+    {
+      "doc_id": "API-ORDER-003",
+      "path": "kb_content/minishop/interfaces/order/API-ORDER-003.md",
+      "previous_hash": "5571342d481b48f1a0a26c73d16db39a9ffad948ce13a5dee2dce838087998a5",
+      "approved_hash": "b8db9c4fd7ee58f8b7755dc9c03c86d37ba8417905e126f2727bc730590cd7c2",
+      "source_ref": "Minishop/backend/app/api/orders.py#L173-L220; Minishop/backend/app/api/common.py#L142-L184",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "核对 orders.py 列表/详情与 common.py 序列化。缺失 payment/shipment/refund 键不是 null；未排序多支付关系不能保证固定返回第一条。"
+    },
+    {
+      "doc_id": "PROJECT-ENVIRONMENTS",
+      "path": "kb_content/minishop/project/environments.md",
+      "previous_hash": "34fa94bfc017d410460bfb6003e8a3fc8fe9ca2fa2f77e7c3952474f5cb61e5c",
+      "approved_hash": "5fcb16dfcbc34dd3f0493a50b33eafa28807662be98231e99be48d9eae48470c",
+      "source_ref": "Minishop/docker-compose.yml#L1-L22; Minishop/backend/Dockerfile#L1-L15; Minishop/frontend/vite.config.ts#L5-L17; Minishop/backend/app/config.py#L1-L23",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "核对冻结 Dockerfile/compose/config 的 seed_media 缺口；历史 MiniShop 构建失败不代表 TestJury PostgreSQL 不可用。"
+    },
+    {
+      "doc_id": "PROJECT-OVERVIEW",
+      "path": "kb_content/minishop/project/overview.md",
+      "previous_hash": "c614e13fb1abd510f63af6f88ad909867c9b65f287b9c273c8568be7010218b4",
+      "approved_hash": "1356ab8deb593d655c39cb393cb803a0b76a6e83d4c5500b445da2a4a77c0ff0",
+      "source_ref": "Minishop/README.md#L1-L158; Minishop/backend/app/main.py#L11-L15",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "核对 README 与 main.py 原始定位；仅退款已实现，不把 TestJury 接入宣称成原始产品需求。"
+    },
+    {
+      "doc_id": "PROJECT-PLATFORMS",
+      "path": "kb_content/minishop/project/platforms.md",
+      "previous_hash": "1b945009bc9348c1dc3425865608d9e9eae0a47c7345f6e2f1a4befb18d964ab",
+      "approved_hash": "461e2d194b71929242730070836fc5cb7c3fab4bc23a9a8fbabadd27bfa2d4fd",
+      "source_ref": "Minishop/frontend/vite.config.ts#L5-L17; Minishop/frontend/src/App.tsx#L63-L101; Minishop/backend/app/main.py#L11-L15",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "核对 Vite 代理、App.tsx 路由及 main.py Swagger 无门控；compose 8000 映射事实保留。"
+    },
+    {
+      "doc_id": "PROJECT-ROLES",
+      "path": "kb_content/minishop/project/roles_and_permissions.md",
+      "previous_hash": "b89c59a625e257ee3c7a15782e1c9ce6938a7ab42f342f0357e6c8f6619c16a6",
+      "approved_hash": "56e183c8804b9b631e02daa3cb89407b02927b78c75397bff5f2b413e3bda9e4",
+      "source_ref": "Minishop/backend/app/auth/dependencies.py#L13-L58; Minishop/backend/app/api/orders.py#L201-L260; Minishop/backend/app/api/admin.py#L22-L334",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "核对 dependencies.py 的数据库角色检查及订单 403/404 归属差异；没有用户资料修改路由。"
+    },
+    {
+      "doc_id": "PROJECT-VERSIONS",
+      "path": "kb_content/minishop/project/versions.md",
+      "previous_hash": "c04314b543b4b7b677f7b74e5849946574bd1ba148a8f2278cad1462ecd38907",
+      "approved_hash": "14867ae517842ae524349f64e3c6ef844a87f6d23b69405d128fa9c1ebec25fa",
+      "source_ref": "Minishop/backend/app/main.py#L11-L15; Minishop/frontend/package.json#L1-L5; Minishop/backend/requirements.txt",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "版本号与绑定提交、80 文件快照来源一致；原始数据库播种时效仅描述历史快照，不代表当前本地工作库。"
+    },
+    {
+      "doc_id": "REQ-ORDER-001",
+      "path": "kb_content/minishop/requirements/order/REQ-ORDER-001.md",
+      "previous_hash": "cf03b522fc5a8707d2191530c7eb317aff9b5a383bf3754550a13a06bdefca68",
+      "approved_hash": "a06ba9f8a72e8f3db81fb1da16d8772617a7b86ee3f85002f02a7d95d3e87def",
+      "source_ref": "Minishop/README.md#L55-L57; Minishop/backend/app/api/orders.py#L29-L170",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "核对 orders.py 创建/预览无库存扣减、无清购物车、用券即占用；修正预览与落库金额断言需考虑精度及重新计价。"
+    },
+    {
+      "doc_id": "RULE-ORDER-001",
+      "path": "kb_content/minishop/rules/order/RULE-ORDER-001.md",
+      "previous_hash": "1c0662d9c7fc6a06ef0aab3dcd5ec14a9cbe826c9e19729db2d93b642749571a",
+      "approved_hash": "a1461ff6e28fbbe1766e83fce42d0aa07931e2d3762fc13b54bd840a9e208ce7",
+      "source_ref": "Minishop/backend/app/api/orders.py#L46-L59; Minishop/backend/app/api/orders.py#L83-L84; Minishop/backend/app/api/orders.py#L124-L130",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "核对订单计价与落库：预览 total_amount 未 round，pay_amount 已 round，订单与明细落库分别 round；SKU 价格为来源。"
+    },
+    {
+      "doc_id": "RULE-ORDER-002",
+      "path": "kb_content/minishop/rules/order/RULE-ORDER-002.md",
+      "previous_hash": "7034e863e2273801d1fddf82e54a9f9b7bdddeaf4f907913f8b2ceadda3af16b",
+      "approved_hash": "5cb761a39f72fb852267f136f7949f06f9c9e8699687c07de20a4e95335cf92a",
+      "source_ref": "Minishop/backend/app/api/orders.py#L34-L43; Minishop/backend/app/api/orders.py#L116-L143",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "核对 address_id 必填模型与业务门禁：缺失/null 是参数错误，0 是请选择地址；所有者过滤与地址快照成立。"
+    },
+    {
+      "doc_id": "RULE-ORDER-008",
+      "path": "kb_content/minishop/rules/order/RULE-ORDER-008.md",
+      "previous_hash": "ff3b50b23fcb2e2f1d76304f4542d6d6eb53727bb9b566ee342cfc6a496f55d1",
+      "approved_hash": "dc426247ed91c3addea11605596e8af2f35cc55a6c29a1d94e17c9a3d948712b",
+      "source_ref": "Minishop/backend/app/api/payments.py#L39-L118",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "核对支付门禁、金额取 order.pay_amount、PENDING 复用及失败重试；没有支付状态与并发行锁保障；多支付选择不是排序契约。"
+    },
+    {
+      "doc_id": "TEST-SPEC-PROJECT-001",
+      "path": "kb_content/minishop/testing/project_test_standards.md",
+      "previous_hash": "57892121003267f533bfaab3913c3c4618f10a3be04a3c16340920b44ea3ecd4",
+      "approved_hash": "c4ed8a140d7c776e23b476b039b35ae3fea00973a10f47e91571725b1fc4ff04",
+      "source_ref": "TestJury_项目知识库数据规范_v1.0.md#testing-standard-template; Minishop/README.md#L99-L107; Minishop/e2e_test.py",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "作为 E3 项目测试规范批准；适用当前实现/目标规格的显式基线；不把 E3 或通用建议提升为业务 E1。"
+    },
+    {
+      "doc_id": "TEST-ENV",
+      "path": "kb_content/minishop/testing/test_environment.md",
+      "previous_hash": "24feec2df349b83f6d4710a4a3290b216848b48f3b3687cec9ecbe16daee6ea3",
+      "approved_hash": "703ddf8de77fc226397e5fb0bc75bb89dc7ff21f9c848660d178d2440a16d55c",
+      "source_ref": "Minishop/README.md#L16-L37; Minishop/README.md#L108-L122; Minishop/docker-compose.yml#L1-L22; Minishop/backend/app/config.py#L1-L23",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "核对配置与启动命令；Swagger 未配置环境门控。历史种子库与独立测试库必须区分。"
+    },
+    {
+      "doc_id": "FLOW-ORDER-001",
+      "path": "kb_content/minishop/workflows/order/FLOW-ORDER-001.md",
+      "previous_hash": "0cadd73a46376d519aec9dbb64d46645bbd3a5d401a974e8a78a846bd278df39",
+      "approved_hash": "1b97db7bf49f5ebeb4c166d4c70200c617daa00b3539b80c8af15c0b19b81894",
+      "source_ref": "Minishop/README.md#L54-L58; Minishop/frontend/src/pages/cart/Cart.tsx#L45-L51; Minishop/frontend/src/pages/order/OrderConfirm.tsx#L19-L62; Minishop/frontend/src/pages/payment/Payment.tsx#L18-L33; Minishop/backend/app/api/orders.py#L88-L260",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "核对 Payment.tsx 一次点击触发 create+success/fail；修正地址异常细分与 sessionStorage 刷新语义。"
+    },
+    {
+      "doc_id": "STATE-ORDER-001",
+      "path": "kb_content/minishop/workflows/order/STATE-ORDER-001.md",
+      "previous_hash": "94fd67b0832504a294f038900d80f297f4efaedd63cf3af0468eb4ee3d070620",
+      "approved_hash": "b081287564f2f3a04f340ab47bd63cfe2b4440fbefba5ac665f7fd205b4b1948",
+      "source_ref": "Minishop/backend/app/models/models.py#L171-L193; Minishop/backend/app/api/orders.py#L223-L260; Minishop/backend/app/api/payments.py#L77-L118; Minishop/backend/app/api/admin.py#L156-L245; Minishop/backend/app/api/refunds.py#L14-L41; Minishop/backend/app/api/common.py#L114-L125",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "核对订单、支付、发货和退款路由；COMPLETED 有退款出边，修正 Mermaid 终态矛盾；退款拒绝当前回 PAID，目标恢复原状态。"
+    },
+    {
+      "doc_id": "AUTO-LIMITATIONS",
+      "path": "kb_content/minishop/automation/limitations.md",
+      "previous_hash": "50c2989f8208224259b811eb5e42fd272d2968000c75141a9fc4596a640e996c",
+      "approved_hash": "0c8b1216c34ba1ba0f4804ba7ee0bf7ea50877d149bf47a04d92129c72848162",
+      "source_ref": "Minishop/e2e_test.py; Minishop/frontend/src/pages/product/ProductDetail.tsx#L45-L77; Minishop/frontend/src/pages/order/OrderConfirm.tsx#L19-L62; Minishop/backend/app/seed/seed.py#L12-L25",
+      "decision": "approved_for_frozen_baseline",
+      "rationale": "OrderConfirm.tsx 从 sessionStorage 读 checkout_items，普通刷新不清会话存储；e2e_test.py check(False) 与未捕获异常退出语义不同。"
+    }
+  ]
+}

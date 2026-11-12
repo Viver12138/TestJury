@@ -4,7 +4,9 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.13 + M0 实现 + M1 工程收口**（真实三模型 3/3 盲评 + 3/3 投票；327 条测试通过；V-01F 数据准入与 M2 知识库未完成）· 2026-11-11
+> **状态**：**design-v1.13 + M2 本地技术预览**（MiniShop 知识检索、网页评审、版本冻结、受控发布与复核反馈已接入；生产效果验收尚未完成）· 2026-11-12
+
+当前开发与验收记录见 [交付进度](docs/development-2026-11-12.md)。本机入口为 [TestJury](http://127.0.0.1:8088)。黄金集及授权技术复核由 AI 代理完成，身份与历史人工记录分别保存。
 
 ---
 
@@ -320,6 +322,9 @@
 | [design/model_admission.yaml](design/model_admission.yaml) | 模型技术验证 + 数据准入看板 |
 | [design/experiment_protocol.yaml](design/experiment_protocol.yaml) | A–E 实验协议台账（阈值签署前为空） |
 | [design/kb_pilot.yaml](design/kb_pilot.yaml) | 知识库首批模块试点台账 |
+| [TestJury_项目知识库数据规范_v1.0.md](TestJury_项目知识库数据规范_v1.0.md) | 项目内容规范与平台字段、状态、基线的兼容映射 |
+| [design/kb_contract.yaml](design/kb_contract.yaml) | 知识内容契约、治理枚举、评审基线（机读） |
+| [kb_content/_delivery/09_contract_remediation_2026-11-12.md](kb_content/_delivery/09_contract_remediation_2026-11-12.md) | MiniShop 首批整改结果、重跑方式与剩余发布阻塞 |
 | [design/review_roster.yaml](design/review_roster.yaml) | 人工复核责任表（主责/备份/抽检/仲裁） |
 | [design/changes/TEMPLATE.md](design/changes/TEMPLATE.md) | 设计变更影响分析模板 |
 | [scripts/README.md](scripts/README.md) | 契约检查脚本：入口、检查项、输出格式与边界 |
@@ -455,8 +460,8 @@ export DATABASE_URL=postgresql+asyncpg://testjury:testjury@127.0.0.1:55432/testj
 .venv/Scripts/python.exe -m alembic -c alembic.ini upgrade head
 .venv/Scripts/python.exe -m app.bootstrap     # 默认需要配置 BOOTSTRAP_API_KEYS
 
-# 4. 测试（无真实模型调用；PG 用例在无数据库时自动跳过）
-.venv/Scripts/python.exe -m pytest -q
+# 4. 测试（无真实模型调用；新建并删除独立临时数据库，不重置应用库）
+.venv/Scripts/python.exe scripts/verify_isolated.py
 python scripts/check_contracts.py
 python scripts/check_m0_acceptance.py
 ```
@@ -465,7 +470,7 @@ python scripts/check_m0_acceptance.py
 
 - 已回填 `design/m0_acceptance.yaml`：40 条用例 `result=passed`；本地执行环境与时间见文件头。
 - **M0 通过只代表工程正确**：不代表评审质量、业务有效性或生产可用（`docs/08` §5.3）。
-- 未实现：知识库加载/检索/Rerank、A–E 实验、性能压测、生产部署、恢复演练。
+- 2026-11-12 已加入知识库加载、混合检索、阶段及逐票恢复、本地部署和备份恢复比对；重排真实连接、性能压测与生产验收尚未完成。最新范围见 [开发记录](docs/development-2026-11-12.md)。
 - 真实模型已接入：`REVIEW_MODEL_MODE=live` 时按 `config/models.yaml` 调用 Qwen3.8-Max、DeepSeek-Flash、Kimi-K3.1-Pro；仍为 `testing`，未完成 V-01 正式准入与数据准入。
 - `STORAGE_BACKEND=memory` 仅用于单测与本地演示；生产默认 `postgres` 且禁止 memory。
 - Rubric 仍为 `0.2.0 draft`：生产模式加载会被拒绝，待 V-03B 审核发布。
@@ -480,7 +485,7 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 |---|---|---|
 | 存储适配器实现 | 已回写 docs/06：运行时 `asyncpg` 直连，SQLAlchemy 2.0 仅作 Alembic 迁移引擎；不再声称 ORM 运行时 | 已收口（2026-11-11） |
 | 真实模型 | **已接入并跑通**：`qwen3.8-max` / `deepseek-flash` / `kimi-k3.1-pro`（Kimi 指定 pro）；最终验收运行 `770b119b…`：3/3 盲评、3/3 投票、27 次调用 0 失败、成本 ¥1.2035 | V-01 A–E 有证据；V-01F 数据准入（Q-09）未完成，父项不标 verified/accepted |
-| 知识库检索 | 阶段固定 `skipped`，报告记 `kb_module_missing` | M2/M3 接入 KB、向量、RRF、Rerank |
+| 知识库检索 | MiniShop order 已接入不可变知识版本、1024 维向量、BM25/RRF 与引用包；任务固定版本 | 18 条检索样例通过；真实评审效果另行验收，重排未启用 |
 | CI 远端执行 | `.github/workflows/contracts.yml` 已定义 contract/unit/migration/mock-e2e/ci-all；本地等价命令全部通过，未在 GitHub 远端实际运行 | 首次 push 后确认各 Job 通过 |
 
 ### 6.5 M1 前置与真实模型联调
@@ -503,6 +508,8 @@ v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 
 
 > 旧 **TestLab Arcade** 项目资料已按用户要求从当前仓库删除（2026-11-11），不再作为测试项目或评测数据使用。
 >
-> 新测试项目待接入；接入后在本节登记项目文档、用例、知识库来源和裁决工作台路径。
+MiniShop 已接入，冻结源码为 `e354437069504381f10a54d9c14baed755f3ba56`。知识内容见 [kb_content/minishop](kb_content/minishop/README.md)，当前黄金集为 [datasets/minishop/v3](datasets/minishop/v3)，包含 18 条检索和 30 条评审种子，均标注 AI 复核身份。
+
+本地工作台：[http://127.0.0.1:8088](http://127.0.0.1:8088)。运行方式、证据和未完成事项见 [开发记录](docs/development-2026-11-12.md) 与 [验收证据索引](evidence/M2/README.md)。技术预览可运行，不代表生产效果已验收。
 
 

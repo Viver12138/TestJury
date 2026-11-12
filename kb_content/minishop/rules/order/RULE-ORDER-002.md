@@ -8,33 +8,33 @@ source_type: OTHER
 source_ref: Minishop/backend/app/api/orders.py#L34-L43; Minishop/backend/app/api/orders.py#L116-L143
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E2
-status: in_review
+status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（产品负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - order
-  - address
-  - snapshot
-  - ownership
+- order
+- address
+- snapshot
+- ownership
 related_ids:
-  - REQ-ORDER-001
-  - API-ORDER-002
-  - DATA-ORDER-001
+- REQ-ORDER-001
+- API-ORDER-002
+- DATA-ORDER-001
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: changes_applied_pending_reapproval
-change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过）"
+review_status: delegated_review_completed
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 ---
 
 # 1. 规则陈述
@@ -98,6 +98,13 @@ change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过�
 - 是否需要校验手机号与省市区完整性？
 - 地址删除后是否应禁止删除被历史订单引用的地址？（当前允许，订单靠快照保留）
 - 是否需要限制每用户地址数量？
+
+
+# 本次授权技术复核适用性
+
+核对 address_id 必填模型与业务门禁：缺失/null 是参数错误，0 是请选择地址；所有者过滤与地址快照成立。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

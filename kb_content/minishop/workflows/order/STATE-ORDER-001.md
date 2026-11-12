@@ -5,40 +5,42 @@ knowledge_type: WORKFLOW
 project_id: minishop
 module_id: order
 source_type: OTHER
-source_ref: Minishop/backend/app/models/models.py#L171-L193; Minishop/backend/app/api/orders.py#L223-L260; Minishop/backend/app/api/payments.py#L77-L118; Minishop/backend/app/api/admin.py#L156-L245; Minishop/backend/app/api/refunds.py#L14-L41; Minishop/backend/app/api/common.py#L114-L125
+source_ref: Minishop/backend/app/models/models.py#L171-L193; Minishop/backend/app/api/orders.py#L223-L260;
+  Minishop/backend/app/api/payments.py#L77-L118; Minishop/backend/app/api/admin.py#L156-L245;
+  Minishop/backend/app/api/refunds.py#L14-L41; Minishop/backend/app/api/common.py#L114-L125
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E2
-status: in_review
+status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（产品负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - order
-  - state_machine
-  - state_transition
-  - invariants
+- order
+- state_machine
+- state_transition
+- invariants
 related_ids:
-  - FLOW-ORDER-001
-  - REQ-ORDER-001
-  - REQ-ORDER-002
-  - REQ-ORDER-004
-  - RULE-ORDER-007
-  - RULE-ORDER-008
-  - RULE-ORDER-010
+- FLOW-ORDER-001
+- REQ-ORDER-001
+- REQ-ORDER-002
+- REQ-ORDER-004
+- RULE-ORDER-007
+- RULE-ORDER-008
+- RULE-ORDER-010
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: changes_applied_pending_reapproval
-change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过）"
+review_status: delegated_review_completed
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 ---
 
 # 1. 状态列表
@@ -63,7 +65,7 @@ change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过�
 | （无） | 创建订单 | 校验通过，地址必填 | `PENDING_PAYMENT` | 商品下架、SKU 失效、库存不足、地址无效、券无效 |
 | `PENDING_PAYMENT` | 支付成功 | 订单属于当前用户；支付单存在 | `PAID` | 订单已取消；订单已是支付后状态 |
 | `PENDING_PAYMENT` | 取消订单 | 订单属于当前用户 | `CANCELLED` | 非待支付状态；非本人（返回 404） |
-| `PENDING_PAYMENT` | 支付失败 | 无 | `PENDING_PAYMENT` | 非待支付状态（返回 409） |
+| `PENDING_PAYMENT` | 支付失败 | 支付单存在、订单属于当前用户 | `PENDING_PAYMENT` | 非待支付状态（返回 409） |
 | `PAID` | 管理员发货 | 操作者为管理员；填写物流信息 | `SHIPPED` | 非已支付/待发货；非管理员 |
 | `PENDING_SHIPMENT` | 管理员发货 | 同上 | `SHIPPED` | 实际不可达（状态从未被赋值） |
 | `SHIPPED` | 用户确认收货 | 订单属于当前用户 | `COMPLETED` | 非已发货；非本人（返回 404） |
@@ -84,7 +86,6 @@ stateDiagram-v2
     REFUNDING --> REFUNDED: 同意退款
     REFUNDING --> PAID: 拒绝退款（当前实现）
     CANCELLED --> [*]
-    COMPLETED --> [*]
     REFUNDED --> [*]
 ```
 
@@ -170,6 +171,13 @@ SELECT id, order_id, status, amount, reason, reject_reason FROM refunds WHERE or
 5. 支付成功并发是否需要行锁或幂等键？
 6. 退款成功后优惠券是否应归还？
 7. `REFUNDING` 是否允许发货/确认收货？（当前发货只允许 `PAID/PENDING_SHIPMENT`，确认只允许 `SHIPPED`）
+
+
+# 本次授权技术复核适用性
+
+核对订单、支付、发货和退款路由；COMPLETED 有退款出边，修正 Mermaid 终态矛盾；退款拒绝当前回 PAID，目标恢复原状态。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

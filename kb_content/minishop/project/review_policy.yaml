@@ -1,0 +1,14 @@
+project_id: minishop
+default_baseline: null
+selection_rule: 任务/构建必须显式选择并冻结；基线变更创建新内容/构建版本，不修改历史结论
+baselines:
+  current_implementation:
+    type: current_implementation
+    product_version: 1.0.0
+    source_ref: https://github.com/Viver12138/minishop.git
+    source_version: e354437069504381f10a54d9c14baed755f3ba56
+  target_specification:
+    type: target_specification
+    product_version: 1.0.0
+    source_ref: kb_content/_delivery/_build/review_input_rows.json
+    source_version: 967ce3de226a674ea563bb1a385f0ebb878da5b046301d9bc3e0ca0beb60951d

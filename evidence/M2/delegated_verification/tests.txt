@@ -1,0 +1,99 @@
+........................................................................ [ 19%]
+........................................................................ [ 39%]
+.....................................................................F.. [ 58%]
+........................................................................ [ 78%]
+........................................................................ [ 97%]
+........                                                                 [100%]
+================================== FAILURES ===================================
+_________________ test_empty_database_migrates_and_rolls_back _________________
+
+clean_database = 'postgresql://testjury:testjury@127.0.0.1:55432/testjury_verify_56b2d18bb0cd'
+
+    def test_empty_database_migrates_and_rolls_back(clean_database: str) -> None:
+        upgrade = run_alembic("upgrade", "head")
+        assert upgrade.returncode == 0, upgrade.stdout + upgrade.stderr
+    
+        assert {"vector", "pgcrypto", "pg_trgm"} <= asyncio.run(_extensions())
+        tables = asyncio.run(_tables())
+        assert CORE_TABLES <= tables
+        assert "review_attachments" in tables
+        assert asyncio.run(_alembic_version()) == "0005_m2_knowledge"
+        assert {"knowledge_builds", "knowledge_vectors", "knowledge_active", "knowledge_events"} <= tables
+    
+        # 回滚 0004：只撤销脱敏审计列
+        downgrade_0004 = run_alembic("downgrade", "0003_m1_audit_evidence")
+        assert downgrade_0004.returncode == 0, downgrade_0004.stdout + downgrade_0004.stderr
+        assert asyncio.run(_alembic_version()) == "0003_m1_audit_evidence"
+    
+        # 回滚 0003：只撤销审计/证据列，不破坏附件表与 M0 核心表
+        downgrade_0003 = run_alembic("downgrade", "0002_m1_review_attachments")
+        assert downgrade_0003.returncode == 0, downgrade_0003.stdout + downgrade_0003.stderr
+        after_0003 = asyncio.run(_tables())
+        assert "review_attachments" in after_0003
+        assert CORE_TABLES <= after_0003
+        assert asyncio.run(_alembic_version()) == "0002_m1_review_attachments"
+    
+        # 再回滚一个 revision：只撤销附件绑定表
+        downgrade_0002 = run_alembic("downgrade", "0001_m0_initial")
+        assert downgrade_0002.returncode == 0, downgrade_0002.stdout + downgrade_0002.stderr
+        after_0002 = asyncio.run(_tables())
+        assert "review_attachments" not in after_0002
+        assert CORE_TABLES <= after_0002
+        assert asyncio.run(_alembic_version()) == "0001_m0_initial"
+    
+        # 再回滚到 base：核心表被撤销
+        downgrade_all = run_alembic("downgrade", "base")
+        assert downgrade_all.returncode == 0, downgrade_all.stdout + downgrade_all.stderr
+        remaining = asyncio.run(_tables())
+        assert CORE_TABLES.isdisjoint(remaining), remaining
+        assert "api_keys" not in remaining
+    
+        rebuild = run_alembic("upgrade", "head")
+        assert rebuild.returncode == 0, rebuild.stdout + rebuild.stderr
+        rebuilt = asyncio.run(_tables())
+        assert CORE_TABLES <= rebuilt
+        assert "review_attachments" in rebuilt
+>       assert asyncio.run(_alembic_version()) == "0004_m1_masking_audit"
+E       AssertionError: assert '0005_m2_knowledge' == '0004_m1_masking_audit'
+E         
+E         - 0004_m1_masking_audit
+E         + 0005_m2_knowledge
+
+tests\migration\test_migrations.py:93: AssertionError
+---------------------------- Captured stdout setup ----------------------------
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T06:24:22.652624Z"}
+----------------------------- Captured log setup ------------------------------
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+---------------------------- Captured stdout call -----------------------------
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T06:24:23.958252Z"}
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T06:24:23.977514Z"}
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T06:24:23.997423Z"}
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T06:24:24.836146Z"}
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T06:24:25.660269Z"}
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T06:24:25.679970Z"}
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T06:24:26.533852Z"}
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T06:24:26.557158Z"}
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T06:24:27.413500Z"}
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T06:24:28.659343Z"}
+{"event": "Using proactor: IocpProactor", "level": "debug", "logger": "asyncio", "timestamp": "2026-11-12T06:24:28.680021Z"}
+------------------------------ Captured log call ------------------------------
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+DEBUG    asyncio:proactor_events.py:629 Using proactor: IocpProactor
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  C:\Users\admin\Desktop\评审团\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/migration/test_migrations.py::test_empty_database_migrates_and_rolls_back
+1 failed, 367 passed, 1 warning in 72.58s (0:01:12)

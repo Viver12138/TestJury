@@ -1,0 +1,17 @@
+{
+  "repository": "docker.io/pgvector/pgvector",
+  "tag": "pg16",
+  "platform": "linux/amd64",
+  "index_digest": "sha256:0dd3149a06e4579a0d70d8fef9945636cd514005e7237deb27f9b67886f8dc4f",
+  "manifest_digest": "sha256:c0cd736fe8b8b5d408db56b780570bac404fe518e66e39de624aa46f9aabc60a",
+  "config_digest": "sha256:31c6867f8fd38f4b75885aeb954d43cd4c2be714659d72b0dc4ae55bdcd9e967",
+  "layer_count": 16,
+  "all_registry_digests_verified": true,
+  "all_layer_diff_ids_verified": true,
+  "tls_verification": true,
+  "system_dns_modified": false,
+  "loaded_image_id": "sha256:97812cbcc48ba1a9daf24f75fc9543ff7ee040aaeaf60b3deac08ced8c9f15fd",
+  "loaded_layer_order_verified": true,
+  "loaded_runtime_configuration_verified": true,
+  "note": "Docker may assign a new image identifier on archive import; all original layer diff_ids and runtime configuration are verified."
+}

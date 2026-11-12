@@ -75,6 +75,7 @@ def verify_evidence(
     *,
     allowed_kb_refs: set[str] | None = None,
     allowed_evidence_refs: set[str] | None = None,
+    knowledge_evidence: list[dict[str, Any]] | None = None,
 ) -> EvidenceResult:
     allowed_kb = allowed_kb_refs or set()
     allowed_evidence = allowed_evidence_refs or set()
@@ -112,6 +113,24 @@ def verify_evidence(
         warnings.append("kb_grounded_without_valid_refs")
 
     invalid_citation = bool(invalid_evidence_refs or invalid_kb_refs)
+    if valid_kb_refs and knowledge_evidence is not None:
+        documents = {c["chunk_id"]: c for c in knowledge_evidence}
+        kb_quote = issue.get("kb_quote")
+        expected_types = {
+            "business_rule": {"BUSINESS_RULE", "WORKFLOW"},
+            "requirement": {"REQUIREMENT", "INTERFACE"},
+            "known_limit": {"KNOWN_LIMITATION", "AUTOMATION"},
+        }
+        valid_quote = isinstance(kb_quote, str) and len(kb_quote.strip()) >= 8
+        for ref in valid_kb_refs:
+            doc = documents.get(ref, {})
+            if (not valid_quote or kb_quote not in doc.get("text", "")
+                    or doc.get("evidence_level") not in {"E1", "E2"}
+                    or doc.get("knowledge_type") not in expected_types.get(evidence_type, set())):
+                invalid_citation = True
+        if invalid_citation:
+            warnings.append("kb_quote_or_evidence_scope_unverified")
+            kb_grounded = False
 
     if invalid_citation:
         status = "insufficient"

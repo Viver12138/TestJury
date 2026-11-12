@@ -1,0 +1,373 @@
+{
+  "build_version": "kb-runtime-7f401c235ac7b32cda4f556c4830bf480aeb7bd20af055f7ca0940f250329188",
+  "dataset_sha256": "35861d238995ef9e9325df88370218308ec5232748732f5fc69377aacf3b1615",
+  "annotation_type": "delegated_ai",
+  "metrics": {
+    "dev": {
+      "count": 3,
+      "recall_at_10": 1.0,
+      "mrr": 0.8333333333333334
+    },
+    "validation": {
+      "count": 4,
+      "recall_at_10": 1.0,
+      "mrr": 1.0
+    },
+    "frozen": {
+      "count": 4,
+      "recall_at_10": 1.0,
+      "mrr": 1.0
+    },
+    "regression": {
+      "count": 7,
+      "recall_at_10": 1.0,
+      "mrr": 1.0
+    }
+  },
+  "cases": [
+    {
+      "id": "R-001",
+      "split": "dev",
+      "expected": [
+        "RULE-ORDER-001"
+      ],
+      "retrieved": [
+        "RULE-ORDER-001",
+        "REQ-ORDER-001",
+        "RULE-ORDER-005",
+        "REQ-ORDER-002",
+        "API-ORDER-001",
+        "GLOSSARY-001",
+        "RULE-ORDER-008",
+        "FLOW-ORDER-001",
+        "RULE-ORDER-003",
+        "RULE-ORDER-006"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-002",
+      "split": "validation",
+      "expected": [
+        "RULE-ORDER-002"
+      ],
+      "retrieved": [
+        "RULE-ORDER-002",
+        "RULE-ORDER-006",
+        "REQ-ORDER-001",
+        "API-ORDER-002",
+        "FLOW-ORDER-001",
+        "STATE-ORDER-001",
+        "API-ORDER-004",
+        "RULE-ORDER-011",
+        "TEST-DATA",
+        "PROJECT-ROLES"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-003",
+      "split": "frozen",
+      "expected": [
+        "RULE-ORDER-003"
+      ],
+      "retrieved": [
+        "RULE-ORDER-003",
+        "RULE-ORDER-009",
+        "REQ-ORDER-001",
+        "REQ-ORDER-002",
+        "EXP-ORDER-001",
+        "GLOSSARY-001",
+        "TEST-SPEC-PROJECT-001",
+        "TEST-DATA",
+        "API-ORDER-001",
+        "AUTO-LIMITATIONS"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-004",
+      "split": "regression",
+      "expected": [
+        "RULE-ORDER-004"
+      ],
+      "retrieved": [
+        "RULE-ORDER-004",
+        "REQ-ORDER-004",
+        "RULE-ORDER-007",
+        "REQ-ORDER-001",
+        "RULE-ORDER-005",
+        "TEST-DATA",
+        "GLOSSARY-001",
+        "RULE-ORDER-006",
+        "TEST-SPEC-PROJECT-001",
+        "EXP-ORDER-001"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-005",
+      "split": "validation",
+      "expected": [
+        "RULE-ORDER-005"
+      ],
+      "retrieved": [
+        "RULE-ORDER-005",
+        "REQ-ORDER-001",
+        "RULE-ORDER-001",
+        "RULE-ORDER-004",
+        "RULE-ORDER-007",
+        "API-ORDER-001",
+        "RULE-ORDER-006",
+        "REQ-ORDER-004",
+        "TEST-DATA",
+        "REQ-ORDER-002"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-006",
+      "split": "frozen",
+      "expected": [
+        "RULE-ORDER-006"
+      ],
+      "retrieved": [
+        "RULE-ORDER-006",
+        "REQ-ORDER-001",
+        "RULE-ORDER-003",
+        "EXP-ORDER-001",
+        "AUTO-LIMITATIONS",
+        "TEST-DATA",
+        "STATE-ORDER-001",
+        "RULE-ORDER-002",
+        "API-ORDER-002",
+        "FLOW-ORDER-001"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-007",
+      "split": "regression",
+      "expected": [
+        "RULE-ORDER-007"
+      ],
+      "retrieved": [
+        "RULE-ORDER-007",
+        "REQ-ORDER-004",
+        "API-ORDER-004",
+        "RULE-ORDER-005",
+        "GLOSSARY-001",
+        "STATE-ORDER-001",
+        "REQ-ORDER-002",
+        "TEST-DATA",
+        "API-ORDER-002",
+        "RULE-ORDER-004"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-008",
+      "split": "dev",
+      "expected": [
+        "RULE-ORDER-008"
+      ],
+      "retrieved": [
+        "RULE-ORDER-008",
+        "STATE-ORDER-001",
+        "API-ORDER-005",
+        "REQ-ORDER-002",
+        "FLOW-ORDER-001",
+        "RULE-ORDER-007",
+        "REQ-ORDER-003",
+        "API-ORDER-003",
+        "EXP-ORDER-001",
+        "API-ORDER-002"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-009",
+      "split": "validation",
+      "expected": [
+        "RULE-ORDER-009"
+      ],
+      "retrieved": [
+        "RULE-ORDER-009",
+        "API-ORDER-005",
+        "REQ-ORDER-002",
+        "EXP-ORDER-001",
+        "FLOW-ORDER-001",
+        "RULE-ORDER-006",
+        "RULE-ORDER-003",
+        "STATE-ORDER-001",
+        "REQ-ORDER-001",
+        "GLOSSARY-001"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-010",
+      "split": "frozen",
+      "expected": [
+        "RULE-ORDER-010"
+      ],
+      "retrieved": [
+        "RULE-ORDER-010",
+        "REQ-ORDER-003",
+        "RULE-ORDER-011",
+        "REQ-ORDER-004",
+        "API-ORDER-006",
+        "STATE-ORDER-001",
+        "FLOW-ORDER-001",
+        "API-ORDER-004",
+        "REQ-ORDER-002",
+        "RULE-ORDER-006"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-011",
+      "split": "regression",
+      "expected": [
+        "RULE-ORDER-011"
+      ],
+      "retrieved": [
+        "RULE-ORDER-011",
+        "STATE-ORDER-001",
+        "PROJECT-ROLES",
+        "RULE-ORDER-007",
+        "REQ-ORDER-003",
+        "REQ-ORDER-004",
+        "API-ORDER-004",
+        "RULE-ORDER-008",
+        "REQ-ORDER-001",
+        "EXP-ORDER-001"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-012",
+      "split": "validation",
+      "expected": [
+        "STATE-ORDER-001"
+      ],
+      "retrieved": [
+        "STATE-ORDER-001",
+        "REQ-ORDER-002",
+        "RULE-ORDER-010",
+        "REQ-ORDER-003",
+        "RULE-ORDER-009",
+        "API-ORDER-005",
+        "RULE-ORDER-008",
+        "REQ-ORDER-001",
+        "FLOW-ORDER-001",
+        "TEST-DATA"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-013",
+      "split": "frozen",
+      "expected": [
+        "STATE-ORDER-001"
+      ],
+      "retrieved": [
+        "STATE-ORDER-001",
+        "REQ-ORDER-003",
+        "DATA-ORDER-001",
+        "REQ-ORDER-004",
+        "REQ-ORDER-002",
+        "RULE-ORDER-010",
+        "RULE-ORDER-007",
+        "RULE-ORDER-008",
+        "API-ORDER-003",
+        "REQ-ORDER-001"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-014",
+      "split": "regression",
+      "expected": [
+        "API-ORDER-003"
+      ],
+      "retrieved": [
+        "API-ORDER-003",
+        "REQ-ORDER-002",
+        "API-ORDER-005",
+        "DATA-ORDER-001",
+        "RULE-ORDER-008",
+        "RULE-ORDER-006",
+        "STATE-ORDER-001",
+        "API-ORDER-002",
+        "RULE-ORDER-002",
+        "REQ-ORDER-004"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "R-015",
+      "split": "dev",
+      "expected": [
+        "REQ-ORDER-001"
+      ],
+      "retrieved": [
+        "RULE-ORDER-006",
+        "REQ-ORDER-001",
+        "RULE-ORDER-001",
+        "RULE-ORDER-005",
+        "RULE-ORDER-007",
+        "API-ORDER-002",
+        "API-ORDER-004",
+        "RULE-ORDER-003",
+        "REQ-ORDER-004",
+        "API-ORDER-001"
+      ],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 0.5
+    },
+    {
+      "id": "N-001",
+      "split": "regression",
+      "expected": [],
+      "retrieved": [],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "N-002",
+      "split": "regression",
+      "expected": [],
+      "retrieved": [],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "N-003",
+      "split": "regression",
+      "expected": [],
+      "retrieved": [],
+      "recall_at_10": 1.0,
+      "reciprocal_rank": 1.0
+    }
+  ],
+  "passed": true,
+  "acceptance_scope": "retrieval_only",
+  "review_effectiveness": "not_measured",
+  "review_record_sha256": "e03d1ec0c0ed3a4bd10bcd25e6657144d02c0fbe1847d2b60ebc3cb923c1602c",
+  "release_scope": "delegated_technical_preview"
+}

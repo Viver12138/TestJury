@@ -5,36 +5,37 @@ knowledge_type: TEST_SPEC
 project_id: minishop
 module_id: null
 source_type: TEST_STANDARD
-source_ref: C:/Users/Viver/Desktop/TestJury_项目知识库数据规范_v1.0.md#L653-L697; Minishop/README.md#L99-L107; Minishop/e2e_test.py
+source_ref: TestJury_项目知识库数据规范_v1.0.md#testing-standard-template; Minishop/README.md#L99-L107;
+  Minishop/e2e_test.py
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E3
 status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（产品负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - test_spec
-  - order
-  - review_standard
+- test_spec
+- order
+- review_standard
 related_ids:
-  - TEST-ENV
-  - TEST-DATA
-  - FLOW-ORDER-001
-  - STATE-ORDER-001
+- TEST-ENV
+- TEST-DATA
+- FLOW-ORDER-001
+- STATE-ORDER-001
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: approved_after_review
-change_reason: "2026-11-12 人工复核回写（审核结论：通过）"
+review_status: delegated_review_completed
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 ---
 
 # 1. 测试范围与原则
@@ -45,7 +46,7 @@ change_reason: "2026-11-12 人工复核回写（审核结论：通过）"
 
 ## 原则
 
-1. **以服务端行为为准**：金额、库存、状态、权限均以 API 实际响应和数据库为准，不以页面文案或常识推断。
+1. **显式选择评审基线**：选择 `current_implementation` 时，用冻结源码和可复核 API/数据观察描述当前行为；选择 `target_specification` 时，用已确认的目标规则判断预期。当前实现中的缺陷不能覆盖目标规则，页面文案或常识不能代替依据。
 2. **可判定**：每条预期结果必须能落到 HTTP 状态码、`code`/`message`、字段值、数据库记录或页面可见状态。
 3. **前置显式**：不得用“已登录”“有库存”等模糊描述，必须写明账号、角色、地址、订单状态、券状态、库存值。
 4. **数据可复现**：优先使用独立库或独立用户，避免依赖执行顺序和历史残留。
@@ -187,6 +188,13 @@ change_reason: "2026-11-12 人工复核回写（审核结论：通过）"
 7. 当前没有测试环境重置接口，数据清理只能删库/换库。
 
 > 复核补充：1187.0 的金额基线依赖已过期的新人券；重建种子库后成立，否则机械键盘×3 使用券#2 应为 1097.0。
+
+
+# 本次授权技术复核适用性
+
+作为 E3 项目测试规范批准；适用当前实现/目标规格的显式基线；不把 E3 或通用建议提升为业务 E1。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

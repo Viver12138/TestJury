@@ -21,7 +21,7 @@ effective_from: null
 effective_until: null
 reviewed_at: 2026-11-11
 review_cycle_days: 90
-change_reason: 2026-11-12 审核整改：澄清 user_coupons.EXPIRED 为读取时计算值；优惠券“可用”列标注快照日期并给出动态判断要求
+change_reason: "2026-11-12：澄清 user_coupons.EXPIRED 为读取时计算值、优惠券可用列标注快照日期并要求动态判断；保留人工复核通过记录；本轮仅合并重复变更字段"
 tags:
   - order
   - data
@@ -38,7 +38,6 @@ sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
 review_status: approved_after_review
-change_reason: "2026-11-12 人工复核回写（审核结论：通过）"
 ---
 
 # 1. 数据对象与表

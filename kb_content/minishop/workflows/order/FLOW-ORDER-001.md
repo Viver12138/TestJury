@@ -5,39 +5,41 @@ knowledge_type: WORKFLOW
 project_id: minishop
 module_id: order
 source_type: OTHER
-source_ref: Minishop/README.md#L54-L58; Minishop/frontend/src/pages/cart/Cart.tsx#L45-L51; Minishop/frontend/src/pages/order/OrderConfirm.tsx#L19-L62; Minishop/frontend/src/pages/payment/Payment.tsx#L18-L33; Minishop/backend/app/api/orders.py#L88-L260
+source_ref: Minishop/README.md#L54-L58; Minishop/frontend/src/pages/cart/Cart.tsx#L45-L51;
+  Minishop/frontend/src/pages/order/OrderConfirm.tsx#L19-L62; Minishop/frontend/src/pages/payment/Payment.tsx#L18-L33;
+  Minishop/backend/app/api/orders.py#L88-L260
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E2
-status: in_review
+status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（产品负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - order
-  - flow
-  - checkout
-  - payment
-  - fulfillment
+- order
+- flow
+- checkout
+- payment
+- fulfillment
 related_ids:
-  - REQ-ORDER-001
-  - REQ-ORDER-002
-  - REQ-ORDER-003
-  - REQ-ORDER-004
-  - STATE-ORDER-001
+- REQ-ORDER-001
+- REQ-ORDER-002
+- REQ-ORDER-003
+- REQ-ORDER-004
+- STATE-ORDER-001
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: changes_applied_pending_reapproval
-change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过）"
+review_status: delegated_review_completed
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 ---
 
 # 1. 流程目标
@@ -105,7 +107,8 @@ change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过�
 | 商品下架 | 预览/创建订单 | 400 `商品已下架` | 提示商品不可购买 |
 | SKU 失效 | 预览/创建订单 | 400 `商品规格无效` | 提示规格无效 |
 | 库存不足 | 预览/创建订单 | 409 `商品「X」库存不足` | 提示库存不足 |
-| 地址缺失 | 创建订单 | 400 `请选择收货地址` | 提示先选地址 |
+| 地址 ID 为 0 | 创建订单 | 400 `请选择收货地址` | 提示先选地址 |
+| 地址字段缺失/null/类型错误 | 创建订单 | 400 `VALIDATION_ERROR` | 参数校验失败 |
 | 地址非本人 | 预览/创建订单 | 400 `收货地址不存在` | 提示地址无效 |
 | 券不可用 | 预览/创建订单 | 400/409（见 `RULE-ORDER-004`） | 提示券不可用 |
 | 未达门槛 | 预览/创建订单 | 409 `未达优惠券门槛（满X可用）` | 提示门槛 |
@@ -158,11 +161,18 @@ change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过�
 
 # 10. 未决问题
 
-- 前端结算依赖 `sessionStorage`，刷新/直接访问 `/orders/confirm` 会丢失商品清单；是否应改为服务端购物车结算？
+- 前端结算依赖 `sessionStorage`，同标签页普通刷新保留数据；新会话或无 checkout_items 时直接访问 `/orders/confirm` 无商品清单；是否应改为服务端购物车结算？
 - 下单后购物车是否应清空？
 - 是否需要订单超时关闭与库存预占？
 - 退款拒绝后的状态恢复（`SHIPPED`/`COMPLETED` 丢失）应如何定义？
 - 是否需要管理员取消订单能力？
+
+
+# 本次授权技术复核适用性
+
+核对 Payment.tsx 一次点击触发 create+success/fail；修正地址异常细分与 sessionStorage 刷新语义。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

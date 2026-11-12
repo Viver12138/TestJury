@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-12",
+  "contracts_ok": true,
+  "source_audit_ok": true,
+  "snapshot_files_verified": 80,
+  "manual_review_rows_verified": 77,
+  "release_blocked_as_expected": true,
+  "candidates": [
+    {
+      "baseline": "current_implementation",
+      "documents": 21,
+      "chunks": 125
+    },
+    {
+      "baseline": "target_specification",
+      "documents": 21,
+      "chunks": 125
+    }
+  ],
+  "tests": {
+    "tests": 343,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2,
+    "passed": 341
+  }
+}

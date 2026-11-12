@@ -1,0 +1,2249 @@
+{
+  "id": "G-001-negative",
+  "mode": "live",
+  "split": "dev",
+  "build_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85",
+  "annotation_type": "delegated_ai",
+  "status": "completed_with_warnings",
+  "error": null,
+  "expected_count": 1,
+  "reported_count": 5,
+  "matched_count": 1,
+  "report": {
+    "review_id": "d1fb40b4-7d72-4d83-b841-9691ea6bb249",
+    "case_id": "G-001-negative",
+    "case_version": 1,
+    "module": "order",
+    "test_type": "functional",
+    "test_type_source": "request",
+    "generation": 1,
+    "parent_review_id": null,
+    "status": "completed_with_warnings",
+    "stage": "render",
+    "ai_verdict": "need_human",
+    "human_status": "pending",
+    "report_schema_version": "report-1.0",
+    "degraded": true,
+    "degraded_reasons": [
+      "arbitration_skipped",
+      "model_missing"
+    ],
+    "participants": [
+      "chief_blind:qwen3.8-max",
+      "jury_a:deepseek-flash"
+    ],
+    "topology": "multi",
+    "review_participants": [
+      {
+        "participant_id": "p-01",
+        "role_id": "chief_blind",
+        "status": "active",
+        "model": "qwen3.8-max",
+        "actual_model": "qwen3.8-max"
+      },
+      {
+        "participant_id": "p-02",
+        "role_id": "jury_a",
+        "status": "active",
+        "model": "deepseek-flash",
+        "actual_model": "deepseek-flash"
+      },
+      {
+        "participant_id": "p-03",
+        "role_id": "jury_b",
+        "status": "failed",
+        "model": "kimi-k3.1-pro",
+        "actual_model": null
+      }
+    ],
+    "review_completeness": {
+      "blind": "2/3",
+      "vote": "1/2",
+      "arbitration": "skipped",
+      "arbitration_required": false,
+      "stages_completed": [
+        "input_check",
+        "kb_retrieve",
+        "blind_review",
+        "fusion",
+        "vote",
+        "verdict",
+        "render"
+      ],
+      "stages_skipped": [
+        "preprocess",
+        "arbitration"
+      ],
+      "stages_failed": [],
+      "stages_pending": [],
+      "complete": true,
+      "full_participation": false
+    },
+    "input_quality": {
+      "hard_errors": [],
+      "soft_issues": []
+    },
+    "versions": {
+      "kb": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85",
+      "kb_content_version": "kb-07e52c331a2a97b65810814cd6f90956ca558ba7dcdf20760275c4f099ec1b7c",
+      "kb_build_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85",
+      "rubric": "0.2.0",
+      "prompts": {
+        "preprocess": "p-m0-pre-01",
+        "chief_blind": "p-m0-chief-01",
+        "jury_a": "p-m0-jury-a-01",
+        "jury_b": "p-m0-jury-b-01",
+        "vote": "p-m0-vote-01",
+        "arbitration": "p-m0-arb-01"
+      },
+      "retrieval_config": "0a738ad6",
+      "embedding_profile": "lexical-only",
+      "model_config": "7e35c71d",
+      "models": {
+        "chief_blind": "qwen3.8-max",
+        "jury_a": "deepseek-flash",
+        "jury_b": "kimi-k3.1-pro",
+        "vote": "qwen3.8-max",
+        "arbitration": "qwen3.8-max",
+        "preprocess": "deepseek-flash"
+      },
+      "price_config": "price-unverified-2026-11"
+    },
+    "summary": {
+      "total_issues": 5,
+      "blocker": 1,
+      "major": 4,
+      "suggestion": 0
+    },
+    "issues": [
+      {
+        "issue_no": 1,
+        "candidate_id": "8669df7c-99f6-4f4b-a26a-a4d7bbf93bd1",
+        "step_index": 1,
+        "dimension": "business",
+        "severity": "blocker",
+        "category": "规则冲突",
+        "evidence_quote": "HTTP 201；data.pay_amount=0.01，按客户端传入金额成交",
+        "rationale": "第 1 步存在「规则冲突」问题：知识库 RULE-ORDER-001 明确订单创建金额由服务端重算，客户端传入 pay_amount 等金额字段不参与计算且会被忽略；在前置价格100、数量2、无券时应付金额应为服务端计算的200，而非0.01",
+        "suggestion": "将预期改为 HTTP 201，且 data.total_amount=200、data.discount_amount=0、data.pay_amount=200（或200.00），并说明客户端 pay_amount=0.01 被忽略。",
+        "kb_grounded": false,
+        "kb_refs": [
+          "da8a1c934bfab2b92831a8e5b6612a69e6cfb9b527e03bf0a88e44fe5dd689a9"
+        ],
+        "evidence_type": "business_rule",
+        "evidence_strength": "strong",
+        "evidence_status": "insufficient",
+        "evidence_refs": [],
+        "evidence_support_status": "insufficient",
+        "validation_status": "needs_review",
+        "proposed_by": [
+          "chief_blind",
+          "jury_a"
+        ],
+        "votes": {
+          "chief_blind": {
+            "validity": "accept",
+            "severity": "blocker"
+          },
+          "jury_a": {
+            "validity": "accept",
+            "severity": "blocker"
+          }
+        },
+        "vote_summary": {
+          "support": 2,
+          "reject": 0,
+          "not_assessed": 0,
+          "uncertain": 0,
+          "support_ratio": 1.0,
+          "severity_distribution": {
+            "blocker": 2,
+            "major": 0,
+            "suggestion": 0
+          },
+          "severity_disputed": false,
+          "vote_completeness": "2/2"
+        },
+        "confidence": null,
+        "confidence_source": "uncalibrated",
+        "model_confidence": null,
+        "decision_status": null,
+        "status": "need_human",
+        "chief_decision": "need_human",
+        "chief_reason": null,
+        "human_verdict": null
+      },
+      {
+        "issue_no": 2,
+        "candidate_id": "41de57fd-e742-4c4f-b25f-22505838e08e",
+        "step_index": 1,
+        "dimension": "automation",
+        "severity": "major",
+        "category": "不可重复",
+        "evidence_quote": "items=[{sku_id:1,quantity:2}], address_id=1",
+        "rationale": "第 1 步存在「不可重复」问题：步骤硬编码 sku_id=1 和 address_id=1；知识库测试数据准备明确不要硬编码 SKU ID，重建数据库后 ID 会变化，地址也应在创建后取 data.id，导致自动化不可重复",
+        "suggestion": "在准备阶段创建地址并取 data.id，查询或构造价格100、库存10、ACTIVE/ON_SALE 的 SKU 并取其 id；请求体使用动态变量。",
+        "kb_grounded": false,
+        "kb_refs": [
+          "bf4edf9910414e1e325f857f6288ff45806c3c31f798aca0f77507fb91610067"
+        ],
+        "evidence_type": "testing_standard",
+        "evidence_strength": "medium",
+        "evidence_status": "insufficient",
+        "evidence_refs": [],
+        "evidence_support_status": "insufficient",
+        "validation_status": "needs_review",
+        "proposed_by": [
+          "chief_blind",
+          "jury_a"
+        ],
+        "votes": {
+          "chief_blind": {
+            "validity": "accept",
+            "severity": "major"
+          },
+          "jury_a": {
+            "validity": "not_assessed",
+            "severity": null
+          }
+        },
+        "vote_summary": {
+          "support": 1,
+          "reject": 0,
+          "not_assessed": 1,
+          "uncertain": 0,
+          "support_ratio": 0.5,
+          "severity_distribution": {
+            "blocker": 0,
+            "major": 1,
+            "suggestion": 0
+          },
+          "severity_disputed": false,
+          "vote_completeness": "1/2"
+        },
+        "confidence": null,
+        "confidence_source": "uncalibrated",
+        "model_confidence": null,
+        "decision_status": null,
+        "status": "need_human",
+        "chief_decision": "need_human",
+        "chief_reason": null,
+        "human_verdict": null
+      },
+      {
+        "issue_no": 3,
+        "candidate_id": "9b443595-20ec-42ae-84de-2e8aad5987ec",
+        "step_index": 1,
+        "dimension": "test_design",
+        "severity": "major",
+        "category": "覆盖缺失",
+        "evidence_quote": "HTTP 201；data.pay_amount=0.01，按客户端传入金额成交",
+        "rationale": "第 1 步存在「覆盖缺失」问题：标题要验证下单最终按哪个价格计算，但只断言创建响应中的 pay_amount，未核对订单详情或落库金额；知识库要求订单落库的 total_amount、discount_amount、pay_amount 使用服务端结果",
+        "suggestion": "增加步骤：创建成功后调用 GET /api/orders/{id} 或使用数据库只读查询，断言 orders.total_amount=200、discount_amount=0、pay_amount=200，order_items 按 SKU 价格100与数量2生成小计。",
+        "kb_grounded": false,
+        "kb_refs": [
+          "da8a1c934bfab2b92831a8e5b6612a69e6cfb9b527e03bf0a88e44fe5dd689a9"
+        ],
+        "evidence_type": "business_rule",
+        "evidence_strength": "strong",
+        "evidence_status": "insufficient",
+        "evidence_refs": [],
+        "evidence_support_status": "insufficient",
+        "validation_status": "needs_review",
+        "proposed_by": [
+          "chief_blind",
+          "jury_a"
+        ],
+        "votes": {
+          "chief_blind": {
+            "validity": "accept",
+            "severity": "major"
+          },
+          "jury_a": {
+            "validity": "not_assessed",
+            "severity": null
+          }
+        },
+        "vote_summary": {
+          "support": 1,
+          "reject": 0,
+          "not_assessed": 1,
+          "uncertain": 0,
+          "support_ratio": 0.5,
+          "severity_distribution": {
+            "blocker": 0,
+            "major": 1,
+            "suggestion": 0
+          },
+          "severity_disputed": false,
+          "vote_completeness": "1/2"
+        },
+        "confidence": null,
+        "confidence_source": "uncalibrated",
+        "model_confidence": null,
+        "decision_status": null,
+        "status": "need_human",
+        "chief_decision": "need_human",
+        "chief_reason": null,
+        "human_verdict": null
+      },
+      {
+        "issue_no": 4,
+        "candidate_id": "fec33241-1af5-4481-b704-5bfdea8c4e6b",
+        "step_index": null,
+        "dimension": "business",
+        "severity": "major",
+        "category": "前置不足",
+        "evidence_quote": "用户 A 已登录；地址 1 属于 A；SKU 1 ACTIVE、商品 ON_SALE、价格 100、库存 10；无券",
+        "rationale": "用例整体存在「前置不足」问题：前置条件未写清账号角色/状态、登录 token、地址与 SKU 的准备方式及数据库重置；知识库前置条件规范要求账号、登录态、地址、SKU、数据隔离等信息充分",
+        "suggestion": "补充：普通用户 A/USER/ACTIVE，持有有效 Bearer token；独立测试库已重置；地址由 A 创建并动态取 id；SKU 动态准备为价格100、库存10、ACTIVE且所属商品 ON_SALE。",
+        "kb_grounded": false,
+        "kb_refs": [
+          "f7c24acd3286b5d7e1589fd82025c8e2da044d91a65a56b2f8943022eedf58f5"
+        ],
+        "evidence_type": "testing_standard",
+        "evidence_strength": "medium",
+        "evidence_status": "insufficient",
+        "evidence_refs": [],
+        "evidence_support_status": "insufficient",
+        "validation_status": "needs_review",
+        "proposed_by": [
+          "chief_blind",
+          "jury_a"
+        ],
+        "votes": {
+          "chief_blind": {
+            "validity": "accept",
+            "severity": "major"
+          },
+          "jury_a": {
+            "validity": "accept",
+            "severity": "major"
+          }
+        },
+        "vote_summary": {
+          "support": 2,
+          "reject": 0,
+          "not_assessed": 0,
+          "uncertain": 0,
+          "support_ratio": 1.0,
+          "severity_distribution": {
+            "blocker": 0,
+            "major": 2,
+            "suggestion": 0
+          },
+          "severity_disputed": false,
+          "vote_completeness": "2/2"
+        },
+        "confidence": null,
+        "confidence_source": "uncalibrated",
+        "model_confidence": null,
+        "decision_status": null,
+        "status": "adopted",
+        "chief_decision": "adopt",
+        "chief_reason": null,
+        "human_verdict": null
+      },
+      {
+        "issue_no": 5,
+        "candidate_id": "6de9e730-6375-4d1a-a501-7b0af1a41c01",
+        "step_index": 1,
+        "dimension": "test_design",
+        "severity": "major",
+        "category": "歧义",
+        "evidence_quote": "API POST /api/orders，items=[{sku_id:1,quantity:2}], address_id=1, pay_amount=0.01",
+        "rationale": "第 1 步存在「歧义」问题：（推断）用例未说明 pay_amount=0.01 是 JSON 请求体字段、查询参数还是其他注入方式，影响篡改金额场景的可重复执行",
+        "suggestion": "明确请求为 JSON body，包含 items、address_id，并额外传入 pay_amount=0.01；避免使用模糊的参数拼接描述。",
+        "kb_grounded": false,
+        "kb_refs": [],
+        "evidence_type": "inference",
+        "evidence_strength": "weak",
+        "evidence_status": "ungrounded",
+        "evidence_refs": [],
+        "evidence_support_status": "unsupported",
+        "validation_status": "passed",
+        "proposed_by": [
+          "chief_blind"
+        ],
+        "votes": {
+          "chief_blind": {
+            "validity": "accept",
+            "severity": "major"
+          },
+          "jury_a": {
+            "validity": "accept",
+            "severity": "major"
+          }
+        },
+        "vote_summary": {
+          "support": 2,
+          "reject": 0,
+          "not_assessed": 0,
+          "uncertain": 0,
+          "support_ratio": 1.0,
+          "severity_distribution": {
+            "blocker": 0,
+            "major": 2,
+            "suggestion": 0
+          },
+          "severity_disputed": false,
+          "vote_completeness": "2/2"
+        },
+        "confidence": null,
+        "confidence_source": "uncalibrated",
+        "model_confidence": null,
+        "decision_status": null,
+        "status": "adopted",
+        "chief_decision": "adopt",
+        "chief_reason": null,
+        "human_verdict": null
+      }
+    ],
+    "human_review_items": [
+      {
+        "issue_no": 1,
+        "reason": "need_human",
+        "priority": "normal"
+      },
+      {
+        "issue_no": 2,
+        "reason": "need_human",
+        "priority": "normal"
+      },
+      {
+        "issue_no": 3,
+        "reason": "need_human",
+        "priority": "normal"
+      }
+    ],
+    "kb_gaps": [],
+    "attachments": [],
+    "scope": {
+      "feature_point": "客户端把金额改成一分钱，下单最终按哪个价格计算？",
+      "scope_version": null,
+      "provided": true,
+      "coverage_claims_allowed": false,
+      "note": "v1 仅做单条用例评审，不输出功能点整体覆盖率"
+    },
+    "decision_summary": {
+      "human_status": "pending",
+      "latest_decision": null,
+      "history_count": 0
+    },
+    "appendix": {
+      "raw_opinions": {
+        "chief_blind": {
+          "summary": "用例核心预期与服务端重算规则直接冲突，且缺少落库金额断言与动态数据准备，需修正预期并补充验证。",
+          "issues": [
+            {
+              "scope": "step",
+              "step_index": 1,
+              "dimension": "business",
+              "severity": "blocker",
+              "category": "规则冲突",
+              "evidence_quote": "HTTP 201；data.pay_amount=0.01，按客户端传入金额成交",
+              "rationale": "知识库 RULE-ORDER-001 明确订单创建金额由服务端重算，客户端传入 pay_amount 等金额字段不参与计算且会被忽略；在前置价格100、数量2、无券时应付金额应为服务端计算的200，而非0.01。",
+              "suggestion": "将预期改为 HTTP 201，且 data.total_amount=200、data.discount_amount=0、data.pay_amount=200（或200.00），并说明客户端 pay_amount=0.01 被忽略。",
+              "kb_grounded": false,
+              "kb_refs": [
+                "da8a1c934bfab2b92831a8e5b6612a69e6cfb9b527e03bf0a88e44fe5dd689a9"
+              ],
+              "evidence_refs": [],
+              "evidence_type": "business_rule",
+              "evidence_strength": "strong",
+              "evidence_status": "insufficient",
+              "model_evidence_status": "conflicted",
+              "evidence_support_status": "insufficient",
+              "validation_status": "needs_review",
+              "parse_warnings": [
+                "evidence_refs_not_in_pack",
+                "kb_quote_or_evidence_scope_unverified",
+                "model_conflict_unverified"
+              ],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            },
+            {
+              "scope": "step",
+              "step_index": 1,
+              "dimension": "test_design",
+              "severity": "major",
+              "category": "覆盖缺失",
+              "evidence_quote": "HTTP 201；data.pay_amount=0.01，按客户端传入金额成交",
+              "rationale": "标题要验证下单最终按哪个价格计算，但只断言创建响应中的 pay_amount，未核对订单详情或落库金额；知识库要求订单落库的 total_amount、discount_amount、pay_amount 使用服务端结果。",
+              "suggestion": "增加步骤：创建成功后调用 GET /api/orders/{id} 或使用数据库只读查询，断言 orders.total_amount=200、discount_amount=0、pay_amount=200，order_items 按 SKU 价格100与数量2生成小计。",
+              "kb_grounded": false,
+              "kb_refs": [
+                "da8a1c934bfab2b92831a8e5b6612a69e6cfb9b527e03bf0a88e44fe5dd689a9"
+              ],
+              "evidence_refs": [],
+              "evidence_type": "business_rule",
+              "evidence_strength": "strong",
+              "evidence_status": "insufficient",
+              "model_evidence_status": "grounded",
+              "evidence_support_status": "insufficient",
+              "validation_status": "needs_review",
+              "parse_warnings": [
+                "evidence_refs_not_in_pack",
+                "kb_quote_or_evidence_scope_unverified",
+                "model_grounded_downgraded"
+              ],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            },
+            {
+              "scope": "step",
+              "step_index": 1,
+              "dimension": "automation",
+              "severity": "major",
+              "category": "不可重复",
+              "evidence_quote": "items=[{sku_id:1,quantity:2}], address_id=1",
+              "rationale": "步骤硬编码 sku_id=1 和 address_id=1；知识库测试数据准备明确不要硬编码 SKU ID，重建数据库后 ID 会变化，地址也应在创建后取 data.id，导致自动化不可重复。",
+              "suggestion": "在准备阶段创建地址并取 data.id，查询或构造价格100、库存10、ACTIVE/ON_SALE 的 SKU 并取其 id；请求体使用动态变量。",
+              "kb_grounded": false,
+              "kb_refs": [
+                "bf4edf9910414e1e325f857f6288ff45806c3c31f798aca0f77507fb91610067"
+              ],
+              "evidence_refs": [],
+              "evidence_type": "testing_standard",
+              "evidence_strength": "medium",
+              "evidence_status": "insufficient",
+              "model_evidence_status": "grounded",
+              "evidence_support_status": "insufficient",
+              "validation_status": "needs_review",
+              "parse_warnings": [
+                "evidence_refs_not_in_pack",
+                "kb_quote_or_evidence_scope_unverified",
+                "model_grounded_downgraded"
+              ],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            },
+            {
+              "scope": "case",
+              "step_index": null,
+              "dimension": "business",
+              "severity": "major",
+              "category": "前置不足",
+              "evidence_quote": "用户 A 已登录；地址 1 属于 A；SKU 1 ACTIVE、商品 ON_SALE、价格 100、库存 10；无券",
+              "rationale": "前置条件未写清账号角色/状态、登录 token、地址与 SKU 的准备方式及数据库重置；知识库前置条件规范要求账号、登录态、地址、SKU、数据隔离等信息充分。",
+              "suggestion": "补充：普通用户 A/USER/ACTIVE，持有有效 Bearer token；独立测试库已重置；地址由 A 创建并动态取 id；SKU 动态准备为价格100、库存10、ACTIVE且所属商品 ON_SALE。",
+              "kb_grounded": false,
+              "kb_refs": [
+                "f7c24acd3286b5d7e1589fd82025c8e2da044d91a65a56b2f8943022eedf58f5"
+              ],
+              "evidence_refs": [],
+              "evidence_type": "testing_standard",
+              "evidence_strength": "medium",
+              "evidence_status": "insufficient",
+              "model_evidence_status": "grounded",
+              "evidence_support_status": "insufficient",
+              "validation_status": "needs_review",
+              "parse_warnings": [
+                "evidence_refs_not_in_pack",
+                "kb_quote_or_evidence_scope_unverified",
+                "model_grounded_downgraded"
+              ],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            },
+            {
+              "scope": "step",
+              "step_index": 1,
+              "dimension": "test_design",
+              "severity": "suggestion",
+              "category": "歧义",
+              "evidence_quote": "API POST /api/orders，items=[{sku_id:1,quantity:2}], address_id=1, pay_amount=0.01",
+              "rationale": "（推断）用例未说明 pay_amount=0.01 是 JSON 请求体字段、查询参数还是其他注入方式，影响篡改金额场景的可重复执行。",
+              "suggestion": "明确请求为 JSON body，包含 items、address_id，并额外传入 pay_amount=0.01；避免使用模糊的参数拼接描述。",
+              "kb_grounded": false,
+              "kb_refs": [],
+              "evidence_refs": [],
+              "evidence_type": "inference",
+              "evidence_strength": "weak",
+              "evidence_status": "ungrounded",
+              "model_evidence_status": "ungrounded",
+              "evidence_support_status": "unsupported",
+              "validation_status": "passed",
+              "parse_warnings": [],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            }
+          ]
+        },
+        "jury_a": {
+          "summary": "核心预期与E2服务端金额重算规则直接冲突，且缺少落库金额核对与可重复数据准备，需重写。",
+          "issues": [
+            {
+              "scope": "step",
+              "step_index": 1,
+              "dimension": "business",
+              "severity": "blocker",
+              "category": "规则冲突",
+              "evidence_quote": "HTTP 201；data.pay_amount=0.01，按客户端传入金额成交",
+              "rationale": "RULE-ORDER-001（E2）明确订单金额由服务端按 SKU 价格重算，客户端传入的 pay_amount 会被忽略；价格 100×数量 2 时，应付金额应为 200，而非 0.01。该预期与已评审业务规则直接冲突，按此预期无法判定正确结果。（依据 RULE-ORDER-001）",
+              "suggestion": "将预期改为 HTTP 201；total_amount=200、discount_amount=0、pay_amount=200，并说明客户端传入的 pay_amount 被 Pydantic 忽略；若要验证拒绝未知字段，应另立用例并明确目标规格。",
+              "kb_grounded": false,
+              "kb_refs": [
+                "da8a1c934bfab2b92831a8e5b6612a69e6cfb9b527e03bf0a88e44fe5dd689a9",
+                "bb49f3df5c947015119e315cc946a6fc9cca3366c67609c272f26851ef1eeaac"
+              ],
+              "evidence_refs": [],
+              "evidence_type": "business_rule",
+              "evidence_strength": "strong",
+              "evidence_status": "insufficient",
+              "model_evidence_status": "grounded",
+              "evidence_support_status": "insufficient",
+              "validation_status": "needs_review",
+              "parse_warnings": [
+                "evidence_refs_not_in_pack",
+                "kb_quote_or_evidence_scope_unverified",
+                "model_grounded_downgraded"
+              ],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            },
+            {
+              "scope": "step",
+              "step_index": 1,
+              "dimension": "test_design",
+              "severity": "major",
+              "category": "覆盖缺失",
+              "evidence_quote": "HTTP 201；data.pay_amount=0.01",
+              "rationale": "用例只断言响应中的一个 data.pay_amount，未核对服务端重算出的 total_amount、discount_amount，也未查询订单详情或数据库落库金额。RULE-ORDER-001 要求订单落库的 total_amount、discount_amount、pay_amount 使用服务端结果，因此仅凭该断言无法证明“最终按哪个价格计算”。",
+              "suggestion": "补充断言服务端重算结果 total_amount=200、discount_amount=0、pay_amount=200；随后调用 GET /api/orders/{id} 并对数据库只读查询 orders/order_items，确认落库三金额及明细 subtotal 与响应一致。",
+              "kb_grounded": false,
+              "kb_refs": [
+                "da8a1c934bfab2b92831a8e5b6612a69e6cfb9b527e03bf0a88e44fe5dd689a9"
+              ],
+              "evidence_refs": [],
+              "evidence_type": "business_rule",
+              "evidence_strength": "strong",
+              "evidence_status": "insufficient",
+              "model_evidence_status": "grounded",
+              "evidence_support_status": "insufficient",
+              "validation_status": "needs_review",
+              "parse_warnings": [
+                "evidence_refs_not_in_pack",
+                "kb_quote_or_evidence_scope_unverified",
+                "model_grounded_downgraded"
+              ],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            },
+            {
+              "scope": "step",
+              "step_index": 1,
+              "dimension": "test_design",
+              "severity": "major",
+              "category": "不可重复",
+              "evidence_quote": "API POST /api/orders，items=[{sku_id:1,quantity:2}], address_id=1, pay_amount=0.01",
+              "rationale": "步骤直接硬编码 sku_id=1、address_id=1，且没有创建地址、查询商品解析 SKU 的前置动作。TEST-DATA 明确提醒不要硬编码 SKU ID，重建数据库后会变化；独立测试库重建后该用例可能找不到对应数据，无法重复执行。",
+              "suggestion": "增加数据准备步骤：登录 user、POST /api/addresses 创建地址并记录返回 id、GET /api/products 解析 SKU id 并记录 price/stock，再以变量替换请求中的 sku_id 和 address_id。",
+              "kb_grounded": false,
+              "kb_refs": [
+                "a0925e069b3a4ae7ec211b9c7e95a6080160758105b4292f0ac15836d06a69f6"
+              ],
+              "evidence_refs": [],
+              "evidence_type": "testing_standard",
+              "evidence_strength": "medium",
+              "evidence_status": "insufficient",
+              "model_evidence_status": "grounded",
+              "evidence_support_status": "insufficient",
+              "validation_status": "needs_review",
+              "parse_warnings": [
+                "evidence_refs_not_in_pack",
+                "kb_quote_or_evidence_scope_unverified",
+                "model_grounded_downgraded"
+              ],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            },
+            {
+              "scope": "case",
+              "step_index": null,
+              "dimension": "business",
+              "severity": "suggestion",
+              "category": "前置不足",
+              "evidence_quote": "用户 A 已登录；地址 1 属于 A；SKU 1 ACTIVE、商品 ON_SALE、价格 100、库存 10；无券",
+              "rationale": "前置只写“用户 A 已登录”，未明确账号角色/状态（如 USER/ACTIVE）、token 是否有效、地址是否默认，也未在预置中写隔离库名称或重置方式。TEST-SPEC-PROJECT-001 要求前置条件写清账号状态、登录态、地址归属和数据库隔离信息。",
+              "suggestion": "补充：账号 user（USER/ACTIVE）已登录并携带有效 token；地址 1 归属 user、是否默认；使用独立 verify.db 且已重置/已播种；并注明未领券。",
+              "kb_grounded": false,
+              "kb_refs": [
+                "f7c24acd3286b5d7e1589fd82025c8e2da044d91a65a56b2f8943022eedf58f5"
+              ],
+              "evidence_refs": [],
+              "evidence_type": "testing_standard",
+              "evidence_strength": "medium",
+              "evidence_status": "insufficient",
+              "model_evidence_status": "grounded",
+              "evidence_support_status": "insufficient",
+              "validation_status": "needs_review",
+              "parse_warnings": [
+                "evidence_refs_not_in_pack",
+                "kb_quote_or_evidence_scope_unverified",
+                "model_grounded_downgraded"
+              ],
+              "model_confidence": null,
+              "confidence": null,
+              "claims": []
+            }
+          ]
+        }
+      },
+      "disagreements": [],
+      "model_runs": [
+        {
+          "role": "chief_blind",
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "latency_ms": 221741,
+          "tokens": {
+            "request": 49309,
+            "response": 8779
+          },
+          "cost_estimate": 1.51292,
+          "parse_warnings": [
+            "evidence:0:evidence_refs_not_in_pack",
+            "evidence:0:kb_quote_or_evidence_scope_unverified",
+            "evidence:0:model_conflict_unverified",
+            "evidence:1:evidence_refs_not_in_pack",
+            "evidence:1:kb_quote_or_evidence_scope_unverified",
+            "evidence:1:model_grounded_downgraded",
+            "evidence:2:evidence_refs_not_in_pack",
+            "evidence:2:kb_quote_or_evidence_scope_unverified",
+            "evidence:2:model_grounded_downgraded",
+            "evidence:3:evidence_refs_not_in_pack",
+            "evidence:3:kb_quote_or_evidence_scope_unverified",
+            "evidence:3:model_grounded_downgraded"
+          ]
+        },
+        {
+          "role": "jury_a",
+          "model": "deepseek-flash",
+          "status": "ok",
+          "latency_ms": 26586,
+          "tokens": {
+            "request": 43806,
+            "response": 4464
+          },
+          "cost_estimate": 0.052734,
+          "parse_warnings": [
+            "evidence:0:evidence_refs_not_in_pack",
+            "evidence:0:kb_quote_or_evidence_scope_unverified",
+            "evidence:0:model_grounded_downgraded",
+            "evidence:1:evidence_refs_not_in_pack",
+            "evidence:1:kb_quote_or_evidence_scope_unverified",
+            "evidence:1:model_grounded_downgraded",
+            "evidence:2:evidence_refs_not_in_pack",
+            "evidence:2:kb_quote_or_evidence_scope_unverified",
+            "evidence:2:model_grounded_downgraded",
+            "evidence:3:evidence_refs_not_in_pack",
+            "evidence:3:kb_quote_or_evidence_scope_unverified",
+            "evidence:3:model_grounded_downgraded"
+          ]
+        },
+        {
+          "role": "jury_b",
+          "model": "kimi-k3.1-pro",
+          "status": "failed",
+          "error_code": "RATE_LIMITED",
+          "latency_ms": 40405,
+          "tokens": {
+            "request": 0,
+            "response": 0
+          }
+        },
+        {
+          "role": "chief_blind",
+          "operation": "vote",
+          "candidate_no": 4,
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "error_code": null,
+          "latency_ms": 11752,
+          "tokens": {
+            "request": 539,
+            "response": 329
+          },
+          "cost_estimate": 0.03052,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 11752
+            }
+          ],
+          "provider": null,
+          "request_hash": "e695d5d559efac8c0657e0e08e97269f5a9818bbf538be0fe30d57474e58a9f2",
+          "response_hash": "fe4ab4f6e0c7cc7380e7a551c8115a014f6191dbcd905c743131eeffe3278d48",
+          "raw_request": {
+            "model": "qwen3.8-max",
+            "temperature": 0.0,
+            "max_tokens": 8192,
+            "response_format": {
+              "type": "json_object"
+            },
+            "messages": [
+              {
+                "role": "system",
+                "content": "你是评审团中的一名评审员，对一条“候选问题”独立投票。\n只能依据候选描述与评审标准判断：问题是否成立（validity），以及严重级（severity）。\n不得读取或猜测其他评审员的意见；拿不准时选 uncertain，而不是 reject。\n只输出一个 JSON 对象：{\"validity\":\"accept|reject|uncertain|not_assessed\",\"severity\":\"blocker|major|suggestion|null\",\"reason\":\"不超过 60 字\"}\nvalidity != accept 时 severity 必须为 null。"
+              },
+              {
+                "role": "user",
+                "content": "维度与检查点：\n- business：B1 用例意图一致、B2 关键分支覆盖、B3 业务规则正确性、B4 前置条件充分、B5 术语一致、B6 业务状态自洽\n- test_design：T1 步骤可执行、T2 预期可判定、T3 步骤-预期对应、T4 测试数据齐备、T5 边界与异常覆盖、T6 可重复执行、T7 无歧义、T8 无重复冗余\n- automation：A1 步骤可自动化、A2 状态可获取、A3 定位可维护、A4 数据可准备、A5 执行稳定、A6 框架能力匹配\n严重级定义：blocker: 无法执行 / 无法判定 / 与 E1/E2 权威依据直接冲突；major: 明显降低有效性，执行者可凭经验补全；suggestion: 可读性、规范性、优化类\n问题分类：覆盖缺失、规则冲突、意图不符、前置不足、术语不一致、状态不自洽、步骤不可执行、预期不明确、数据缺失、边界缺失、不可重复、歧义、自动化不可行、状态不可读、定位不稳定、数据不可准备、框架不匹配、重复冗余\n\n【候选问题】\n步骤：1\n维度：business\n描述：第 1 步存在「规则冲突」问题：知识库 RULE-ORDER-001 明确订单创建金额由服务端重算，客户端传入 pay_amount 等金额字段不参与计算且会被忽略；在前置价格100、数量2、无券时应付金额应为服务端计算的200，而非0.01\n\n请按 schema 输出投票 JSON。"
+              }
+            ]
+          },
+          "raw_response": {
+            "choices": [
+              {
+                "finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "content": "{\"validity\":\"accept\",\"severity\":\"blocker\",\"reason\":\"与服务端重算金额规则冲突，预期0.01错误\"}",
+                  "reasoning_content": "我们需要回答用户：作为评审员，对候选问题独立投票，只输出 JSON。\n候选问题描述：步骤1，维度 business，描述：第1步存在「规则冲突」：知识库 RULE-ORDER-001 明确订单创建金额由服务端重算，客户端传入 pay_amount 等金额字段不参与计算且会被忽略；在前置价格100、数量2、无券时应付金额应为服务端计算的200，而非0.01。\n我们需要判断问题是否成立与严重级。只能依据候选描述与评审标准。候选描述指出业务规则冲突：客户端金额忽略，服务端重算，前置价格100数量2无券应付200，而非0.01。若测试步骤预期使用0.01，则与权威知识库规则冲突，属于业务规则正确性问题/规则冲突。严重级定义：blocker：无法执行/无法判定/与 E1/E2 权威依据直接冲突。这里引用知识库 RULE-ORDER-001，似乎是权威依据，直接冲突。候选问题可能成立。需要输出 accept, blocker, reason 不超过60字。\n注意：如果拿不准选 uncertain。但描述明确，接受。\nJSON: {\"validity\":\"accept\",\"severity\":\"blocker\",\"reason\":\"与服务端重算金额规则冲突，预期0.01错误\"}\n确保 reason 不超过60字。只输出 JSON。",
+                  "role": "assistant"
+                }
+              }
+            ],
+            "created": 1794465034,
+            "id": "chatcmpl-a28b86b1-842b-99b1-9cb0-266c6da67ba9",
+            "model": "qwen3.8-max",
+            "object": "chat.completion",
+            "usage": {
+              "completion_tokens": 329,
+              "completion_tokens_details": {
+                "reasoning_tokens": 298,
+                "text_tokens": 329
+              },
+              "prompt_tokens": 539,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "text_tokens": 539
+              },
+              "total_tokens": 868
+            }
+          },
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "jury_a",
+          "operation": "vote",
+          "candidate_no": 4,
+          "model": "deepseek-flash",
+          "status": "ok",
+          "error_code": null,
+          "latency_ms": 3253,
+          "tokens": {
+            "request": 534,
+            "response": 340
+          },
+          "cost_estimate": 0.001214,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 3253
+            }
+          ],
+          "provider": null,
+          "request_hash": "11290f714262aaa5d321321e9376a2b064fd600421af02c0fdd79670232adf29",
+          "response_hash": "c5eb9f48a91060766e00d908935b6aa0c2e842c411ed5b32b2515bc29c6c86cc",
+          "raw_request": {
+            "model": "deepseek-flash",
+            "temperature": 0.0,
+            "max_tokens": 8192,
+            "response_format": {
+              "type": "json_object"
+            },
+            "messages": [
+              {
+                "role": "system",
+                "content": "你是评审团中的一名评审员，对一条“候选问题”独立投票。\n只能依据候选描述与评审标准判断：问题是否成立（validity），以及严重级（severity）。\n不得读取或猜测其他评审员的意见；拿不准时选 uncertain，而不是 reject。\n只输出一个 JSON 对象：{\"validity\":\"accept|reject|uncertain|not_assessed\",\"severity\":\"blocker|major|suggestion|null\",\"reason\":\"不超过 60 字\"}\nvalidity != accept 时 severity 必须为 null。"
+              },
+              {
+                "role": "user",
+                "content": "维度与检查点：\n- business：B1 用例意图一致、B2 关键分支覆盖、B3 业务规则正确性、B4 前置条件充分、B5 术语一致、B6 业务状态自洽\n- test_design：T1 步骤可执行、T2 预期可判定、T3 步骤-预期对应、T4 测试数据齐备、T5 边界与异常覆盖、T6 可重复执行、T7 无歧义、T8 无重复冗余\n- automation：A1 步骤可自动化、A2 状态可获取、A3 定位可维护、A4 数据可准备、A5 执行稳定、A6 框架能力匹配\n严重级定义：blocker: 无法执行 / 无法判定 / 与 E1/E2 权威依据直接冲突；major: 明显降低有效性，执行者可凭经验补全；suggestion: 可读性、规范性、优化类\n问题分类：覆盖缺失、规则冲突、意图不符、前置不足、术语不一致、状态不自洽、步骤不可执行、预期不明确、数据缺失、边界缺失、不可重复、歧义、自动化不可行、状态不可读、定位不稳定、数据不可准备、框架不匹配、重复冗余\n\n【候选问题】\n步骤：1\n维度：business\n描述：第 1 步存在「规则冲突」问题：知识库 RULE-ORDER-001 明确订单创建金额由服务端重算，客户端传入 pay_amount 等金额字段不参与计算且会被忽略；在前置价格100、数量2、无券时应付金额应为服务端计算的200，而非0.01\n\n请按 schema 输出投票 JSON。"
+              }
+            ]
+          },
+          "raw_response": {
+            "id": "592ef5b2-8802-4ac5-9483-1e6601b9bf4d",
+            "object": "chat.completion",
+            "created": 1794465035,
+            "model": "deepseek-flash",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"validity\":\"accept\",\"severity\":\"blocker\",\"reason\":\"用例第1步预期金额0.01与RULE-ORDER-001服务端重算规则直接冲突，正确应为200，导致预期不可判定。\"}",
+                  "reasoning_content": "候选问题：第1步中客户端传入 pay_amount=0.01，但服务端重算应为200。需要判断是否成立。\n\n我们只有候选描述，没有原始用例文本。候选描述声称步骤1存在规则冲突：RULE-ORDER-001 订单创建金额服务端重算，客户端传入 pay_amount 被忽略；前置价格100、数量2、无券时应付应为200而非0.01。\n\n这看起来是一个有效的规则冲突问题：用例预期金额0.01与服务端重算规则冲突。但需确认步骤1是否真的预期0.01。候选说“而非0.01”，暗示用例中预期为0.01。若确实如此，则成立，严重级 blocker？规则冲突直接与权威依据冲突 -> blocker 定义包括“与 E1/E2 权威依据直接冲突”。这里规则库是权威依据，若用例预期与规则直接冲突，可能 blocker。\n\n但候选描述维度是 business，问题分类规则冲突。我认为 accept，severity blocker 或 major。若导致预期无法判定/直接冲突，blocker。\n\n不过要谨慎：我们没有看到原用例，只依据候选描述。候选描述本身逻辑自洽且引用了规则。可 accept。严重级：blocker，因为直接与业务规则冲突，预期金额错误，无法判定通过。输出 JSON。\n\n注意只输出 JSON。reason 不超过60字。中文。"
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 534,
+              "completion_tokens": 340,
+              "total_tokens": 874,
+              "prompt_tokens_details": {
+                "cached_tokens": 256
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 291
+              },
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 278
+            },
+            "system_fingerprint": "bc19ba97cbe016479903222bb1578db6"
+          },
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "chief_blind",
+          "operation": "vote",
+          "candidate_no": 1,
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "error_code": null,
+          "latency_ms": 24165,
+          "tokens": {
+            "request": 526,
+            "response": 781
+          },
+          "cost_estimate": 0.05738,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 24165
+            }
+          ],
+          "provider": null,
+          "request_hash": "f755ad54762ab0d3018e4825fa43a2bf24486f28741ab98fb7699e9dbd026ed7",
+          "response_hash": "a15e1b772905b9b36e3a9e03665ce91a17bd851c337a6f296d1d7a099e8e0fcf",
+          "raw_request": {
+            "model": "qwen3.8-max",
+            "temperature": 0.0,
+            "max_tokens": 8192,
+            "response_format": {
+              "type": "json_object"
+            },
+            "messages": [
+              {
+                "role": "system",
+                "content": "你是评审团中的一名评审员，对一条“候选问题”独立投票。\n只能依据候选描述与评审标准判断：问题是否成立（validity），以及严重级（severity）。\n不得读取或猜测其他评审员的意见；拿不准时选 uncertain，而不是 reject。\n只输出一个 JSON 对象：{\"validity\":\"accept|reject|uncertain|not_assessed\",\"severity\":\"blocker|major|suggestion|null\",\"reason\":\"不超过 60 字\"}\nvalidity != accept 时 severity 必须为 null。"
+              },
+              {
+                "role": "user",
+                "content": "维度与检查点：\n- business：B1 用例意图一致、B2 关键分支覆盖、B3 业务规则正确性、B4 前置条件充分、B5 术语一致、B6 业务状态自洽\n- test_design：T1 步骤可执行、T2 预期可判定、T3 步骤-预期对应、T4 测试数据齐备、T5 边界与异常覆盖、T6 可重复执行、T7 无歧义、T8 无重复冗余\n- automation：A1 步骤可自动化、A2 状态可获取、A3 定位可维护、A4 数据可准备、A5 执行稳定、A6 框架能力匹配\n严重级定义：blocker: 无法执行 / 无法判定 / 与 E1/E2 权威依据直接冲突；major: 明显降低有效性，执行者可凭经验补全；suggestion: 可读性、规范性、优化类\n问题分类：覆盖缺失、规则冲突、意图不符、前置不足、术语不一致、状态不自洽、步骤不可执行、预期不明确、数据缺失、边界缺失、不可重复、歧义、自动化不可行、状态不可读、定位不稳定、数据不可准备、框架不匹配、重复冗余\n\n【候选问题】\n步骤：1\n维度：automation\n描述：第 1 步存在「不可重复」问题：步骤硬编码 sku_id=1 和 address_id=1；知识库测试数据准备明确不要硬编码 SKU ID，重建数据库后 ID 会变化，地址也应在创建后取 data.id，导致自动化不可重复\n\n请按 schema 输出投票 JSON。"
+              }
+            ]
+          },
+          "raw_response": {
+            "choices": [
+              {
+                "finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "content": "{\"validity\":\"accept\",\"severity\":\"major\",\"reason\":\"硬编码SKU与地址ID依赖环境，重建后易失效，影响自动化可重复性。\"}",
+                  "reasoning_content": "我们需要回答用户：作为评审员，对候选问题独立投票。只能依据候选描述与评审标准判断有效性和严重级。输出 JSON。\n\n候选问题：步骤1，维度 automation，描述：第1步存在「不可重复」问题：步骤硬编码 sku_id=1 和 address_id=1；知识库测试数据准备明确不要硬编码 SKU ID，重建数据库后 ID 会变化，地址也应在创建后取 data.id，导致自动化不可重复。\n\n我们需要判断 validity accept/reject/uncertain/not_assessed，severity blocker/major/suggestion/null，reason <=60字。\n\n依据维度与检查点：automation 包括 A4 数据可准备、A5 执行稳定、A6 框架能力匹配等。问题分类包括不可重复、数据不可准备等。严重级：blocker 无法执行/无法判定/与权威依据直接冲突；major 明显降低有效性，执行者可凭经验补全；suggestion 可读性/规范性/优化类。\n\n候选描述指出硬编码 sku_id=1 和 address_id=1，知识库测试数据准备明确不要硬编码 SKU ID，重建数据库后 ID 会变化，地址应在创建后取 data.id，导致自动化不可重复。若属实，这是测试数据不可重复/数据准备问题。严重级：是否 blocker？如果硬编码导致重建数据库后无法执行或失败，但可能当前环境存在 id=1，执行者可以补全？自动化不可重复通常明显降低有效性，可能 major。若知识库明确不要硬编码，属于与权威依据直接冲突？严重级定义中 blocker包括与 E1/E2 权威依据直接冲突。这里“知识库测试数据准备明确不要硬编码 SKU ID”可视为权威依据？候选描述称知识库明确，若接受，则可能 blocker。但我们需要谨慎：只依据候选描述与评审标准。候选问题说“知识库测试数据准备明确不要硬编码 SKU ID”，这像权威依据。如果步骤硬编码，直接冲突，可能 blocker。但问题是否成立？我们没有原步骤内容，只能依据候选描述。描述具体且符合 automation A4/A5/T6 可重复。应 accept。\n\nSeverity：blocker or major? “无法执行 / 无法判定 / 与 E1/E2 权威依据直接冲突”。硬编码 sku_id=1/address_id=1 不一定无法执行，但重建数据库后 ID 变化会导致失败；并且与知识库明确规则冲突。候选问题强调“不可重复”。自动化不可重复可能使自动化执行不稳定。若依据严重级定义，如果与权威依据直接冲突，应为 blocker。知识库测试数据准备明确不要硬编码 SKU ID，是权威依据吗？维度中未列 E1/E2，但严重级定义提到 E1/E2 权威依据。可能知识库是权威依据。若不确定，可选 major？用户要求拿不准选 uncertain，而不是 reject。这里是否 blocker 拿不准？我们可以选 accept + major? 需要理由。\n\n通常测试用例硬编码数据库自增 ID 是自动化不可重复，属于 major，因为可以通过动态获取 ID 补全；不是完全无法执行。若知识库明确禁止硬编码，也许 blocker。但严重级“明显降低有效性，执行者可凭经验补全”符合 major。候选描述说“导致自动化不可重复”，不是当前必然无法执行。因此 major 更稳妥。\n\nReason <=60字：硬编码SKU与地址ID依赖环境，重建后易失效，违反数据准备/可重复要求。\n\nJSON only. Ensure validity accept severity major.",
+                  "role": "assistant"
+                }
+              }
+            ],
+            "created": 1794465035,
+            "id": "chatcmpl-ce590a05-4b24-94fa-8c06-239a88f39e55",
+            "model": "qwen3.8-max",
+            "object": "chat.completion",
+            "usage": {
+              "completion_tokens": 781,
+              "completion_tokens_details": {
+                "reasoning_tokens": 745,
+                "text_tokens": 781
+              },
+              "prompt_tokens": 526,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "text_tokens": 526
+              },
+              "total_tokens": 1307
+            }
+          },
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "jury_a",
+          "operation": "vote",
+          "candidate_no": 1,
+          "model": "-",
+          "status": "failed",
+          "error_code": "OUTPUT_INVALID",
+          "latency_ms": null,
+          "tokens": {
+            "request": 0,
+            "response": 0
+          },
+          "cost_estimate": null,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 2812
+            }
+          ],
+          "provider": null,
+          "request_hash": null,
+          "response_hash": null,
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "chief_blind",
+          "operation": "vote",
+          "candidate_no": 3,
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "error_code": null,
+          "latency_ms": 13337,
+          "tokens": {
+            "request": 528,
+            "response": 445
+          },
+          "cost_estimate": 0.03726,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 13337
+            }
+          ],
+          "provider": null,
+          "request_hash": "db682c1c805a59510ade062c5a2a165fa0466a2d29c1986599d77f884f1ff5ec",
+          "response_hash": "67e54df05a536dfd2087d78db0c314e6c4cfe2d2195e582958ad3d1ec72d6c34",
+          "raw_request": {
+            "model": "qwen3.8-max",
+            "temperature": 0.0,
+            "max_tokens": 8192,
+            "response_format": {
+              "type": "json_object"
+            },
+            "messages": [
+              {
+                "role": "system",
+                "content": "你是评审团中的一名评审员，对一条“候选问题”独立投票。\n只能依据候选描述与评审标准判断：问题是否成立（validity），以及严重级（severity）。\n不得读取或猜测其他评审员的意见；拿不准时选 uncertain，而不是 reject。\n只输出一个 JSON 对象：{\"validity\":\"accept|reject|uncertain|not_assessed\",\"severity\":\"blocker|major|suggestion|null\",\"reason\":\"不超过 60 字\"}\nvalidity != accept 时 severity 必须为 null。"
+              },
+              {
+                "role": "user",
+                "content": "维度与检查点：\n- business：B1 用例意图一致、B2 关键分支覆盖、B3 业务规则正确性、B4 前置条件充分、B5 术语一致、B6 业务状态自洽\n- test_design：T1 步骤可执行、T2 预期可判定、T3 步骤-预期对应、T4 测试数据齐备、T5 边界与异常覆盖、T6 可重复执行、T7 无歧义、T8 无重复冗余\n- automation：A1 步骤可自动化、A2 状态可获取、A3 定位可维护、A4 数据可准备、A5 执行稳定、A6 框架能力匹配\n严重级定义：blocker: 无法执行 / 无法判定 / 与 E1/E2 权威依据直接冲突；major: 明显降低有效性，执行者可凭经验补全；suggestion: 可读性、规范性、优化类\n问题分类：覆盖缺失、规则冲突、意图不符、前置不足、术语不一致、状态不自洽、步骤不可执行、预期不明确、数据缺失、边界缺失、不可重复、歧义、自动化不可行、状态不可读、定位不稳定、数据不可准备、框架不匹配、重复冗余\n\n【候选问题】\n步骤：1\n维度：test_design\n描述：第 1 步存在「覆盖缺失」问题：标题要验证下单最终按哪个价格计算，但只断言创建响应中的 pay_amount，未核对订单详情或落库金额；知识库要求订单落库的 total_amount、discount_amount、pay_amount 使用服务端结果\n\n请按 schema 输出投票 JSON。"
+              }
+            ]
+          },
+          "raw_response": {
+            "choices": [
+              {
+                "finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "content": "{\"validity\":\"accept\",\"severity\":\"major\",\"reason\":\"仅断言创建响应金额，未校验订单详情或落库金额，覆盖不足。\"}",
+                  "reasoning_content": "我们需要回答用户：作为评审员，对候选问题投票，只输出 JSON。需要依据候选描述与评审标准判断问题是否成立以及严重级。候选问题：步骤1，维度test_design，描述：第1步存在覆盖缺失：标题要验证下单最终按哪个价格计算，但只断言创建响应中的pay_amount，未核对订单详情或落库金额；知识库要求订单落库的 total_amount、discount_amount、pay_amount 使用服务端结果。\n\n我们需要判断 validity accept/reject/uncertain。候选描述指出测试用例标题意图是验证下单最终按哪个价格计算，但步骤只断言创建响应中的 pay_amount，未核对订单详情或落库金额；并引用知识库要求订单落库金额使用服务端结果。这个看起来是覆盖缺失/预期不充分，可能降低有效性。严重级？如果只断言创建响应 pay_amount，是否无法判定？标题要验证最终按哪个价格计算，创建响应中的 pay_amount 可能足以判定下单计算价格？但知识库要求落库金额使用服务端结果，未核对落库可能缺失关键分支/业务规则。严重级定义：blocker 无法执行/无法判定/与权威依据直接冲突；major 明显降低有效性，执行者可凭经验补全；suggestion 可读性优化。这里不是无法执行，也不是完全无法判定，因为创建响应可判定支付金额；但未核对订单详情/落库，明显降低有效性，执行者可补全。所以 severity major。validity accept。reason不超过60字。需要输出 JSON。\n\n注意：只输出 JSON，不要解释。reason 中文。确保 severity 不为 null 因为 accept。\n\n可能 reason: “未覆盖订单详情/落库金额校验，降低价格计算验证有效性。” 字数约27。或 “仅断言创建响应金额，未校验落库金额，覆盖不足。”\n\n需要确保 schema: {\"validity\":\"accept\",\"severity\":\"major\",\"reason\":\"...\"}",
+                  "role": "assistant"
+                }
+              }
+            ],
+            "created": 1794465046,
+            "id": "chatcmpl-ef74ce13-5587-98fd-907a-75c6d10f5a4d",
+            "model": "qwen3.8-max",
+            "object": "chat.completion",
+            "usage": {
+              "completion_tokens": 445,
+              "completion_tokens_details": {
+                "reasoning_tokens": 410,
+                "text_tokens": 445
+              },
+              "prompt_tokens": 528,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "text_tokens": 528
+              },
+              "total_tokens": 973
+            }
+          },
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "jury_a",
+          "operation": "vote",
+          "candidate_no": 3,
+          "model": "-",
+          "status": "failed",
+          "error_code": "OUTPUT_INVALID",
+          "latency_ms": null,
+          "tokens": {
+            "request": 0,
+            "response": 0
+          },
+          "cost_estimate": null,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 2653
+            }
+          ],
+          "provider": null,
+          "request_hash": null,
+          "response_hash": null,
+          "raw_request": null,
+          "raw_response": null,
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "chief_blind",
+          "operation": "vote",
+          "candidate_no": 5,
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "error_code": null,
+          "latency_ms": 16172,
+          "tokens": {
+            "request": 517,
+            "response": 424
+          },
+          "cost_estimate": 0.03578,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 16173
+            }
+          ],
+          "provider": null,
+          "request_hash": "1bbf737c6fd0c446e5acf5756d10d262d051d5faaf95f3cce4745b46463c82ab",
+          "response_hash": "844a5278b1b74238133269f84b24b35e7184ea9140a7bf123a7adb7f72a5c187",
+          "raw_request": {
+            "model": "qwen3.8-max",
+            "temperature": 0.0,
+            "max_tokens": 8192,
+            "response_format": {
+              "type": "json_object"
+            },
+            "messages": [
+              {
+                "role": "system",
+                "content": "你是评审团中的一名评审员，对一条“候选问题”独立投票。\n只能依据候选描述与评审标准判断：问题是否成立（validity），以及严重级（severity）。\n不得读取或猜测其他评审员的意见；拿不准时选 uncertain，而不是 reject。\n只输出一个 JSON 对象：{\"validity\":\"accept|reject|uncertain|not_assessed\",\"severity\":\"blocker|major|suggestion|null\",\"reason\":\"不超过 60 字\"}\nvalidity != accept 时 severity 必须为 null。"
+              },
+              {
+                "role": "user",
+                "content": "维度与检查点：\n- business：B1 用例意图一致、B2 关键分支覆盖、B3 业务规则正确性、B4 前置条件充分、B5 术语一致、B6 业务状态自洽\n- test_design：T1 步骤可执行、T2 预期可判定、T3 步骤-预期对应、T4 测试数据齐备、T5 边界与异常覆盖、T6 可重复执行、T7 无歧义、T8 无重复冗余\n- automation：A1 步骤可自动化、A2 状态可获取、A3 定位可维护、A4 数据可准备、A5 执行稳定、A6 框架能力匹配\n严重级定义：blocker: 无法执行 / 无法判定 / 与 E1/E2 权威依据直接冲突；major: 明显降低有效性，执行者可凭经验补全；suggestion: 可读性、规范性、优化类\n问题分类：覆盖缺失、规则冲突、意图不符、前置不足、术语不一致、状态不自洽、步骤不可执行、预期不明确、数据缺失、边界缺失、不可重复、歧义、自动化不可行、状态不可读、定位不稳定、数据不可准备、框架不匹配、重复冗余\n\n【候选问题】\n步骤：None\n维度：business\n描述：用例整体存在「前置不足」问题：前置条件未写清账号角色/状态、登录 token、地址与 SKU 的准备方式及数据库重置；知识库前置条件规范要求账号、登录态、地址、SKU、数据隔离等信息充分\n\n请按 schema 输出投票 JSON。"
+              }
+            ]
+          },
+          "raw_response": {
+            "choices": [
+              {
+                "finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "content": "{\"validity\":\"accept\",\"severity\":\"major\",\"reason\":\"前置条件缺账号、登录态、地址、SKU及重置说明，降低可执行性。\"}",
+                  "reasoning_content": "我们需要回答用户：作为评审员，对候选问题独立投票。只能依据候选描述与评审标准判断问题是否成立 validity 和严重级 severity。输出 JSON。\n\n候选问题：\n步骤：None\n维度：business\n描述：用例整体存在「前置不足」问题：前置条件未写清账号角色/状态、登录 token、地址与 SKU 的准备方式及数据库重置；知识库前置条件规范要求账号、登录态、地址、SKU、数据隔离等信息充分\n\n我们需要判断是否 accept/reject/uncertain。候选描述指出前置条件不足，未写清账号角色/状态、登录 token、地址与 SKU 准备方式及数据库重置；知识库前置条件规范要求这些信息充分。维度 business，检查点 B4 前置条件充分。严重级定义：blocker 无法执行/无法判定/与权威依据直接冲突；major 明显降低有效性，执行者可凭经验补全；suggestion 可读性/规范/优化。\n\n这里前置不足通常可能 major，因为执行者可凭经验补全？但如果前置条件缺失导致无法执行？描述说未写清账号角色/状态、登录 token、地址与 SKU 的准备方式及数据库重置。对于电商下单类用例，缺少这些可能无法执行或不可重复，但候选说“用例整体存在前置不足”，没有提供实际用例内容。依据候选描述与标准：前置条件不充分，违反 B4。是否成立？看起来成立。严重级：如果关键前置信息不足，可能明显降低有效性，执行者可凭经验补全，属于 major。若完全无法执行则 blocker。描述未说无法执行，只说未写清准备方式；知识库规范要求充分。因此 major 更合适。\n\n需要 reason 不超过60字。输出 JSON。validity accept severity major reason 简练。\n\n确保 JSON 对象只有三个字段。中文 reason 可。",
+                  "role": "assistant"
+                }
+              }
+            ],
+            "created": 1794465059,
+            "id": "chatcmpl-3d15e8cf-d928-966b-9a4a-69642a38c63c",
+            "model": "qwen3.8-max",
+            "object": "chat.completion",
+            "usage": {
+              "completion_tokens": 424,
+              "completion_tokens_details": {
+                "reasoning_tokens": 388,
+                "text_tokens": 424
+              },
+              "prompt_tokens": 517,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "text_tokens": 517
+              },
+              "total_tokens": 941
+            }
+          },
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "jury_a",
+          "operation": "vote",
+          "candidate_no": 5,
+          "model": "deepseek-flash",
+          "status": "ok",
+          "error_code": null,
+          "latency_ms": 3024,
+          "tokens": {
+            "request": 518,
+            "response": 383
+          },
+          "cost_estimate": 0.001284,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 3024
+            }
+          ],
+          "provider": null,
+          "request_hash": "18c178d220d715061ba1c7d08f3aae62f320c30aa385b9e6e5c1c054d3afac16",
+          "response_hash": "ff11c69d5283a44f5409bf86c04cc4c74566525e99b0f0b71067549d31cd2a60",
+          "raw_request": {
+            "model": "deepseek-flash",
+            "temperature": 0.0,
+            "max_tokens": 8192,
+            "response_format": {
+              "type": "json_object"
+            },
+            "messages": [
+              {
+                "role": "system",
+                "content": "你是评审团中的一名评审员，对一条“候选问题”独立投票。\n只能依据候选描述与评审标准判断：问题是否成立（validity），以及严重级（severity）。\n不得读取或猜测其他评审员的意见；拿不准时选 uncertain，而不是 reject。\n只输出一个 JSON 对象：{\"validity\":\"accept|reject|uncertain|not_assessed\",\"severity\":\"blocker|major|suggestion|null\",\"reason\":\"不超过 60 字\"}\nvalidity != accept 时 severity 必须为 null。"
+              },
+              {
+                "role": "user",
+                "content": "维度与检查点：\n- business：B1 用例意图一致、B2 关键分支覆盖、B3 业务规则正确性、B4 前置条件充分、B5 术语一致、B6 业务状态自洽\n- test_design：T1 步骤可执行、T2 预期可判定、T3 步骤-预期对应、T4 测试数据齐备、T5 边界与异常覆盖、T6 可重复执行、T7 无歧义、T8 无重复冗余\n- automation：A1 步骤可自动化、A2 状态可获取、A3 定位可维护、A4 数据可准备、A5 执行稳定、A6 框架能力匹配\n严重级定义：blocker: 无法执行 / 无法判定 / 与 E1/E2 权威依据直接冲突；major: 明显降低有效性，执行者可凭经验补全；suggestion: 可读性、规范性、优化类\n问题分类：覆盖缺失、规则冲突、意图不符、前置不足、术语不一致、状态不自洽、步骤不可执行、预期不明确、数据缺失、边界缺失、不可重复、歧义、自动化不可行、状态不可读、定位不稳定、数据不可准备、框架不匹配、重复冗余\n\n【候选问题】\n步骤：None\n维度：business\n描述：用例整体存在「前置不足」问题：前置条件未写清账号角色/状态、登录 token、地址与 SKU 的准备方式及数据库重置；知识库前置条件规范要求账号、登录态、地址、SKU、数据隔离等信息充分\n\n请按 schema 输出投票 JSON。"
+              }
+            ]
+          },
+          "raw_response": {
+            "id": "e8a9cd6b-32d2-461b-8b00-b7ca7038bea5",
+            "object": "chat.completion",
+            "created": 1794465038,
+            "model": "deepseek-flash",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"validity\":\"accept\",\"severity\":\"major\",\"reason\":\"前置条件缺失账号、登录态、地址、SKU及数据重置，影响用例执行与重复性，但可由有经验执行者补全，判为major。\"}",
+                  "reasoning_content": "We need answer JSON only. Need judge candidate problem. Candidate says steps None, dimension business, description: overall 前置不足: preconditions not clear account role/state, login token, address and SKU preparation and DB reset; knowledge base precondition spec requires account, login state, address, SKU, data isolation info sufficient.\n\nWe need vote validity accept/reject/uncertain and severity. Need infer from only candidate description and standards. The candidate problem is about missing preconditions. Generally if preconditions indeed missing, business B4 前置条件充分 issue. Severity? Could be major if prevents setup/repeatability but can be supplemented by experienced executor. \"前置条件未写清账号角色/状态、登录 token、地址与 SKU 的准备方式及数据库重置\" affects execution/test data. Not blocker unless cannot execute at all. Since user says steps None—candidate has no steps, but issue itself pertains preconditions. We assess validity of candidate issue. It says knowledge base spec requires info. Seems plausible accept. Severity major? Missing preconditions (account role, token, address, SKU, DB reset) can lower effectiveness, executor can infer maybe major. Because B4 is business, severity definitions: major明显降低有效性，执行者可凭经验补全. This fits. Suggestion if readability only, but data prep missing likely major. Could be blocker? \"无法执行\" maybe if no account/token/address/SKU, cannot execute. But missing preconditions can be supplemented. I'd choose accept/major.\n\nNeed reason <=60 Chinese chars. Only JSON. Ensure validity accept and severity major."
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 518,
+              "completion_tokens": 383,
+              "total_tokens": 901,
+              "prompt_tokens_details": {
+                "cached_tokens": 256
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 332
+              },
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 262
+            },
+            "system_fingerprint": "bc19ba97cbe016479903222bb1578db6"
+          },
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "chief_blind",
+          "operation": "vote",
+          "candidate_no": 2,
+          "model": "qwen3.8-max",
+          "status": "ok",
+          "error_code": null,
+          "latency_ms": 21878,
+          "tokens": {
+            "request": 516,
+            "response": 622
+          },
+          "cost_estimate": 0.04764,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 21878
+            }
+          ],
+          "provider": null,
+          "request_hash": "8e7b0ae9f7d0f80afea3fb87b562cddb7bf8b70ef406d43a7400d70ea3b69bb0",
+          "response_hash": "8e550a7df48e2bfc95d861f6a7d480224da6d5d869fc0efcc541e1a703b10b15",
+          "raw_request": {
+            "model": "qwen3.8-max",
+            "temperature": 0.0,
+            "max_tokens": 8192,
+            "response_format": {
+              "type": "json_object"
+            },
+            "messages": [
+              {
+                "role": "system",
+                "content": "你是评审团中的一名评审员，对一条“候选问题”独立投票。\n只能依据候选描述与评审标准判断：问题是否成立（validity），以及严重级（severity）。\n不得读取或猜测其他评审员的意见；拿不准时选 uncertain，而不是 reject。\n只输出一个 JSON 对象：{\"validity\":\"accept|reject|uncertain|not_assessed\",\"severity\":\"blocker|major|suggestion|null\",\"reason\":\"不超过 60 字\"}\nvalidity != accept 时 severity 必须为 null。"
+              },
+              {
+                "role": "user",
+                "content": "维度与检查点：\n- business：B1 用例意图一致、B2 关键分支覆盖、B3 业务规则正确性、B4 前置条件充分、B5 术语一致、B6 业务状态自洽\n- test_design：T1 步骤可执行、T2 预期可判定、T3 步骤-预期对应、T4 测试数据齐备、T5 边界与异常覆盖、T6 可重复执行、T7 无歧义、T8 无重复冗余\n- automation：A1 步骤可自动化、A2 状态可获取、A3 定位可维护、A4 数据可准备、A5 执行稳定、A6 框架能力匹配\n严重级定义：blocker: 无法执行 / 无法判定 / 与 E1/E2 权威依据直接冲突；major: 明显降低有效性，执行者可凭经验补全；suggestion: 可读性、规范性、优化类\n问题分类：覆盖缺失、规则冲突、意图不符、前置不足、术语不一致、状态不自洽、步骤不可执行、预期不明确、数据缺失、边界缺失、不可重复、歧义、自动化不可行、状态不可读、定位不稳定、数据不可准备、框架不匹配、重复冗余\n\n【候选问题】\n步骤：1\n维度：test_design\n描述：第 1 步存在「歧义」问题：（推断）用例未说明 pay_amount=0.01 是 JSON 请求体字段、查询参数还是其他注入方式，影响篡改金额场景的可重复执行\n\n请按 schema 输出投票 JSON。"
+              }
+            ]
+          },
+          "raw_response": {
+            "choices": [
+              {
+                "finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "content": "{\"validity\":\"accept\",\"severity\":\"major\",\"reason\":\"未说明金额参数注入位置，造成歧义并影响可重复执行。\"}",
+                  "reasoning_content": "我们需要回答用户：作为评审员，对候选问题投票，只输出 JSON。必须先调用工具。已经调用。现在分析：候选问题描述：步骤1，维度test_design，描述：第1步存在「歧义」问题：（推断）用例未说明 pay_amount=0.01 是 JSON 请求体字段、查询参数还是其他注入方式，影响篡改金额场景的可重复执行。\n\n我们需要依据候选描述与评审标准判断问题是否成立以及严重级。不能读取其他评审员意见。拿不准选 uncertain 而不是 reject。只输出 JSON。\n\n候选问题指出用例未说明 pay_amount=0.01 的注入位置/方式，导致歧义和不可重复执行。维度是 test_design，可能涉及 T6 可重复执行、T7 无歧义、T4 测试数据齐备。严重级：如果确实未说明关键参数位置，可能执行者无法确定如何篡改金额，降低可重复性。但是否 blocker？严重级定义：blocker 无法执行/无法判定/与权威依据冲突；major 明显降低有效性，执行者可凭经验补全。这里如果只缺参数位置，通常执行者可凭接口常识或上下文补全（比如请求体），但候选说“推断”，可能没有足够上下文。问题是否成立？如果候选描述明确“未说明”，且影响可重复执行，应该 accept。严重级可能 major，因为不是完全无法执行，但明显降低有效性。或者 suggestion？可重复执行属于测试设计关键属性，缺参数注入方式可能导致不同执行者不同操作，应是 major。若拿不准是否真的未说明，因为只给候选描述没有原用例，不能猜测。但评审依据候选描述？“只能依据候选描述与评审标准判断”。候选描述声称未说明。我们接受其事实？通常应判断问题是否合理。若描述中有“（推断）”，表示候选者推断，可能不确定。拿不准选 uncertain。但我们需要投票。问题是否成立？候选问题说“第 1 步存在歧义：用例未说明 pay_amount=0.01 是 JSON 请求体字段、查询参数还是其他注入方式”。在接口测试中，篡改金额场景必须知道参数位置，否则无法准确执行。若用例步骤仅写 pay_amount=0.01 但没说明位置，确实歧义。严重级：可能 major，因为执行者可凭经验补全（如常见 JSON body），但可重复性受损。不是 blocker，因为仍可能执行。输出 JSON：validity accept, severity major, reason 不超过60字。比如：“未说明金额参数注入位置，造成歧义且影响可重复执行。”\n\n需要确保 JSON 字段 severity 字符串，不是 null。reason 中文不超60。最终只输出 JSON。",
+                  "role": "assistant"
+                }
+              }
+            ],
+            "created": 1794465060,
+            "id": "chatcmpl-765bdf9a-9ca7-9b81-ab01-71e69169d49f",
+            "model": "qwen3.8-max",
+            "object": "chat.completion",
+            "usage": {
+              "completion_tokens": 622,
+              "completion_tokens_details": {
+                "reasoning_tokens": 590,
+                "text_tokens": 622
+              },
+              "prompt_tokens": 516,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "text_tokens": 516
+              },
+              "total_tokens": 1138
+            }
+          },
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        },
+        {
+          "role": "jury_a",
+          "operation": "vote",
+          "candidate_no": 2,
+          "model": "deepseek-flash",
+          "status": "ok",
+          "error_code": null,
+          "latency_ms": 9788,
+          "tokens": {
+            "request": 513,
+            "response": 1291
+          },
+          "cost_estimate": 0.003095,
+          "attempts": [
+            {
+              "attempt": 1,
+              "status": "ok",
+              "error_code": null,
+              "retryable": null,
+              "delay_s": 0.0,
+              "latency_ms": 9788
+            }
+          ],
+          "provider": null,
+          "request_hash": "938995b761050b93f2ae99490c1556848fcd18cfe3c8ffd40355df61961a6ffe",
+          "response_hash": "5a3362e741240386c1881fd00f8d2d768508395997507aa8ef8e05ce516471b4",
+          "raw_request": {
+            "model": "deepseek-flash",
+            "temperature": 0.0,
+            "max_tokens": 8192,
+            "response_format": {
+              "type": "json_object"
+            },
+            "messages": [
+              {
+                "role": "system",
+                "content": "你是评审团中的一名评审员，对一条“候选问题”独立投票。\n只能依据候选描述与评审标准判断：问题是否成立（validity），以及严重级（severity）。\n不得读取或猜测其他评审员的意见；拿不准时选 uncertain，而不是 reject。\n只输出一个 JSON 对象：{\"validity\":\"accept|reject|uncertain|not_assessed\",\"severity\":\"blocker|major|suggestion|null\",\"reason\":\"不超过 60 字\"}\nvalidity != accept 时 severity 必须为 null。"
+              },
+              {
+                "role": "user",
+                "content": "维度与检查点：\n- business：B1 用例意图一致、B2 关键分支覆盖、B3 业务规则正确性、B4 前置条件充分、B5 术语一致、B6 业务状态自洽\n- test_design：T1 步骤可执行、T2 预期可判定、T3 步骤-预期对应、T4 测试数据齐备、T5 边界与异常覆盖、T6 可重复执行、T7 无歧义、T8 无重复冗余\n- automation：A1 步骤可自动化、A2 状态可获取、A3 定位可维护、A4 数据可准备、A5 执行稳定、A6 框架能力匹配\n严重级定义：blocker: 无法执行 / 无法判定 / 与 E1/E2 权威依据直接冲突；major: 明显降低有效性，执行者可凭经验补全；suggestion: 可读性、规范性、优化类\n问题分类：覆盖缺失、规则冲突、意图不符、前置不足、术语不一致、状态不自洽、步骤不可执行、预期不明确、数据缺失、边界缺失、不可重复、歧义、自动化不可行、状态不可读、定位不稳定、数据不可准备、框架不匹配、重复冗余\n\n【候选问题】\n步骤：1\n维度：test_design\n描述：第 1 步存在「歧义」问题：（推断）用例未说明 pay_amount=0.01 是 JSON 请求体字段、查询参数还是其他注入方式，影响篡改金额场景的可重复执行\n\n请按 schema 输出投票 JSON。"
+              }
+            ]
+          },
+          "raw_response": {
+            "id": "82d57b47-0675-418c-b6e4-3f0ee55d9397",
+            "object": "chat.completion",
+            "created": 1794465040,
+            "model": "deepseek-flash",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"validity\":\"accept\",\"severity\":\"major\",\"reason\":\"步骤未明确金额参数注入位置，影响篡改场景可重复执行，执行者可依接口文档补全\"}",
+                  "reasoning_content": "We need answer JSON only. Need evaluate candidate. We have only description. Need decide validity severity. Candidate says step 1 ambiguous: doesn't specify pay_amount=0.01 is JSON body field, query param, or other injection. Affects repeatability of tamper amount scenario.\n\nNeed assess: Is this a valid issue? Need infer from candidate only. Likely test_design T7 ambiguity / T4 data. If test case step says pay_amount=0.01 without specifying location, could be ambiguity, but maybe common in API tests context where request body implied? Need decide uncertain maybe. We must not read other opinions. Need based on description. Candidate marked \"推断\". It claims ambiguity. Is it truly a problem? If step has \"pay_amount=0.01\" maybe format indicates parameter? \"篡改金额场景\" often in payment API test, request body field. If not specified, tester may need infer; could affect repeatability. Severity maybe suggestion or major? If ambiguous but executor can infer from API docs/experience, major? Severity definitions: major明显降低有效性，执行者可凭经验补全. This fits major if valid. But if only \"推断\" and not enough context, uncertain. The prompt says拿不准时选 uncertain. We don't see original case, only candidate description. We must judge candidate validity. The description is a plausible issue. Is there enough evidence? It's an assertion about step 1. We can accept if issue is valid. But \"（推断）\" signals uncertainty in candidate. Need maybe uncertain because lack context; cannot confirm step indeed omits injection method. But评审员 should evaluate candidate based on description and criteria. The candidate is itself a finding. If it's \"推断\" not direct evidence, maybe validity uncertain. However the requirement is to vote on whether candidate问题成立. We can accept as suggestion/major? Let's reason.\n\nWe need output one JSON with validity, severity, reason <=60 chars. If validity != accept severity null.\n\nNeed choose. The issue: Step 1 ambiguity about where pay_amount=0.01 goes. Test_design T7 \"无歧义\". If the case says \"pay_amount=0.01\" perhaps typical notation could mean field in request. But if not explicitly \"请求体 JSON 字段 pay_amount\", an executor could still infer from API spec. Ambiguity affects repeatability. This seems a legitimate test design issue but perhaps minor. Severity: major? It can cause wrong injection; executor can refer API doc. Suggestion? T7 ambiguity is readability/规范? But severe definitions: suggestion readability/规范/优化. Ambiguity may be major if明显降低有效性. The candidate says affects repeatable execution, but \"可凭经验补全\" = major. Could be suggestion if just clarity. Need decide.\n\nPotential issue: Test data missing T4 rather than T7? The candidate labels test_design. Description: \"未说明...影响可重复执行\". This is ambiguity/数据缺失. Since only one step, no context. It does not directly say the case fails. I might vote accept with severity suggestion or major. Need align with评审标准: T7无歧义. If step doesn't specify injection method, yes T7. Is it blocker? No, executor can infer. Major? \"明显降低有效性\" maybe if tampering amount is core. But likely major if API field location unknown could lead to invalid test. But no authoritative evidence. I'd choose accept major? Let's see.\n\nThe problem statement: \"第 1 步存在「歧义」问题：（推断）用例未说明 pay_amount=0.01 是 JSON 请求体字段、查询参数还是其他注入方式，影响篡改金额场景的可重复执行\". It says \"(推断)\" meaning the reviewer inferred, not certain. Since we are another reviewer, we can still accept if plausible. But instructions: \"拿不准时选 uncertain，而不是 reject.\" If we cannot confirm omission from description, maybe uncertain. But candidate itself states omission. Hmm.\n\nNeed final only JSON. Reason <=60 Chinese chars. If accept severity major: reason \"步骤未明确金额参数注入位置，影响篡改场景复现，执行者可依接口文档补全\" 32 chars. If uncertain: reason \"仅凭描述无法确认步骤是否确实遗漏参数位置，需查看原文\" and severity null. Which is better?\n\nWe need infer expected answer? This is likely from a benchmark where candidate issue is evaluated. They expect judge validity. Candidate has dimension test_design, step 1, ambiguity. The issue likely valid if test case description missing data location. But \"推断\" maybe red flag; benchmark may test that reviewers shouldn't accept speculative issues? The prompt says只能依据候选描述与评审标准判断. We don't have original step content. The candidate describes enough? It says \"用例未说明...\" but we don't see original. We can accept candidate's description as premise? Usually yes, candidate problem is an assertion; we evaluate whether the described problem is valid in context. Without context, if it's internally consistent and matches criteria, accept. The \"推断\" maybe not necessarily invalid; many review comments are inferred. The impact \"可重复执行\" is relevant T6/T7. I think accept is reasonable.\n\nSeverity: \"明显降低有效性，执行者可凭经验补全\" = major. It could cause wrong request construction, but if API docs available, can resolve. Not blocker because can execute/判定 with doc. Suggestion? Ambiguity in injection location is more than readability; affects test validity. So major.\n\nNeed output JSON only. Ensure schema: {\"validity\":\"accept\",\"severity\":\"major\",\"reason\":\"...\"} reason <=60 chars. Good.\n\nBut let's explore if \"pay_amount=0.01\" could be in URL query param due equals notation. If step uses \"pay_amount=0.01\" maybe often denotes query/form field, not JSON body. Candidate says not specify. The ambiguity is real if API accepts both. Fine.\n\nNeed final."
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 513,
+              "completion_tokens": 1291,
+              "total_tokens": 1804,
+              "prompt_tokens_details": {
+                "cached_tokens": 256
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 1253
+              },
+              "prompt_cache_hit_tokens": 256,
+              "prompt_cache_miss_tokens": 257
+            },
+            "system_fingerprint": "bc19ba97cbe016479903222bb1578db6"
+          },
+          "warnings": [],
+          "masking_policy_id": null,
+          "masking_policy_version": null,
+          "masking_report": null
+        }
+      ],
+      "normalized_case": {
+        "case_id": "G-001-negative",
+        "case_version": 1,
+        "module": "order",
+        "test_type": "functional",
+        "title": "客户端把金额改成一分钱，下单最终按哪个价格计算？",
+        "priority": null,
+        "source": "manual",
+        "preconditions": [
+          "用户 A 已登录；地址 1 属于 A；SKU 1 ACTIVE、商品 ON_SALE、价格 100、库存 10；无券"
+        ],
+        "steps": [
+          {
+            "index": 1,
+            "action": "API POST /api/orders，items=[{sku_id:1,quantity:2}], address_id=1, pay_amount=0.01",
+            "expected": "HTTP 201；data.pay_amount=0.01，按客户端传入金额成交"
+          }
+        ],
+        "test_data": {
+          "fixture": "用户 A 已登录；地址 1 属于 A；SKU 1 ACTIVE、商品 ON_SALE、价格 100、库存 10；无券",
+          "isolation": "独立测试库"
+        },
+        "attachments": [],
+        "raw_text": null,
+        "kb_hint": null,
+        "project_id": "minishop",
+        "review_baseline": "current_implementation",
+        "product_version": "1.0.0",
+        "platform": "api"
+      },
+      "knowledge_pack": {
+        "build_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85",
+        "content_version": "kb-07e52c331a2a97b65810814cd6f90956ca558ba7dcdf20760275c4f099ec1b7c",
+        "project_id": "minishop",
+        "module": "order",
+        "baseline": {
+          "type": "current_implementation",
+          "product_version": "1.0.0",
+          "source_ref": "https://github.com/Viver12138/minishop.git",
+          "source_version": "e354437069504381f10a54d9c14baed755f3ba56"
+        },
+        "as_of": "2026-11-12",
+        "query": "客户端把金额改成一分钱，下单最终按哪个价格计算？\n用户 A 已登录；地址 1 属于 A；SKU 1 ACTIVE、商品 ON_SALE、价格 100、库存 10；无券\nAPI POST /api/orders，items=[{sku_id:1,quantity:2}], address_id=1, pay_amount=0.01 HTTP 201；data.pay_amount=0.01，按客户端传入金额成交",
+        "evidence": [
+          {
+            "chunk_id": "da8a1c934bfab2b92831a8e5b6612a69e6cfb9b527e03bf0a88e44fe5dd689a9",
+            "project_id": "minishop",
+            "doc_id": "RULE-ORDER-001",
+            "module": "order",
+            "doc_type": "rule",
+            "knowledge_type": "BUSINESS_RULE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L46-L59; Minishop/backend/app/api/orders.py#L83-L84; Minishop/backend/app/api/orders.py#L124-L130",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L46-L59",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L83-L84",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L124-L130",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "订单金额必须由服务端重算",
+            "chunk_index": 0,
+            "content_hash": "57f2b4a9b991976f738db46557ac62940a7ffedce4139bc3122654344642559b",
+            "text": "\n# 1. 规则陈述\n\n订单预览与创建时，商品总金额、优惠金额、应付金额均由服务端重新计算，客户端提交的任何价格或金额字段都不参与计算。\n\n# 2. 适用范围\n\n- `POST /api/orders/preview`\n- `POST /api/orders`\n- 产品版本 `1.0.0`\n\n# 3. 前置条件\n\n- 请求已通过登录鉴权；\n- 请求包含至少一个商品项。\n\n# 4. 触发条件\n\n调用订单预览或创建订单接口。\n\n# 5. 规则结果\n\n- 单项小计 = `product_skus.price × quantity`；\n- 商品总金额 `total_amount` = 所有单项小计之和；\n- 优惠金额 `discount_amount` = 所用优惠券的 `discount_amount`，未用券时为 0；\n- 应付金额 `pay_amount` = `round(max(total_amount - discount_amount, 0), 2)`；\n- 订单落库的 `total_amount`、`discount_amount`、`pay_amount` 使用上述服务端结果。\n\n# 6. 边界与例外\n\n- 多个商品项时逐项累加，不按商品去重。\n- 使用 `product_skus.price`，不是 `products.price`；两者在多规格商品上可能不同。\n- 折扣大于商品总金额时，应付金额截断为 0，不会为负数。\n- 金额使用浮点数计算：预览返回的 `total_amount`/`discount_amount` 未舍入；创建订单落库时三金额与 `OrderItem.subtotal` 均 round 到 2 位（orders.py#L128-L130、#L158）。\n- 请求体中的未知字段（如 `price`、`pay_amount`）被 Pydantic 默认忽略，不产生作用。\n\n# 7. 反例或禁止行为\n\n- 禁止信任客户端传入的商品单价、总价、优惠金额或应付金额。\n- 禁止用 `products.price` 覆盖 SKU 成交价。\n- 禁止在预览与创建两个接口使用不同的计价逻辑。\n\n# 8. 验证方式\n\n1. 正常下单，核对响应与订单详情的三个金额。\n2. 在请求体中额外传 `price: 0.01`、`pay_amount: 0.01`，确认订单金额不变。\n3. 对多规格商品选择一个 `price` 与商品主价格不同的 SKU，确认按 SKU 价格计算。\n4. 使用大额券使折扣大于总金额，确认 `pay_amount=0`。\n\n# 9. 来源依据\n\n- `Minishop/backend/app/api/orders.py#L46-L59`：逐项读取 SKU 价格并累加。\n- `Minishop/backend/app/api/orders.py#L83-L84`：折扣与应付金额计算。\n- `Minishop/backend/app/api/orders.py#L124-L130`：订单落库金额。\n\n# 10. 未决问题\n\n- 是否需要引入 Decimal 或分为单位，避免浮点误差？\n- 单项小计是否需要单独四舍五入后再汇总？\n- 是否应拒绝包含未知价格字段的请求，而不是静默忽略？\n\n\n# 本次授权技术复核适用性\n\n核对订单计价与落库：预览 total_amount 未 round，pay_amount 已 round，订单与明细落库分别 round；SKU 价格为来源。\n\n本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。\n",
+            "kb_content_version": "kb-07e52c331a2a97b65810814cd6f90956ca558ba7dcdf20760275c4f099ec1b7c",
+            "kb_build_version": "kb-build-99b30041aa5a7c77163a6de11a4b84e53a7067266e40720809ae7bde502bcda1",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.01639344262295082,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85"
+          },
+          {
+            "chunk_id": "1d3d97950a7e02638f1d87fb32b54f6b4b514db4f719a863ce139d257e34a66f",
+            "project_id": "minishop",
+            "doc_id": "RULE-ORDER-003",
+            "module": "order",
+            "doc_type": "rule",
+            "knowledge_type": "BUSINESS_RULE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L45-L59",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L45-L59",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "下单必须校验 SKU 有效、商品上架与 SKU 库存",
+            "chunk_index": 0,
+            "content_hash": "bfcb687d8694adcf01e8936dd1573b45ed04b2f4ad905d133a0024c777143221",
+            "text": "\n# 1. 规则陈述\n\n预览或创建订单时，每个商品项必须依次满足：数量 ≥ 1、SKU 存在且为 `ACTIVE`、所属商品存在且为 `ON_SALE`、数量不超过该 SKU 的 `stock`；任一条件不满足则拒绝下单。\n\n# 2. 适用范围\n\n- `POST /api/orders/preview`\n- `POST /api/orders`\n- 产品版本 `1.0.0`\n\n# 3. 前置条件\n\n- 用户已登录；\n- 请求包含至少一个商品项。\n\n# 4. 触发条件\n\n遍历请求中的每个 `items[]` 项。\n\n# 5. 规则结果\n\n校验顺序与结果：\n\n| 顺序 | 条件 | 失败结果 |\n|---:|---|---|\n| 1 | `quantity >= 1` | 400 `购买数量不能小于 1` |\n| 2 | SKU 存在且 `status=ACTIVE` | 400 `商品规格无效` |\n| 3 | 商品存在且 `status=ON_SALE` | 400 `商品已下架` |\n| 4 | `quantity <= sku.stock` | 409 `商品「<名称>」库存不足` |\n\n通过后，单项小计按 `sku.price × quantity` 计入总金额。\n\n# 6. 边界与例外\n\n- 只校验 SKU 库存，不校验 `products.stock` 聚合库存。\n- 不校验 SKU 与商品的一致性以外的关系（例如 SKU 是否属于请求期望的商品）。\n- **不合并重复 SKU**：同一 `sku_id` 在 `items` 中出现多次时，每一项独立与 `sku.stock` 比较，合计数量可能超过库存。例如库存 2，提交两次 `quantity=2`，两项都会通过，订单合计 4。\n- 库存为 0 时，任何 `quantity>=1` 都会被拒绝。\n- 校验发生在创建订单前，但**不会扣减或锁定库存**；两个并发请求可以同时通过校验。\n\n# 7. 反例或禁止行为\n\n- 禁止对已下架商品下单。\n- 禁止对失效 SKU 下单。\n- 禁止把数量 0 或负数当作合法购买。\n- 禁止把“校验通过”等同于“库存已占用”。\n\n# 8. 验证方式\n\n1. 数量 0、-1，预期 400。\n2. 使用不存在或已停用的 SKU ID，预期 400。\n3. 对已下架商品下单，预期 400。\n4. 库存 1 的 SKU 购买 2，预期 409。\n5. 同一 SKU 重复提交两次且合计超过库存，观察当前实现是否放行（用于确认该已知边界）。\n6. 下单后查询 SKU 库存，确认未变化。\n\n# 9. 来源依据\n\n- `Minishop/backend/app/api/orders.py#L45-L59`：逐项校验与库存比较。\n- `Minishop/backend/app/models/models.py#L73-L84`：SKU 的 `stock`、`status` 字段。\n- `Minishop/backend/app/api/payments.py#L15-L36`：库存实际扣减点（支付成功时）。\n\n# 10. 未决问题\n\n- 是否应在校验前合并重复 SKU？\n- 是否应校验 `products.stock` 与 SKU 库存之和一致？\n- 是否应引入库存预占，避免并发超卖？\n\n> 已确认（2026-11-11，Q-02）：不引入库存预占；超卖为 Demo 已知限制，支付时按 `max(stock-qty,0)` 截断，不再作为未决问题。\n",
+            "kb_content_version": "kb-07e52c331a2a97b65810814cd6f90956ca558ba7dcdf20760275c4f099ec1b7c",
+            "kb_build_version": "kb-build-99b30041aa5a7c77163a6de11a4b84e53a7067266e40720809ae7bde502bcda1",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.016129032258064516,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85"
+          },
+          {
+            "chunk_id": "f8315a1056d875dde1db96f09619a6723ebd73f1e41afeef01df89435b95923d",
+            "project_id": "minishop",
+            "doc_id": "RULE-ORDER-002",
+            "module": "order",
+            "doc_type": "rule",
+            "knowledge_type": "BUSINESS_RULE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L34-L43; Minishop/backend/app/api/orders.py#L116-L143",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L34-L43",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L116-L143",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "收货地址必须归属当前用户并写入订单快照",
+            "chunk_index": 0,
+            "content_hash": "3e96e25b4577b8a3c77179f2d9d7b7cade4d73c9947ed125b85730b2236ebe00",
+            "text": "\n# 1. 规则陈述\n\n创建订单时 `address_id` 必填且必须属于当前登录用户；订单必须把收货人、电话和完整地址写入地址快照，后续地址修改或删除不影响已创建订单。\n\n# 2. 适用范围\n\n- `POST /api/orders`（创建订单，地址必填）\n- `POST /api/orders/preview`（预览，地址可选；若传则必须归属当前用户）\n- 产品版本 `1.0.0`\n\n# 3. 前置条件\n\n- 用户已登录；\n- 用户已创建至少一个收货地址（创建订单时）。\n\n# 4. 触发条件\n\n调用创建订单接口并传入 `address_id`，或调用预览接口并传入 `address_id`。\n\n# 5. 规则结果\n\n- 创建订单 `address_id=0`：400 `请选择收货地址`；\n- 创建订单 `address_id` 缺失、为 null 或类型非法：400 `VALIDATION_ERROR`（FastAPI 请求校验，main.py#L47-L52）。\n- `address_id` 指向不存在或不属于当前用户的地址：400 `收货地址不存在`。\n- 地址校验通过后，订单写入：\n  - `receiver_name`、`phone`；\n  - `address_snapshot`，JSON 包含 `receiver_name`、`phone`、`province`、`city`、`district`、`detail_address`。\n- 预览接口在地址缺失时允许返回 `address: null`，不阻断金额预览。\n\n# 6. 边界与例外\n\n- 地址归属只按 `user_id` 判断，管理员下单同样只能使用自己的地址。\n- 地址快照是创建订单时的值；之后修改或删除地址不会回写订单。\n- 地址的默认标记不影响下单选择，前端默认选中默认地址，但 API 不做该限制。\n- 地址字段没有手机号格式、长度、省市区完整性校验。\n\n# 7. 反例或禁止行为\n\n- 禁止使用他人地址下单。\n- 禁止只保存 `address_id` 而不保存快照。\n- 禁止在创建订单时允许空地址。\n\n# 8. 验证方式\n\n1. 不传/null `address_id` 创建订单：400 `VALIDATION_ERROR` 参数校验失败。\n2. 传 `address_id=0`：400 `请选择收货地址`。\n3. 用户 B 使用用户 A 的地址 ID 创建订单，预期 400。\n4. 创建订单后修改地址，查询订单详情，确认地址快照不变。\n5. 预览不传地址，确认仍返回金额且 `address=null`。\n\n# 9. 来源依据\n\n- `Minishop/backend/app/api/orders.py#L34-L43`：地址查询与归属校验。\n- `Minishop/backend/app/api/orders.py#L116-L143`：创建订单时地址必填与快照写入。\n- `Minishop/backend/app/api/addresses.py#L19-L75`：地址维护接口。\n\n# 10. 未决问题\n\n- 是否需要校验手机号与省市区完整性？\n- 地址删除后是否应禁止删除被历史订单引用的地址？（当前允许，订单靠快照保留）\n- 是否需要限制每用户地址数量？\n\n\n# 本次授权技术复核适用性\n\n核对 address_id 必填模型与业务门禁：缺失/null 是参数错误，0 是请选择地址；所有者过滤与地址快照成立。\n\n本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。\n",
+            "kb_content_version": "kb-07e52c331a2a97b65810814cd6f90956ca558ba7dcdf20760275c4f099ec1b7c",
+            "kb_build_version": "kb-build-99b30041aa5a7c77163a6de11a4b84e53a7067266e40720809ae7bde502bcda1",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.015873015873015872,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85"
+          },
+          {
+            "chunk_id": "f7c24acd3286b5d7e1589fd82025c8e2da044d91a65a56b2f8943022eedf58f5",
+            "project_id": "minishop",
+            "doc_id": "TEST-SPEC-PROJECT-001",
+            "module": null,
+            "doc_type": "design",
+            "knowledge_type": "TEST_SPEC",
+            "rule_status": "reviewed",
+            "evidence_level": "E3",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "TestJury_项目知识库数据规范_v1.0.md#testing-standard-template; Minishop/README.md#L99-L107; Minishop/e2e_test.py",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "TestJury_项目知识库数据规范_v1.0.md#testing-standard-template",
+                "internal_path": "TestJury_项目知识库数据规范_v1.0.md",
+                "sha256": "8e8e216bcefa2af33d460389821663ce13ee7dee2887cf3b776eee9282c08844"
+              },
+              {
+                "source_ref": "Minishop/README.md#L99-L107",
+                "snapshot_sha256": "7d78ca14a2c5114628fca82b05aafb2c615114f2b554b52a49a00fe5c27f1ede",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "README.md",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/README.md"
+              },
+              {
+                "source_ref": "Minishop/e2e_test.py",
+                "snapshot_sha256": "95b6122d5891d2a291aadb7f89deac25e24ced60a023bb5b88852283468cb8d0",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "e2e_test.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/e2e_test.py"
+              }
+            ],
+            "heading_path": "3. 前置条件规范",
+            "chunk_index": 2,
+            "content_hash": "0ba3f116f43da10c7739ce10d7a4faaa9523dbd8f5f012f4bab7f56d83d2adf9",
+            "text": "# 3. 前置条件规范\n\n必须写清：\n\n- 账号：用户名/角色/状态（`ACTIVE`/`DISABLED`），是否使用种子账号；\n- 登录态：是否携带 token，token 是否过期；\n- 地址：数量、是否默认、归属哪个用户；\n- SKU：商品名、SKU 规格、价格、初始库存；\n- 优惠券：模板 ID/名称、门槛、面额、有效期、用户券状态；\n- 订单：当前状态、金额、是否已用券；\n- 数据隔离：使用哪个数据库/是否已重置。\n\n反例：`前置条件：用户已登录，购物车有商品` —— 不可接受。\n\n正例：`前置条件：user/123456 已登录；地址 A 属于 user；机械键盘 SKU 库存 50；未领券；数据库为独立 verify.db`。\n\n",
+            "kb_content_version": "kb-07e52c331a2a97b65810814cd6f90956ca558ba7dcdf20760275c4f099ec1b7c",
+            "kb_build_version": "kb-build-99b30041aa5a7c77163a6de11a4b84e53a7067266e40720809ae7bde502bcda1",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.015625,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85"
+          },
+          {
+            "chunk_id": "935daae11a29672575f6667a8af1ea4c787fdf15987bac8e3583fa85a0105559",
+            "project_id": "minishop",
+            "doc_id": "FLOW-ORDER-001",
+            "module": "order",
+            "doc_type": "flow",
+            "knowledge_type": "WORKFLOW",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/README.md#L54-L58; Minishop/frontend/src/pages/cart/Cart.tsx#L45-L51; Minishop/frontend/src/pages/order/OrderConfirm.tsx#L19-L62; Minishop/frontend/src/pages/payment/Payment.tsx#L18-L33; Minishop/backend/app/api/orders.py#L88-L260",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/README.md#L54-L58",
+                "snapshot_sha256": "7d78ca14a2c5114628fca82b05aafb2c615114f2b554b52a49a00fe5c27f1ede",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "README.md",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/README.md"
+              },
+              {
+                "source_ref": "Minishop/frontend/src/pages/cart/Cart.tsx#L45-L51",
+                "snapshot_sha256": "0b202269ca0194f257159e1b4f3d925fd067d1b30ffb1502433b00753d00fc49",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "frontend/src/pages/cart/Cart.tsx",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/frontend/src/pages/cart/Cart.tsx"
+              },
+              {
+                "source_ref": "Minishop/frontend/src/pages/order/OrderConfirm.tsx#L19-L62",
+                "snapshot_sha256": "bdaabf9101333c7ba4f5fdb8c2c9dbd9f022ce907bd737443bcd8e729dc622ee",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "frontend/src/pages/order/OrderConfirm.tsx",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/frontend/src/pages/order/OrderConfirm.tsx"
+              },
+              {
+                "source_ref": "Minishop/frontend/src/pages/payment/Payment.tsx#L18-L33",
+                "snapshot_sha256": "eef90d9e0e74f30f1d842c3c2b844a9b19617bada880b3dc1439246c7b3a0199",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "frontend/src/pages/payment/Payment.tsx",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/frontend/src/pages/payment/Payment.tsx"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L88-L260",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "下单到确认收货主流程",
+            "chunk_index": 0,
+            "content_hash": "3cb777b8805c195217df45a232d1b569ff9d141ddeaebec8d8cce02c4c2862a6",
+            "text": "\n# 1. 流程目标\n\n把用户选中的 SKU 转成订单，完成模拟支付、管理员发货和用户确认收货，使订单从 `PENDING_PAYMENT` 推进到 `COMPLETED`。\n\n# 2. 参与角色\n\n| 角色 | 职责 |\n|---|---|\n| 普通用户 `USER` | 加购、选地址/券、提交订单、支付、确认收货 |\n| 管理员 `ADMIN` | 查看订单、录入物流并发货 |\n| 系统 | 金额重算、库存扣减、状态推进、站内消息 |\n\n# 3. 前置条件\n\n- 用户已登录且账号 `ACTIVE`；\n- 用户有收货地址；\n- 目标 SKU 存在、商品上架、SKU 库存满足购买数量；\n- 若用券：券属于本人、未使用、未过期、达到门槛；\n- 管理员账号可登录后台。\n\n# 4. 主流程\n\n| 步骤 | 操作者 | 动作 | 系统响应 | 状态变化 | 可观察结果 |\n|---:|---|---|---|---|---|\n| 1 | 用户 | 在商品详情/列表选择 SKU 并加购 | `POST /api/cart/items` 返回 201 | 无订单状态 | 购物车出现该 SKU，数量合并 |\n| 2 | 用户 | 在购物车勾选商品并点击“去结算” | 前端把 `sku_id + quantity` 写入 `sessionStorage`，跳转 `/orders/confirm` | 无 | 结算页显示商品清单 |\n| 3 | 用户 | 选择地址、优惠券 | `POST /api/orders/preview` 返回 200 与金额 | 无 | 页面显示商品金额、优惠、应付 |\n| 4 | 用户 | 点击“提交订单” | `POST /api/orders` 返回 201 | `(新建) → PENDING_PAYMENT` | 跳转支付页，订单详情可见 |\n| 5 | 用户 | 在支付页点击“模拟支付” | `POST /api/payments` 返回 201，`status=PENDING` | 无订单状态变化 | 生成支付单号与待支付记录 |\n| 6 | 用户 | 选择“模拟支付成功” | `POST /api/payments/{id}/success` 返回 200 | `PENDING_PAYMENT → PAID` | 订单已支付；库存减少；销量增加；收到站内消息 |\n| 7 | 管理员 | 在后台对已支付订单点击发货，填写物流公司/运单号 | `POST /api/admin/orders/{id}/ship` 返回 200 | `PAID → SHIPPED` | 订单详情出现物流信息；用户收到站内消息 |\n| 8 | 用户 | 在订单详情点击“确认收货” | `POST /api/orders/{id}/confirm` 返回 200 | `SHIPPED → COMPLETED` | 订单已完成；物流状态已签收 |\n| 9 | 用户 | 对已完成订单发表评价（跨模块） | `POST /api/reviews` 返回 201 | 订单状态不变 | 商品评价列表出现该评价 |\n\n> **UI 交互说明（复核 2026-11-11）**：第 5、6 步由支付页一次点击连续触发两个请求（`create` + `success` 或 `create` + `fail`），中间没有独立选择界面；UI 用例不要把两步写成两次点击。\n\n# 5. 分支流程\n\n## 5.1 支付失败\n\n1. 用户在第 5 步后点击“模拟支付失败”。\n2. `POST /api/payments/{id}/fail` 返回 200。\n3. 支付单 `FAILED`，订单仍为 `PENDING_PAYMENT`。\n4. 用户可重新创建支付单并支付；旧 `FAILED` 记录保留。\n\n## 5.2 取消订单\n\n1. 订单仍为 `PENDING_PAYMENT` 时，用户点击取消。\n2. `POST /api/orders/{id}/cancel` 返回 200。\n3. 订单 `CANCELLED`；优惠券恢复 `UNUSED`；购物车不受影响。\n4. 取消后不能支付，也不能恢复。\n\n## 5.3 退款（跨模块，未纳入本批知识）\n\n订单 `PAID/SHIPPED/COMPLETED` 可申请退款，订单进入 `REFUNDING`；管理员同意后 `REFUNDED` 并恢复库存；拒绝后当前回 `PAID`（已确认应恢复退款前状态，Q-04，属缺陷待修复）。详见 `after_sales` 模块（本批未覆盖）。\n\n# 6. 异常流程\n\n| 异常 | 触发点 | 系统响应 | 用户可见结果 |\n|---|---|---|---|\n| 未登录 | 任意受保护接口 | 401 `未登录` / `登录已过期` | 跳转登录页 |\n| 账号禁用 | 任意受保护接口 | 403 `账号已被禁用` | 无法继续操作 |\n| 商品下架 | 预览/创建订单 | 400 `商品已下架` | 提示商品不可购买 |\n| SKU 失效 | 预览/创建订单 | 400 `商品规格无效` | 提示规格无效 |\n| 库存不足 | 预览/创建订单 | 409 `商品「X」库存不足` | 提示库存不足 |\n| 地址 ID 为 0 | 创建订单 | 400 `请选择收货地址` | 提示先选地址 |\n| 地址字段缺失/null/类型错误 | 创建订单 | 400 `VALIDATION_ERROR` | 参数校验失败 |\n| 地址非本人 | 预览/创建订单 | 400 `收货地址不存在` | 提示地址无效 |\n| 券不可用 | 预览/创建订单 | 400/409（见 `RULE-ORDER-004`） | 提示券不可用 |\n| 未达门槛 | 预览/创建订单 | 409 `未达优惠券门槛（满X可用）` | 提示门槛 |\n| 订单已取消 | 创建支付/支付成功 | 409 `订单已取消，无法支付` | 无法支付 |\n| 重复支付 | 支付成功 | 409 `订单已支付，请勿重复支付` | 不重复扣款 |\n| 非法发货 | 发货 | 409 `只有已支付/待发货的订单可以发货` | 后台报错 |\n| 非法确认 | 确认收货 | 409 `只有已发货订单可以确认收货` | 前台报错 |\n\n# 7. 回退、取消与重试\n\n| 场景 | 是否支持 | 说明 |\n|---|---|---|\n| 支付失败后重试 | ✅ | 新建支付单，旧记录保留 |\n| 待支付取消 | ✅ | 券归还，订单终态 |\n| 已支付取消 | ❌ | 只能走退款 |\n| 退款被拒绝后重试退款 | ❌ | 同一订单已有退款记录时再次申请返回 409 |\n| 发货撤销 | ❌ | 无接口 |\n| 确认收货撤销 | ❌ | 无接口 |\n| 订单超时自动取消 | ❌ | 无定时任务 |\n| 重复提交订单 | ⚠️ | 无幂等，可能生成多张订单 |\n\n# 8. 涉及的业务规则\n\n- `RULE-ORDER-001` 服务端金额重算\n- `RULE-ORDER-002` 地址归属与快照\n- `RULE-ORDER-003` SKU/商品/库存校验\n- `RULE-ORDER-004` 用券资格\n- `RULE-ORDER-005` 门槛与应付金额\n- `RULE-ORDER-006` 创建订单副作用\n- `RULE-ORDER-007` 取消与券归还\n- `RULE-ORDER-008` 支付金额与重复支付\n- `RULE-ORDER-009` 支付成功扣库存\n- `RULE-ORDER-010` 发货与确认收货\n- `RULE-ORDER-011` 订单访问控制\n\n# 9. 涉及的接口与数据\n\n| 用途 | 接口 |\n|---|---|\n| 加购 | `POST /api/cart/items` |\n| 预览 | `POST /api/orders/preview` |\n| 创建 | `POST /api/orders` |\n| 查询 | `GET /api/orders`、`GET /api/orders/{id}` |\n| 支付 | `POST /api/payments`、`/success`、`/fail` |\n| 发货 | `POST /api/admin/orders/{id}/ship` |\n| 确认 | `POST /api/orders/{id}/confirm` |\n| 数据 | `orders`、`order_items`、`payments`、`shipments`、`user_coupons`、`inventory_logs` |\n\n详见 `interfaces/order/`。\n\n# 10. 未决问题\n\n- 前端结算依赖 `sessionStorage`，同标签页普通刷新保留数据；新会话或无 checkout_items 时直接访问 `/orders/confirm` 无商品清单；是否应改为服务端购物车结算？\n- 下单后购物车是否应清空？\n- 是否需要订单超时关闭与库存预占？\n- 退款拒绝后的状态恢复（`SHIPPED`/`COMPLETED` 丢失）应如何定义？\n- 是否需要管理员取消订单能力？\n\n\n# 本次授权技术复核适用性\n\n核对 Payment.tsx 一次点击触发 create+success/fail；修正地址异常细分与 sessionStorage 刷新语义。\n\n本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。\n",
+            "kb_content_version": "kb-07e52c331a2a97b65810814cd6f90956ca558ba7dcdf20760275c4f099ec1b7c",
+            "kb_build_version": "kb-build-99b30041aa5a7c77163a6de11a4b84e53a7067266e40720809ae7bde502bcda1",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.015384615384615385,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85"
+          },
+          {
+            "chunk_id": "bb49f3df5c947015119e315cc946a6fc9cca3366c67609c272f26851ef1eeaac",
+            "project_id": "minishop",
+            "doc_id": "REQ-ORDER-001",
+            "module": "order",
+            "doc_type": "requirement",
+            "knowledge_type": "REQUIREMENT",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/README.md#L55-L57; Minishop/backend/app/api/orders.py#L29-L170",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/README.md#L55-L57",
+                "snapshot_sha256": "7d78ca14a2c5114628fca82b05aafb2c615114f2b554b52a49a00fe5c27f1ede",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "README.md",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/README.md"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L29-L170",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "1. 需求背景与目标",
+            "chunk_index": 0,
+            "content_hash": "c01f6cb0d5b80367400944b70a53b46a79267761ec3a6d14f5250c147bf3ca89",
+            "text": "# 1. 需求背景与目标\n\n用户从购物车或商品详情选择 SKU 后，需要先看到服务端计算的商品金额、优惠金额和应付金额，再确认生成订单。目标是：\n\n- 所有金额以服务端为准，客户端传入的价格无效；\n- 下单前重新校验商品、SKU、库存、地址、优惠券；\n- 订单保存商品与地址快照，后续商品改价或地址修改不影响历史订单。\n\n",
+            "kb_content_version": "kb-07e52c331a2a97b65810814cd6f90956ca558ba7dcdf20760275c4f099ec1b7c",
+            "kb_build_version": "kb-build-99b30041aa5a7c77163a6de11a4b84e53a7067266e40720809ae7bde502bcda1",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.015151515151515152,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85"
+          },
+          {
+            "chunk_id": "bf4edf9910414e1e325f857f6288ff45806c3c31f798aca0f77507fb91610067",
+            "project_id": "minishop",
+            "doc_id": "DATA-ORDER-001",
+            "module": "order",
+            "doc_type": "design",
+            "knowledge_type": "INTERFACE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/models/models.py#L171-L243; Minishop/backend/app/models/models.py#L140-L165; Minishop/backend/app/seed/seed.py#L38-L151; Minishop/data/minishop.db",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/models/models.py#L171-L243",
+                "snapshot_sha256": "84bd973f0a6d923d3dd6e245c10a2a299f8d9ddd4e416a83fe7d695bdd39ce63",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/models/models.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/models/models.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/models/models.py#L140-L165",
+                "snapshot_sha256": "84bd973f0a6d923d3dd6e245c10a2a299f8d9ddd4e416a83fe7d695bdd39ce63",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/models/models.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/models/models.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/seed/seed.py#L38-L151",
+                "snapshot_sha256": "beb34f1d8f012a4b8fbbf5f5da9da3339f1140f8a19ad0385c24751d5d511ade",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/seed/seed.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/seed/seed.py"
+              },
+              {
+                "source_ref": "Minishop/data/minishop.db",
+                "snapshot_sha256": "964c30d3305f73899505f64c41d866640509c9e7c61b2203079a645247ece98f",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "data/minishop.db",
+                "content_commit": null,
+                "git_comparison": "missing",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/data/minishop.db"
+              }
+            ],
+            "heading_path": "8. 测试数据准备",
+            "chunk_index": 7,
+            "content_hash": "c2216a3bb9ea7401e1b42a95706b04e26b1a090334d414515ec3411f44e94d90",
+            "text": "# 8. 测试数据准备\n\n## 8.1 隔离数据库（推荐）\n\n```powershell\ncd Minishop\\backend\n$env:DATABASE_URL='sqlite:///./verify.db'\n..\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000\n```\n\n- `verify.db` 会在 `backend/` 下创建，启动时自动建表 + 播种。\n- 验证结束后停止服务并删除 `verify.db`。\n- 不要直接在共享的 `data/minishop.db` 上跑会写数据的自动化。\n\n## 8.2 步骤\n\n### 步骤 1：登录\n\n```http\nPOST /api/auth/login\n{\"username\": \"user\", \"password\": \"123456\"}\n```\n\n取 `data.token` 作为后续 `Authorization: Bearer <token>`。\n\n### 步骤 2：创建地址\n\n```http\nPOST /api/addresses\n{\"receiver_name\":\"张三\",\"phone\":\"13800138000\",\"province\":\"广东省\",\"city\":\"深圳市\",\"district\":\"南山区\",\"detail_address\":\"科技园路1号\",\"is_default\":true}\n```\n\n取 `data.id` 作为 `address_id`。\n\n### 步骤 3：解析商品与 SKU\n\n```http\nGET /api/products?keyword=机械键盘\n```\n\n取 `data.items[0].skus[0].id` 作为 `sku_id`，并记录 `price` 与 `stock`。\n\n> 不要硬编码 SKU ID。当前种子库中机械键盘 SKU 为 5，但重建数据库后会变化。\n\n### 步骤 4（可选）：加购\n\n```http\nPOST /api/cart/items\n{\"sku_id\": <sku_id>, \"quantity\": 3}\n```\n\n订单接口不要求先加购；加购只用于验证购物车与下单的衔接。\n\n### 步骤 5：领券并获取用户券 ID\n\n```http\nGET /api/coupons/available\nPOST /api/coupons/{coupon_id}/claim\nGET /api/coupons/my\n```\n\n取 `data[].id` 作为 `user_coupon_id`（注意是用户券 ID，不是券模板 ID）。\n当前库中券 1 已过期，优先使用券 2（满1000减100）或券 3（满5000减500）。\n\n### 步骤 6：预览与创建\n\n```http\nPOST /api/orders/preview\n{\"items\":[{\"sku_id\": <sku_id>, \"quantity\": 3}], \"address_id\": <address_id>, \"user_coupon_id\": <user_coupon_id>}\n\nPOST /api/orders\n{\"items\":[{\"sku_id\": <sku_id>, \"quantity\": 3}], \"address_id\": <address_id>, \"user_coupon_id\": <user_coupon_id>}\n```\n\n### 步骤 7：支付、发货、确认\n\n```http\nPOST /api/payments                     {\"order_id\": <order_id>, \"method\": \"WECHAT\"}\nPOST /api/payments/{payment_id}/success\nPOST /api/admin/orders/{order_id}/ship {\"company\":\"顺丰\",\"tracking_number\":\"SF123456789\"}   # 需 admin token\nPOST /api/orders/{order_id}/confirm\n```\n\n",
+            "kb_content_version": "kb-07e52c331a2a97b65810814cd6f90956ca558ba7dcdf20760275c4f099ec1b7c",
+            "kb_build_version": "kb-build-99b30041aa5a7c77163a6de11a4b84e53a7067266e40720809ae7bde502bcda1",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.014925373134328358,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85"
+          },
+          {
+            "chunk_id": "f242fb570c6df518dfb0b8caf27a72837198cdb7c8dc7bf4cf9848c22feb0017",
+            "project_id": "minishop",
+            "doc_id": "GLOSSARY-001",
+            "module": null,
+            "doc_type": "term",
+            "knowledge_type": "GLOSSARY",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/README.md#L46-L107; Minishop/backend/app/models/models.py#L20-L326; Minishop/frontend/src/pages/product/ProductDetail.tsx",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/README.md#L46-L107",
+                "snapshot_sha256": "7d78ca14a2c5114628fca82b05aafb2c615114f2b554b52a49a00fe5c27f1ede",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "README.md",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/README.md"
+              },
+              {
+                "source_ref": "Minishop/backend/app/models/models.py#L20-L326",
+                "snapshot_sha256": "84bd973f0a6d923d3dd6e245c10a2a299f8d9ddd4e416a83fe7d695bdd39ce63",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/models/models.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/models/models.py"
+              },
+              {
+                "source_ref": "Minishop/frontend/src/pages/product/ProductDetail.tsx",
+                "snapshot_sha256": "0335ed9750913af0aa3911840a10f796d90a5ef2f95dfbbb35228c9c6c0d26d9",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "frontend/src/pages/product/ProductDetail.tsx",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/frontend/src/pages/product/ProductDetail.tsx"
+              }
+            ],
+            "heading_path": "1. 术语表",
+            "chunk_index": 0,
+            "content_hash": "ee941312fbacfd1ae67eac47ad4bd680daef55fecfc3bbeb9a5e0099bb1ef9e7",
+            "text": "# 1. 术语表\n\n| 术语 | 定义 | 相关字段/接口 | 备注 |\n|---|---|---|---|\n| SUT | 被测系统（System Under Test） | - | 本项目整体作为被测对象 |\n| 商品 | 可售卖条目，包含名称、描述、主价格、主图、上下架状态、销量 | `products` | 一个商品可有多个 SKU |\n| SKU | 最小库存/价格单位，对应具体规格组合 | `product_skus` | 单规格商品也有 1 个默认 SKU，`spec_values={}` |\n| 规格 | SKU 的属性键值，如 `{\"颜色\":\"黑色\",\"尺码\":\"39\"}` | `product_skus.spec_values` | JSON 字符串存储 |\n| 库存 | SKU 可售数量；商品上另有聚合库存 | `product_skus.stock`、`products.stock` | 下单只校验 SKU 库存 |\n| 销量 | 商品累计销售数量 | `products.sales` | 支付成功 +quantity，退款成功 -quantity |\n| 上架/下架 | 商品是否可被前台查询和购买 | `products.status`：`ON_SALE`/`OFF_SALE` | 下架商品详情返回 404 |\n| 购物车 | 用户待购买 SKU 的集合 | `carts` | 同 SKU 合并；下单不清空 |\n| 地址 | 用户收货信息 | `addresses` | 每用户最多一个默认地址（应用层保证） |\n| 默认地址 | 用户标记为首选的地址 | `addresses.is_default` | 下单不强制使用默认地址 |\n| 优惠券模板 | 平台发放的券定义 | `coupons` | 含门槛、面额、有效期、发放量 |\n| 用户券 | 用户领取到的券实例 | `user_coupons` | 下单时使用其 `id` |\n| 门槛 | 使用券所需的最低商品总金额 | `coupons.threshold` | 按优惠前金额比较 |\n| 满减 | 达到门槛后减固定金额 | `coupons.discount_amount` | 当前只支持这一种类型 |\n| 领券 | 用户把券模板领取为自己的用户券 | `POST /api/coupons/{id}/claim` | 同一用户同一模板只能领一次 |\n| 用券 | 下单时把用户券置为已使用 | `POST /api/orders` | 取消订单会归还 |\n| 优惠金额 | 本单因用券减免的金额 | `orders.discount_amount` | 等于券面额 |\n| 商品总金额 | 各明细 `sku.price × quantity` 之和 | `orders.total_amount` | 服务端计算 |\n| 应付金额 | 商品总金额减优惠金额，最低 0 | `orders.pay_amount` | 支付金额来源 |\n| 订单 | 一次交易的凭据，含金额、状态、地址/商品快照 | `orders` | 状态见下 |\n| 订单号 | 订单业务编号 | `orders.order_no` | 14 位时间戳 + 6 位随机数 |\n| 订单明细 | 订单中的商品行 | `order_items` | 保存商品名/规格/价格快照 |\n| 快照 | 下单时固化的地址或商品信息 | `address_snapshot`、`order_items.*_snapshot` | 后续源数据变化不影响订单 |\n| 支付单 | 一次模拟支付记录 | `payments` | 同一订单可有多条（失败重试） |\n| 模拟支付 | 不接真实渠道，手动标记成功/失败 | `/api/payments/*` | 仅用于演示与测试 |\n| 支付成功 | 支付单置 `SUCCESS`，订单置 `PAID` | `POST /api/payments/{id}/success` | 触发库存扣减 |\n| 支付失败 | 支付单置 `FAILED`，订单仍待支付 | `POST /api/payments/{id}/fail` | 可重新支付 |\n| 重复支付 | 对已支付订单再次支付 | - | 返回 409，不重复扣库存 |\n| 发货 | 管理员录入物流信息，订单置 `SHIPPED` | `POST /api/admin/orders/{id}/ship` | 仅管理员 |\n| 物流单 | 订单对应的物流公司与运单号 | `shipments` | 确认收货后置 `DELIVERED` |\n| 运单号 | 物流公司提供的包裹编号 | `shipments.tracking_number` | 无格式校验 |\n| 确认收货 | 用户确认收到货，订单置 `COMPLETED` | `POST /api/orders/{id}/confirm` | 仅已发货订单 |\n| 取消订单 | 待支付订单置 `CANCELLED` | `POST /api/orders/{id}/cancel` | 归还优惠券 |\n| 退款/售后 | 支付后申请退回款项 | `refunds` | 本批未完整覆盖 |\n| 退款中 | 退款申请待审核 | `orders.status=REFUNDING` | 不可发货/确认 |\n| 已退款 | 退款审核通过 | `orders.status=REFUNDED` | 库存恢复（跨模块） |\n| 评价 | 已完成订单的商品评分与内容 | `reviews` | 每个订单明细只能评价一次 |\n| 站内消息 | 支付、发货、退款等业务通知 | `messages` | 只读/标记已读 |\n| 库存日志 | 库存变化的审计记录 | `inventory_logs` | 支付扣减、退款恢复、人工调整 |\n| 管理员 | 可访问 `/api/admin/**` 的角色 | `users.role=ADMIN` | 不能禁用管理员账号 |\n| 普通用户 | 只能操作自己数据的角色 | `users.role=USER` | 种子账号 `user` |\n| JWT | 登录后签发的访问令牌 | `Authorization: Bearer` | HS256，24 小时 |\n| 种子数据 | 首次启动自动写入的演示数据 | `seed.py` | 幂等 |\n| 幂等 | 同一操作重复执行不产生额外副作用 | - | 本项目多数写接口**不幂等** |\n| 超卖 | 卖出数量超过实际库存 | - | 当前架构存在该风险，见 `EXP-ORDER-001` |\n| 状态机 | 订单状态与合法转换的集合 | `STATE-ORDER-001` | 含不可达状态 `PENDING_SHIPMENT` |\n| 数据库迁移 | 表结构版本化变更脚本 | - | 本项目没有 |\n| 测试用例 | 待评审的测试设计对象 | - | 不属于知识库事实源 |\n| 知识缺口 | 缺少某类可追溯资料 | - | 见 `_governance/knowledge_gaps.yaml` |\n\n",
+            "kb_content_version": "kb-07e52c331a2a97b65810814cd6f90956ca558ba7dcdf20760275c4f099ec1b7c",
+            "kb_build_version": "kb-build-99b30041aa5a7c77163a6de11a4b84e53a7067266e40720809ae7bde502bcda1",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.014705882352941176,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85"
+          },
+          {
+            "chunk_id": "a0925e069b3a4ae7ec211b9c7e95a6080160758105b4292f0ac15836d06a69f6",
+            "project_id": "minishop",
+            "doc_id": "TEST-DATA",
+            "module": null,
+            "doc_type": "design",
+            "knowledge_type": "TEST_SPEC",
+            "rule_status": "reviewed",
+            "evidence_level": "E3",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/seed/seed.py#L38-L151; Minishop/data/minishop.db; Minishop/e2e_test.py",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/seed/seed.py#L38-L151",
+                "snapshot_sha256": "beb34f1d8f012a4b8fbbf5f5da9da3339f1140f8a19ad0385c24751d5d511ade",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/seed/seed.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/seed/seed.py"
+              },
+              {
+                "source_ref": "Minishop/data/minishop.db",
+                "snapshot_sha256": "964c30d3305f73899505f64c41d866640509c9e7c61b2203079a645247ece98f",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "data/minishop.db",
+                "content_commit": null,
+                "git_comparison": "missing",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/data/minishop.db"
+              },
+              {
+                "source_ref": "Minishop/e2e_test.py",
+                "snapshot_sha256": "95b6122d5891d2a291aadb7f89deac25e24ced60a023bb5b88852283468cb8d0",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "e2e_test.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/e2e_test.py"
+              }
+            ],
+            "heading_path": "4. 数据准备配方",
+            "chunk_index": 3,
+            "content_hash": "b701341ab354a7ddb3feac5c93c210660795ae7c765642ef2a82b6308201d431",
+            "text": "# 4. 数据准备配方\n\n## 4.1 正常可支付订单\n\n1. 登录 `user`；\n2. 创建地址；\n3. 查询机械键盘 SKU；\n4. 预览 → 创建订单；\n5. 记录 `order_id`、`pay_amount`；\n6. 不支付，作为 `PENDING_PAYMENT` 基线。\n\n## 4.2 已支付订单\n\n在 4.1 基础上：\n\n1. `POST /api/payments`；\n2. `POST /api/payments/{id}/success`；\n3. 断言订单 `PAID`，记录支付前后库存。\n\n## 4.3 已发货订单\n\n在 4.2 基础上：\n\n1. 使用 `admin` token；\n2. `POST /api/admin/orders/{id}/ship`，填写物流信息；\n3. 断言 `SHIPPED`。\n\n## 4.4 已完成订单\n\n在 4.3 基础上：\n\n1. `POST /api/orders/{id}/confirm`；\n2. 断言 `COMPLETED`。\n\n## 4.5 退款相关订单（跨模块）\n\n在 4.2 基础上调用 `POST /api/refunds`，订单进入 `REFUNDING`；本批不覆盖退款审核细节。\n\n## 4.6 库存边界数据\n\n- 售罄：无线鼠标，库存 0；\n- 边界：蓝牙耳机，库存 1；\n- 多规格：运动鞋，白 39/40 库存 1，其余 2。\n\n## 4.7 优惠券数据\n\n- 无券：不传 `user_coupon_id`；\n- 未达门槛：用“满5000减500”买 399 元商品；\n- 恰好达门槛：用“满1000减100”买总价恰好 1000 元；\n- 已使用：先下一单用掉，再复用到另一单；\n- 已过期：当前库“新人满100减10”已过期；\n- 停用：当前库“满50减5”为 DISABLED，无法领取；\n- 他人券：用户 A 领取，用户 B 使用 A 的用户券 ID。\n\n",
+            "kb_content_version": "kb-07e52c331a2a97b65810814cd6f90956ca558ba7dcdf20760275c4f099ec1b7c",
+            "kb_build_version": "kb-build-99b30041aa5a7c77163a6de11a4b84e53a7067266e40720809ae7bde502bcda1",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.014492753623188406,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85"
+          },
+          {
+            "chunk_id": "398d60305f83cdd07e2037897929981100e521cc39dd34a44ebd8b387c22eee3",
+            "project_id": "minishop",
+            "doc_id": "API-ORDER-001",
+            "module": "order",
+            "doc_type": "design",
+            "knowledge_type": "INTERFACE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L88-L113; Minishop/backend/app/schemas/schemas.py#L134-L143",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L88-L113",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/schemas/schemas.py#L134-L143",
+                "snapshot_sha256": "ec03f7efa334fcfb4e7439240757a131a91ee0005cdcd25071631fd05f1fcc16",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/schemas/schemas.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/schemas/schemas.py"
+              }
+            ],
+            "heading_path": "6. 错误码与异常",
+            "chunk_index": 5,
+            "content_hash": "1d55149387cacae03a8561c9301778f4f3ff9aab4f7714c60ac2bccc8bf80711",
+            "text": "# 6. 错误码与异常\n\n| HTTP | `message` | 触发条件 |\n|---:|---|---|\n| 400 | `订单商品不能为空` | `items` 为空 |\n| 400 | `购买数量不能小于 1` | 数量 ≤ 0 |\n| 400 | `商品规格无效` | SKU 不存在或非 `ACTIVE` |\n| 400 | `商品已下架` | 商品不存在或非 `ON_SALE` |\n| 409 | `商品「<名称>」库存不足` | 数量 > SKU 库存 |\n| 400 | `收货地址不存在` | 地址不存在或不属于当前用户 |\n| 400 | `优惠券不存在` | 用户券不存在或不属于当前用户 |\n| 400 | `优惠券无效或已停用` | 券模板非 `ACTIVE` |\n| 409 | `优惠券已使用` | 用户券非 `UNUSED` |\n| 400 | `优惠券已过期` | 当前时间晚于 `end_time` |\n| 409 | `未达优惠券门槛（满<X>可用）` | 商品总金额 < 门槛 |\n| 400 | `VALIDATION_ERROR` | 字段缺失/类型错误 |\n\n所有 HTTP 错误的响应体格式：`{\"code\": \"HTTP_ERROR\", \"message\": \"<message>\", \"data\": null}`。\n\n",
+            "kb_content_version": "kb-07e52c331a2a97b65810814cd6f90956ca558ba7dcdf20760275c4f099ec1b7c",
+            "kb_build_version": "kb-build-99b30041aa5a7c77163a6de11a4b84e53a7067266e40720809ae7bde502bcda1",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.014285714285714285,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85"
+          }
+        ],
+        "warnings": [],
+        "profile": "lexical-only",
+        "limitations": [
+          "documentation:CONFLICT-001",
+          "documentation:CONFLICT-002",
+          "documentation:CONFLICT-003",
+          "documentation:CONFLICT-004",
+          "documentation:CONFLICT-005",
+          "documentation:CONFLICT-006",
+          "documentation:CONFLICT-007",
+          "documentation:CONFLICT-008",
+          "documentation:CONFLICT-009",
+          "documentation:CONFLICT-010",
+          "documentation:Q-01",
+          "documentation:Q-03",
+          "documentation:Q-04",
+          "documentation:Q-05",
+          "documentation:Q-06",
+          "documentation:Q-08",
+          "documentation:Q-09",
+          "documentation:Q-10",
+          "documentation:Q-12",
+          "documentation:Q-13",
+          "documentation:Q-15",
+          "embedding:not_completed",
+          "implementation:CONFLICT-001",
+          "implementation:CONFLICT-003",
+          "implementation:CONFLICT-005",
+          "implementation:CONFLICT-006",
+          "implementation:CONFLICT-007",
+          "implementation:CONFLICT-008",
+          "implementation:CONFLICT-009",
+          "implementation:CONFLICT-010",
+          "implementation:Q-01",
+          "implementation:Q-04",
+          "implementation:Q-05",
+          "implementation:Q-06",
+          "implementation:Q-09",
+          "implementation:Q-10",
+          "implementation:Q-11",
+          "implementation:Q-13",
+          "implementation:Q-14",
+          "implementation:Q-15",
+          "knowledge_gap:GAP-001",
+          "knowledge_gap:GAP-002",
+          "knowledge_gap:GAP-003",
+          "knowledge_gap:GAP-004",
+          "knowledge_gap:GAP-008",
+          "knowledge_gap:GAP-009",
+          "knowledge_gap:GAP-010",
+          "knowledge_gap:GAP-011",
+          "knowledge_gap:GAP-012",
+          "knowledge_gap:GAP-013",
+          "knowledge_gap:GAP-014",
+          "publication:not_completed",
+          "retrieval_acceptance:not_completed",
+          "review_acceptance:not_completed",
+          "review_baseline:not_selected_for_release",
+          "runtime_index:not_completed",
+          "source_repository_verification:not_run; use --source-root"
+        ],
+        "pack_hash": "10b2b5bd15314d805e02065b064a9d7af2ced3d7e4259a7dbae6323357fa9f88"
+      }
+    },
+    "created_at": "2026-11-12T06:26:53.075379+00:00",
+    "finished_at": "2026-11-12T06:31:21.846319+00:00",
+    "timings": {
+      "queue_ms": 0,
+      "execution_ms": 268770,
+      "model_call_ms": 392101
+    }
+  }
+}

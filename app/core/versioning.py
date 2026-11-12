@@ -88,6 +88,9 @@ def compute_versions(settings: Settings) -> Versions:
         if settings.prompt_registry_path.exists()
         else sha256_text(json.dumps(prompts, sort_keys=True))[:12]
     )
+    # Prompt templates currently live in Python; registry labels alone cannot freeze their content.
+    prompt_version_hash = sha256_text(prompt_version_hash + file_sha256(
+        Path(__file__).resolve().parents[1] / "llm/review.py", length=64))
 
     model_registry = _load_yaml(settings.model_registry_path)
     model_config = (
@@ -105,6 +108,7 @@ def compute_versions(settings: Settings) -> Versions:
     )
 
     retrieval_params = {
+        "implementation": file_sha256(Path(__file__).resolve().parents[1] / "knowledge/runtime.py", length=64),
         "query_max": settings.retrieval_query_max,
         "top_k_keyword": settings.retrieval_top_k_keyword,
         "top_k_vector": settings.retrieval_top_k_vector,
@@ -124,6 +128,11 @@ def compute_versions(settings: Settings) -> Versions:
         f"{settings.embedding_provider}:{settings.embedding_model}"
         f"@{settings.embedding_model_version}/{settings.embedding_dimension}/cosine"
     )
+    if settings.knowledge_vector_enabled:
+        actual = model_registry.get("embedding") or {}
+        configured = (settings.embedding_provider, settings.embedding_model, settings.embedding_dimension)
+        if configured != (actual.get("provider"), actual.get("model_id"), actual.get("dimension")):
+            raise ValueError("Embedding profile differs from the model registry; align configuration before starting")
 
     return Versions(
         kb_content_version="kb-none",

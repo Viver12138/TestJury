@@ -1,0 +1,105 @@
+{
+  "actor": "codex-delegated-reviewer",
+  "actor_type": "ai",
+  "authorization": "design/changes/2026-11-12-delegated-development.md",
+  "source_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+  "source_execution_evidence": "evidence/M2/minishop_gold_source_verification.json",
+  "source_execution_evidence_sha256": "70d56ba30d922b5a017d4443e3960661e1349a5aab49ef4ba7dd9cc3f70d2b3e",
+  "independent_human_validation": false,
+  "report_mutated": false,
+  "scope": "Diagnostic adjudication of selected v2 reports; not a blind precision estimate",
+  "records": [
+    {
+      "report": "evidence/M2/review_eval_live/minishop-gold-2/dual-ae484a923354/G-001-negative.json",
+      "sha256": "8260af9c85058d2c030dd65733c0ef3fac81e99d00033cf08ad591f8b5ca1578",
+      "case_id": "G-001-negative",
+      "dataset_version": "minishop-gold-2",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "客户端金额0.01与服务端100×2=200冲突。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "reason": "与第1项相同触发条件、错误断言和修复方向，应合并保留来源。"
+        },
+        {
+          "issue_no": 3,
+          "decision": "unsupported_requirement",
+          "reason": "本条目的可通过pay_amount验证；额外total_amount断言不是该标题的必要条件。"
+        }
+      ]
+    },
+    {
+      "report": "evidence/M2/review_eval_live/minishop-gold-2/dual-ae484a923354/G-008-negative.json",
+      "sha256": "12af1450bb5c3ec3cc7240c8b48bbee35356532f06635f1823848b3ffbb54cf7",
+      "case_id": "G-008-negative",
+      "dataset_version": "minishop-gold-2",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "失败支付不会取消订单，订单仍待支付并允许新建支付单。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "reason": "与第1项相同业务冲突；引用验证不充分应单独保留，不产生第二个根因。"
+        },
+        {
+          "issue_no": 3,
+          "decision": "valid_unlabelled_dataset_defect",
+          "reason": "v2显式查询payments.status却未给期望值；这是数据集额外缺陷，不能计作误报。v3已补齐。"
+        }
+      ]
+    },
+    {
+      "report": "evidence/M2/review_eval_live/minishop-gold-2/dual-afba2f352b93/G-015-positive.json",
+      "sha256": "00bea40c546bf5c8dc955899ca02005157a2b63a0a82649960eac3f6c7ad6ba4",
+      "case_id": "G-015-positive",
+      "dataset_version": "minishop-gold-2",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "unsupported",
+          "reason": "冻结实现的预览响应明确包含address，无地址时为null；缺检索上下文不足以否定正确断言。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "unsupported_duplicate",
+          "reason": "同第1项，删除正确断言没有依据。"
+        }
+      ]
+    },
+    {
+      "report": "evidence/M2/review_eval_live/minishop-gold-2/dual-afba2f352b93/G-015-negative.json",
+      "sha256": "7b6ece3fec5951ad1e5a08791ef4988d8f5a1682101b06d183b5f0a633060b91",
+      "case_id": "G-015-negative",
+      "dataset_version": "minishop-gold-2",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "预览不创建订单、不占用券，预期与实际规则冲突。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "reason": "同第1项预览副作用冲突。"
+        },
+        {
+          "issue_no": 3,
+          "decision": "same_root_consequence",
+          "reason": "依赖预览会创建订单的错误前提，修复第1项后消失；不应作为独立必修问题。"
+        },
+        {
+          "issue_no": 4,
+          "decision": "valid_unlabelled_dataset_defect",
+          "reason": "v2显式记录库存前后值却未给判定；v3已补齐，不能简单计作误报。"
+        }
+      ]
+    }
+  ]
+}

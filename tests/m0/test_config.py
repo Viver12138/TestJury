@@ -52,6 +52,15 @@ def test_settings_rejects_empty_database_url() -> None:
         )
 
 
+def test_embedding_profile_must_match_actual_registry():
+    from app.core.versioning import compute_versions
+
+    settings = Settings(_env_file=None, database_url="postgresql://unused/unused_test",
+                        knowledge_vector_enabled=True, embedding_model="different-model")
+    with pytest.raises(ValueError, match="differs from the model registry"):
+        compute_versions(settings)
+
+
 def test_production_rejects_memory_storage() -> None:
     with pytest.raises(ValidationError):
         Settings(

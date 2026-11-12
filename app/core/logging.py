@@ -35,6 +35,9 @@ def configure_logging(*, level: str = "INFO", json_logs: bool = True) -> None:
     root.handlers.clear()
     root.addHandler(handler)
     root.setLevel(level.upper())
+    # Third-party request logs may contain callback path/query credentials.
+    for name in ("httpx", "httpcore"):
+        logging.getLogger(name).setLevel(logging.WARNING)
 
     # uvicorn 的 access 日志与我们的 http_request 重复，关闭它；error 日志保留。
     logging.getLogger("uvicorn.access").disabled = True

@@ -1,0 +1,13 @@
+{
+  "matches": true,
+  "original_workbook_sha256": "25c0dbcb6ae7c62ba66319f3a9ddc522ee98c7df7533b4c329257b16a4dbf140",
+  "transcript_sha256": "967ce3de226a674ea563bb1a385f0ebb878da5b046301d9bc3e0ca0beb60951d",
+  "sheet_counts": {
+    "Q": 15,
+    "C": 10,
+    "G": 15,
+    "D": 37
+  },
+  "compared_rows": 77,
+  "note": "逐项比对四张业务表的全部77行和所有列；不新增审核结论，不构成数字签名"
+}

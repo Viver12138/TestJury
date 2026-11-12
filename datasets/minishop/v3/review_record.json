@@ -1,0 +1,307 @@
+{
+  "actor_type": "ai",
+  "authorization": "design/changes/2026-11-12-delegated-development.md",
+  "source_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+  "items": [
+    {
+      "id": "G-001-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "5572baa3aa1abc385b62de28c7c8cbbf34064473c1b60449f9ef9aa9dac0d0a6",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-001-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "d5b6f52459de0d8322fa75803ffeb8f346ccce89f3ec61ef07680d14f624d035",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-002-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-002"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "c58ca6ead3027238308762a4ff93410fa041c88023852562df3c187bfec552d0",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-002-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-002"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "49a50d9a88683f6e858ba5eb61e62fee0d5f2411158df816dbb8222ed0cfb9fc",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-003-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-003"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "4826aaaf358889f11dd312b1a8fa971aaae9b3f743d90fe59800f2803952bdf8",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-003-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-003"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "c0a9c2957cf57efabb0f40693fff74d0805b8a5721607fcb6d2efcf2722c642c",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-004-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-004"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "ac5073bc31544583f0a63feda86159abc1ed93d3ab2ae2415abd16698e83ee57",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-004-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-004"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "8c170692958b484e48f67fe8ebd092e90ceacd129f156f89fafc98a91f45f304",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-005-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-005"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "bb80182298189ed19a72af1b0bbe4da9806a44c6304e5a6d3b944ad064841edd",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-005-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-005"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "d838f0fed85031875a42932049015c3bb60621e62c99779c8b17bdbe6847d274",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-006-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-006"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "40d20170799aee3fc7d238369a74eb36fbf9fc517304c323959b55a55b47dce0",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-006-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-006"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "6516353f0820a17058d1f521ec7cbbeb5987fea150c46596397f8aaa0727cdf1",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-007-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-007"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "4844ecf43fe36084849ba74be6304ffb07b33744c4de6fae71268018a62b4784",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-007-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-007"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "fbd5c14b625ce1e7d86935d55fd5a7020c388fac56506db6c6c25146ce6587c3",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-008-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-008"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "7bfe59e9970108017744cb2e12f53bf0248928344eee896ad5e5d1ab6c26a87f",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-008-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-008"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "f7d653f401b1b33887576fd7904d8aa4cb10c78f462c16383f9fe07853620c0c",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-009-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-009"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "6762f246e264bb677c13f3335e4f1caebfa2ec4a2bc22b16e0cee58ca1abb48c",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-009-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-009"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "de8d7d2d9a48c89e8c603f44c00478d175d55ed30b269042065f346a8037e272",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-010-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-010"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "81bbe71f10b832a2a4e4c116a337844802c1699161a74545004e54f4adb0e338",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-010-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-010"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "6d88755120c88cf12c71a0340e53b5aea8e241ed43a5719b6c4264cd18210879",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-011-positive",
+      "source_doc_ids": [
+        "RULE-ORDER-011"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "f7d6015e9db7fefb81094cedf90326c63f1d160f5148d35ce59086ce75be3b93",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-011-negative",
+      "source_doc_ids": [
+        "RULE-ORDER-011"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "7c90350d024b3ec66fbd1c0c06e4b06dce7da6e34a4dd1b9ed2009749a4c0040",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-012-positive",
+      "source_doc_ids": [
+        "STATE-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "8ecf1ac4ab896746e66ba1d36dd91a51e8b4648fbae3e2fd061bb661da7be9bb",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-012-negative",
+      "source_doc_ids": [
+        "STATE-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "47c83f114ffc5614f6fe5a8100e40884f1d5791f7aead08a757117b100561725",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-013-positive",
+      "source_doc_ids": [
+        "STATE-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "ee2705c0f3a0c72214f6a040155a9f97e7c756a353c0f816a869d2e7f257ed20",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-013-negative",
+      "source_doc_ids": [
+        "STATE-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "bb80d0ff5ff715e55bbae779d770ff5ad4d2287b879015b53ec4b4ce16e12f89",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-014-positive",
+      "source_doc_ids": [
+        "API-ORDER-003"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "fe82b94394a8b71ad410fe2d6b70eeab4f3f776ac5e468cb1d5397df2331c753",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-014-negative",
+      "source_doc_ids": [
+        "API-ORDER-003"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "4668b47158fb1af8bafe36efb455cdb01a4d525e05f1d00a634e262949da5e00",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-015-positive",
+      "source_doc_ids": [
+        "REQ-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "a54b1291eb577650b88342048dbbf9e3a1f49ba8976e7dd8338d124e9547fcb0",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    },
+    {
+      "id": "G-015-negative",
+      "source_doc_ids": [
+        "REQ-ORDER-001"
+      ],
+      "reviewer": "codex-delegated-reviewer",
+      "previous_sha256": "148bf3754b6c970dafc40eaee5189bc193d9e7730ced5c589de344283ca43f81",
+      "decision": "reviewed",
+      "reason": "保持v2完整操作及观测条件；负例明确每个观测结果，只在核心业务规则或其直接结果上引入错误。正确样例不变。"
+    }
+  ]
+}

@@ -8,40 +8,40 @@ source_type: REQUIREMENT_SPEC
 source_ref: Minishop/README.md#L55-L57; Minishop/backend/app/api/orders.py#L29-L170
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E2
-status: in_review
+status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（产品负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - order
-  - create
-  - preview
-  - amount
-  - stock
+- order
+- create
+- preview
+- amount
+- stock
 related_ids:
-  - RULE-ORDER-001
-  - RULE-ORDER-002
-  - RULE-ORDER-003
-  - RULE-ORDER-004
-  - RULE-ORDER-005
-  - RULE-ORDER-006
-  - FLOW-ORDER-001
-  - API-ORDER-001
-  - API-ORDER-002
+- RULE-ORDER-001
+- RULE-ORDER-002
+- RULE-ORDER-003
+- RULE-ORDER-004
+- RULE-ORDER-005
+- RULE-ORDER-006
+- FLOW-ORDER-001
+- API-ORDER-001
+- API-ORDER-002
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: changes_applied_pending_reapproval
-change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过）"
+review_status: delegated_review_completed
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 ---
 
 # 1. 需求背景与目标
@@ -131,7 +131,7 @@ change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过�
 
 # 8. 验收标准
 
-1. 同一组商品，预览与创建返回的 `total_amount`、`discount_amount`、`pay_amount` 一致。
+1. 同一组商品且期间价格/券不变时，创建金额应等于预览值按落库规则 round 到 2 位；预览 total_amount/discount_amount 可能含浮点尾差。价格变化后创建按新价格重新计算。
 2. 客户端伪造价格字段不会影响订单金额。
 3. 数量等于库存时允许下单；数量为库存 +1 时返回 409。
 4. 未上架商品、失效 SKU 不能下单。
@@ -159,6 +159,13 @@ change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过�
 - 重复提交是否应返回同一订单（幂等键）？
 - 是否需要订单超时关闭任务？
 - `PENDING_SHIPMENT` 状态在代码中被引用但从未赋值，是否应删除或启用？
+
+
+# 本次授权技术复核适用性
+
+核对 orders.py 创建/预览无库存扣减、无清购物车、用券即占用；修正预览与落库金额断言需考虑精度及重新计价。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

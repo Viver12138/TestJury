@@ -1,0 +1,25 @@
+{
+  "version": "minishop-gold-2",
+  "annotation_type": "delegated_ai",
+  "author": "codex-delegated-reviewer",
+  "authorization": "design/changes/2026-11-12-delegated-development.md",
+  "source_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+  "baseline": "current_implementation",
+  "split_unit": "scenario_family",
+  "limitations": [
+    "代理编写并复核的种子黄金集，不是独立人工盲标",
+    "当前仅MiniShop order与冻结源码基线",
+    "不能以离线检索分数代替真实模型评审效果",
+    "v2沿用已见过的场景族，不是新盲测集；v1原文件和模型结果保留"
+  ],
+  "files": {
+    "retrieval.jsonl": "bfef25226dfdd7644800fe1c0754fb30f451a2e1de124971e6154319782ee95f",
+    "review.jsonl": "78b7490a4db05489ccc410462a0a4f82ed8905846810a266aea748c1c19f1720"
+  },
+  "counts": {
+    "retrieval": 18,
+    "review": 30
+  },
+  "supersedes": "minishop-gold-1",
+  "revision_reason": "source-based executability review; v1 positive payment_retry had an unexecuted retry assertion"
+}

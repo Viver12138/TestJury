@@ -57,6 +57,15 @@ def render_markdown(report: dict[str, Any]) -> str:
         "> AI 结论不是审批结论：AI 未发现问题不等于用例合格；"
         "知识库无规则不等于业务规则不存在；报告生成成功不等于人工审批完成。"
     )
+    knowledge = (report.get("appendix") or {}).get("knowledge_pack")
+    if knowledge:
+        lines.append("")
+        lines.append(f"评审基线：`{knowledge['baseline']['type']}`；知识证据：{len(knowledge['evidence'])} 条。")
+        lines.append("")
+        for item in knowledge["evidence"]:
+            lines.append(f"- `{item['chunk_id']}` · {item['doc_id']} · {item['heading_path']} · {item['source_ref']}")
+        if knowledge.get("warnings"):
+            lines.append("检索限制：" + "、".join(knowledge["warnings"]))
     lines.append("")
 
     summary = report.get("summary") or {}

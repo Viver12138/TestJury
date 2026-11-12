@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="13" time="10.093" timestamp="2026-11-12T16:27:26.689099+08:00" hostname="DESKTOP-KK9PD6J"><testcase classname="tests.integration.test_checkpoint_recovery" name="test_memory_recovery_reuses_successful_models_and_stable_candidates" time="0.091" /><testcase classname="tests.integration.test_checkpoint_recovery" name="test_postgres_recovery_reuses_successful_models_and_stable_candidates" time="2.082" /><testcase classname="tests.integration.test_checkpoint_recovery" name="test_checkpoints_reject_stale_owner_changed_inputs_and_corrupt_outputs" time="0.084" /><testcase classname="tests.integration.test_checkpoint_recovery" name="test_memory_partial_vote_recovery" time="0.068" /><testcase classname="tests.integration.test_checkpoint_recovery" name="test_postgres_partial_vote_recovery" time="1.770" /><testcase classname="tests.integration.test_model_budget" name="test_memory_budget_serializes_parallel_reservations" time="0.058" /><testcase classname="tests.integration.test_model_budget" name="test_postgres_budget_serializes_parallel_reservations" time="1.623" /><testcase classname="tests.integration.test_model_budget" name="test_exhausted_budget_sends_no_provider_request" time="0.092" /><testcase classname="tests.integration.test_model_budget" name="test_budget_failure_is_reported_as_budget_failure" time="0.098" /><testcase classname="tests.integration.test_model_budget" name="test_batch_budget_and_review_tasks_work_with_real_database" time="1.825" /><testcase classname="tests.integration.test_model_budget" name="test_report_finalization_rolls_back_when_review_task_insert_fails" time="1.589"><failure message="asyncpg.exceptions.CheckViolationError: new row for relation &quot;human_review_tasks&quot; violates check constraint &quot;human_review_tasks_review_level_check&quot;&#10;DETAIL:  Failing row contains (49a29ec3-e609-48f7-80a1-bf63fb45bb95, 0770c539-c920-4108-8552-49949bbe7f14, null, case, normal, null, pending, null, null, auto, null, 0, 2026-11-12 08:27:36.135767+00, null, null).">migrated_database = 'postgresql://testjury:testjury@127.0.0.1:55432/testjury_verify_883eecda4e42'
+
+    @pytest.mark.postgres
+    async def test_report_finalization_rolls_back_when_review_task_insert_fails(migrated_database):
+        app = create_app(make_settings(storage_backend="postgres", database_url=migrated_database), run_worker=False)
+        actor = Principal("rollback-test", ActorType.SERVICE, frozenset({"reviewer"}), None)
+        try:
+            await app.state.review_service.submit(review_payload(), actor)
+            job = await app.state.worker.claim_next()
+            with pytest.raises(ValueError):
+&gt;               await app.state.storage.finalize_report(
+                    job.id, fencing_token=job.fencing_token,
+                    fields={"status": "done", "report_json": {"issues": []}}, issues=[],
+                    review_tasks=[ReviewTaskRecord(id=new_id(), review_id=job.id, review_level="case"),
+                                  ReviewTaskRecord(id="invalid-uuid", review_id=job.id, review_level="case")])
+
+tests\integration\test_model_budget.py:123: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+app\storage\postgres.py:1025: in finalize_report
+    await self._insert_review_task(conn, task)
+app\storage\postgres.py:1269: in _insert_review_task
+    await conn.execute("""INSERT INTO human_review_tasks
+.venv\Lib\site-packages\asyncpg\connection.py:380: in execute
+    _, status, _ = await self._execute(
+.venv\Lib\site-packages\asyncpg\connection.py:1904: in _execute
+    result, _ = await self.__execute(
+.venv\Lib\site-packages\asyncpg\connection.py:2003: in __execute
+    result, stmt = await self._do_execute(
+.venv\Lib\site-packages\asyncpg\connection.py:2066: in _do_execute
+    result = await executor(stmt, None)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+&gt;   return await waiter
+E   asyncpg.exceptions.CheckViolationError: new row for relation "human_review_tasks" violates check constraint "human_review_tasks_review_level_check"
+E   DETAIL:  Failing row contains (49a29ec3-e609-48f7-80a1-bf63fb45bb95, 0770c539-c920-4108-8552-49949bbe7f14, null, case, normal, null, pending, null, null, auto, null, 0, 2026-11-12 08:27:36.135767+00, null, null).
+
+asyncpg/protocol/protocol.pyx:197: CheckViolationError</failure></testcase><testcase classname="tests.m0.test_projection" name="test_worker_writes_matching_projection" time="0.205" /><testcase classname="tests.m0.test_projection" name="test_finalize_report_requires_current_fencing_token" time="0.076" /></testsuite></testsuites>

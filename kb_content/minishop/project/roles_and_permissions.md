@@ -5,33 +5,34 @@ knowledge_type: PROJECT
 project_id: minishop
 module_id: null
 source_type: OTHER
-source_ref: Minishop/backend/app/auth/dependencies.py#L13-L58; Minishop/backend/app/api/orders.py#L201-L260; Minishop/backend/app/api/admin.py#L22-L334
+source_ref: Minishop/backend/app/auth/dependencies.py#L13-L58; Minishop/backend/app/api/orders.py#L201-L260;
+  Minishop/backend/app/api/admin.py#L22-L334
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E2
-status: in_review
+status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（产品负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - role
-  - permission
-  - authz
+- role
+- permission
+- authz
 related_ids:
-  - RULE-ORDER-011
+- RULE-ORDER-011
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: changes_applied_pending_reapproval
-change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过）"
+review_status: delegated_review_completed
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 ---
 
 # 1. 角色定义
@@ -108,6 +109,13 @@ Authorization: Bearer <B_TOKEN>
 - 权限变更是否需要 token 主动失效机制（当前依赖每次查库，已天然生效）。
 - 是否需要更细粒度的管理员分权（当前只有单一 `ADMIN`）。
 - 403/404 语义是否应统一。
+
+
+# 本次授权技术复核适用性
+
+核对 dependencies.py 的数据库角色检查及订单 403/404 归属差异；没有用户资料修改路由。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

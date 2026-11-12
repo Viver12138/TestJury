@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TestJury · 用例评审</title><style>
+:root{font-family:system-ui,"Microsoft YaHei",sans-serif;color:#24334a;background:#f3f5f8}body{max-width:1160px;margin:36px auto;padding:0 24px}header{display:flex;justify-content:space-between;align-items:center}h1{font-size:30px;margin:0}header p{color:#65738a}.tag{background:#e3ebff;color:#2d4b98;padding:8px 12px;border-radius:8px}main{display:grid;grid-template-columns:1fr 1.1fr;gap:24px;margin-top:25px}.card{background:#fff;border:1px solid #dce2eb;border-radius:14px;padding:24px}h2{font-size:19px;margin-top:0}label{display:block;font-size:14px;font-weight:600;margin:16px 0 7px}input,textarea,select{box-sizing:border-box;width:100%;border:1px solid #cbd4e1;border-radius:7px;padding:10px;font:inherit;color:inherit;background:white}textarea{resize:vertical;min-height:90px}button{border:0;border-radius:8px;padding:12px 18px;font:inherit;cursor:pointer;background:#254edb;color:white}button:disabled{opacity:.5;cursor:wait}.secondary{background:#edf1f8;color:#33476b;margin-left:8px}.hint{font-size:13px;color:#65738a;line-height:1.7}.status{padding:12px;background:#eef3ff;border-radius:8px;white-space:pre-wrap}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.8 system-ui}.actions{margin-top:20px}#history button{display:block;text-align:left;width:100%;margin-top:8px;background:#edf1f8;color:#33476b}.error{color:#ab2634}details{margin-top:16px}@media(max-width:800px){main{grid-template-columns:1fr}body{margin:20px auto}header{align-items:start;gap:12px}}
+</style></head><body>
+<header><div><h1>TestJury</h1><p>让每一条测试用例，都有可追溯的评审依据。</p></div><span class="tag" id="mode">正在连接服务</span></header>
+<main><section class="card"><h2>提交用例</h2><p class="hint">首批支持 MiniShop 订单与交易。评审依据固定源码版本；结果是评审意见，审批状态单独保留。</p>
+<label for="key">访问凭证</label><input id="key" type="password" autocomplete="off" placeholder="输入本机启动时生成的凭证"><p class="hint">凭证只保留在当前页面，不写入浏览器存储。</p>
+<label for="title">用例标题</label><input id="title" value="客户端修改订单金额后，服务端重新计价">
+<label for="baseline">评审依据</label><select id="baseline"><option value="current_implementation">当前实现 · 已冻结源码</option><option value="target_specification">目标规格 · 已确认决策</option></select>
+<label for="preconditions">前置条件（每行一条）</label><textarea id="preconditions">用户 A 已登录，地址 1 属于 A
+SKU 1 上架且有效，价格 100 元，库存 10；未使用优惠券
+使用独立测试库</textarea>
+<label for="steps">操作与预期（每行：操作 → 预期）</label><textarea id="steps" rows="5">提交订单：SKU 1 数量 2、地址 1，额外传入 pay_amount=0.01 → 返回 201，订单应付金额为 200 元</textarea>
+<div class="actions"><button id="submit">开始评审</button><button class="secondary" id="recent">历史报告</button><button class="secondary" id="gaps">知识待核实</button></div>
+<p id="error" class="hint error" role="alert"></p>
+<details><summary>查看请求内容</summary><pre id="request"></pre></details><div id="history"></div></section>
+<section class="card"><h2>评审报告</h2><div class="status" id="status" role="status">提交用例后，这里会显示评审进度。</div><div id="report">报告包含问题、修改建议、知识来源和评审版本。
+
+模型可能出现分歧，未找到知识依据时会明确提示。</div><button class="secondary" id="download" hidden>下载报告</button></section></main>
+<script>
+const $=id=>document.getElementById(id);let currentReport='',pollTimer=null,viewGeneration=0;
+const statusLabels={queued:'等待评审',processing:'正在评审',retrying:'正在重试',done:'评审完成',completed_with_warnings:'评审完成，有待复核事项',failed:'评审失败',cancelled:'已取消'};
+function showReport(report){
+  const root=$('report');root.replaceChildren();
+  function add(tag,text,parent=root){const el=document.createElement(tag);el.textContent=text;parent.appendChild(el);return el;}
+  add('h3',({blocked:'发现需要修改的问题',conditional:'本次评审已完成',need_human:'存在分歧，需要复核'})[report.ai_verdict]||'本次未形成完整结论');
+  add('p','共 '+report.issues.length+' 条问题。'+(report.issues.length?'请结合下面的依据和修改建议处理。':'在本条用例的评审范围内，未发现明确问题。'));
+  for(const issue of report.issues){const card=add('div','');card.style.cssText='border-top:1px solid #dce2eb;padding:16px 0;line-height:1.8';
+    add('strong',({blocker:'需修改',major:'重要',suggestion:'建议'})[issue.severity]+' · '+issue.category,card);
+    add('p',issue.rationale,card);if(issue.suggestion)add('p','修改建议：'+issue.suggestion,card);
+    add('small',issue.kb_grounded?'已引用知识依据':'依据尚不充分，请复核',card);
+    const review=add('details','',card);add('summary','记录复核反馈',review);feedbackForm(review,report.review_id,issue.issue_no);
+  }
+  const missed=add('details','');add('summary','补充漏检问题',missed);feedbackForm(missed,report.review_id,null);
+  const feedback=add('details','');add('summary','查看复核记录',feedback);
+  const records=add('div','展开后加载复核记录。',feedback);
+  feedback.ontoggle=async()=>{if(!feedback.open)return;try{const data=await(await api('/v1/reviews/'+encodeURIComponent(report.review_id)+'/feedback')).json();records.replaceChildren();if(!data.items.length)add('p','暂无复核记录。',records);for(const item of data.items){add('p',item.reviewer+' · '+(item.actor_type==='human'?'人工反馈':'服务代理反馈')+' · '+new Date(item.created_at).toLocaleString(),records);for(const issue of item.issues)add('p',(issue.issue_no?'问题 '+issue.issue_no:'第 '+issue.step_index+' 步漏检')+' · '+({adopted:'采纳',rejected:'不采纳',missed:'漏检'})[issue.verdict]+'：'+issue.note,records);}}catch(e){records.textContent=e.message}};
+  const sources=add('details','');add('summary','查看知识来源',sources);
+  for(const source of report.appendix?.knowledge_pack?.evidence||[])add('p',source.doc_id+' · '+source.heading_path+'\n'+source.source_ref,sources);
+  const full=add('details','');add('summary','完整报告与追溯记录',full);add('pre',currentReport,full);
+}
+function feedbackForm(parent,reviewId,issueNo){
+  const form=document.createElement('form');form.style.marginTop='12px';parent.appendChild(form);
+  const choice=document.createElement('select');choice.setAttribute('aria-label',issueNo?'复核结论':'漏检严重程度');
+  const choices=issueNo?[['adopted','采纳此问题'],['rejected','不采纳（误报或重复）']]:[['major','重要问题'],['blocker','阻断问题'],['suggestion','建议']];
+  for(const [value,label]of choices){const option=document.createElement('option');option.value=value;option.textContent=label;choice.appendChild(option)}form.appendChild(choice);
+  let step;if(!issueNo){step=document.createElement('input');step.type='number';step.min='1';step.required=true;step.placeholder='发生漏检的步骤编号';step.setAttribute('aria-label','漏检步骤');form.appendChild(step)}
+  const note=document.createElement('textarea');note.required=true;note.maxLength=2000;note.rows=2;note.placeholder='说明依据、修改建议或不采纳的原因';note.setAttribute('aria-label','复核说明');form.appendChild(note);
+  const button=document.createElement('button');button.type='submit';button.textContent='保存复核反馈';button.className='secondary';form.appendChild(button);
+  const message=document.createElement('p');message.className='hint';message.setAttribute('role','status');form.appendChild(message);
+  form.onsubmit=async event=>{event.preventDefault();if(!note.value.trim()){message.textContent='请填写复核说明。';return}button.disabled=true;try{const item=issueNo?{issue_no:issueNo,verdict:choice.value,note:note.value.trim()}:{verdict:'missed',step_index:Number(step.value),severity:choice.value,note:note.value.trim()};await api('/v1/reviews/'+encodeURIComponent(reviewId)+'/feedback',{method:'POST',body:JSON.stringify({issues:[item]})});message.textContent='反馈已保存。原始报告保留，审批状态不变。';note.value=''}catch(e){message.textContent=e.message}finally{button.disabled=false}};
+}
+async function api(path,options={}){const response=await fetch(path,{...options,headers:{'Content-Type':'application/json','Authorization':'Bearer '+$('key').value.trim(),...(options.headers||{})}});if(!response.ok){let body;try{body=await response.json()}catch{body={}}throw new Error(body.error?.message||'服务暂时不可用，请稍后再试');}return response;}
+function payload(){return {case:{case_id:'UI-'+crypto.randomUUID(),case_version:1,project_id:'minishop',module:'order',product_version:'1.0.0',review_baseline:$('baseline').value,platform:'api',test_type:'functional',title:$('title').value,source:'manual',preconditions:$('preconditions').value.split('\n').filter(x=>x.trim()),test_data:{isolation:'独立测试库'},steps:$('steps').value.split('\n').filter(x=>x.trim()).map((line,i)=>{const pos=line.indexOf('→');return {index:i+1,action:pos<0?line:line.slice(0,pos).trim(),expected:pos<0?null:line.slice(pos+1).trim()}})},options:{strict_kb:true},automation_context:{framework:'HTTP API 与数据库查询'},test_scope:{feature_point:$('title').value,required_scenarios:[]}};}
+function error(e){$('error').textContent=e.message;$('submit').disabled=false;}
+async function poll(id,generation=viewGeneration){try{const result=await (await api('/v1/reviews/'+encodeURIComponent(id))).json();if(generation!==viewGeneration)return;$('status').textContent=(statusLabels[result.status]||result.status);if(result.report_available){const markdown=await (await api('/v1/reviews/'+encodeURIComponent(id)+'/report')).text();if(generation!==viewGeneration)return;currentReport=markdown;showReport(result.report);$('download').hidden=false;$('submit').disabled=false;}else if(['failed','cancelled'].includes(result.status)){$('submit').disabled=false;$('report').textContent='此次评审未完成。可以修正输入后重新提交，已有记录会保留。';}else{pollTimer=setTimeout(()=>poll(id,generation),2500);}}catch(e){if(generation===viewGeneration)error(e)}}
+$('submit').onclick=async()=>{clearTimeout(pollTimer);const generation=++viewGeneration;$('error').textContent='';if(!$('key').value.trim()){error(new Error('请先输入访问凭证'));return;}$('submit').disabled=true;$('download').hidden=true;const body=payload();$('request').textContent=JSON.stringify(body,null,2);try{const result=await (await api('/v1/reviews',{method:'POST',body:JSON.stringify(body)})).json();if(generation!==viewGeneration){$('submit').disabled=false;return;}$('report').textContent='评审正在执行，可能需要几分钟。';await poll(result.review_id,generation)}catch(e){error(e)}};
+$('recent').onclick=async()=>{try{const data=await(await api('/v1/reviews?limit=10')).json();$('history').replaceChildren();for(const item of data.items){const b=document.createElement('button');b.textContent=(item.case_id||item.review_id)+' · '+(statusLabels[item.status]||item.status);b.onclick=()=>{clearTimeout(pollTimer);viewGeneration++;$('download').hidden=true;poll(item.review_id)};$('history').appendChild(b)}}catch(e){error(e)}};
+$('gaps').onclick=async()=>{try{const data=await(await api('/v1/knowledge/minishop/gaps')).json();clearTimeout(pollTimer);viewGeneration++;$('download').hidden=true;$('status').textContent='知识待核实 · '+data.items.length+' 条线索';const root=$('report');root.replaceChildren();const note=document.createElement('p');note.textContent=data.note+(data.truncated?' 当前仅显示最近 '+data.scanned_reviews+' 次评审中的线索。':'');root.appendChild(note);for(const item of data.items){const p=document.createElement('p');p.textContent=item.function_point+' · 出现 '+item.occurrences+' 次\n'+item.suspected_rule;root.appendChild(p)}}catch(e){error(e)}};
+$('download').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([currentReport],{type:'text/markdown;charset=utf-8'}));a.download='TestJury-评审报告.md';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+fetch('/ui-config').then(r=>r.json()).then(c=>{$('mode').textContent=c.mode==='live'?'真实模型 · '+({single:'单模型',dual:'双模型',multi:'三模型'})[c.topology]:'演示模式 · 不代表模型评审效果'}).catch(()=>{$('mode').textContent='服务连接失败'});
+</script></body></html>

@@ -248,8 +248,17 @@ def _check_protocol(data: dict[str, Any], reporter: Reporter) -> None:
 
 def _check_kb_pilot(data: dict[str, Any], reporter: Reporter) -> None:
     modules = data.get("modules", [])
-    if len(modules) < 3 or len(modules) > 5:
-        reporter.error(CHECK, rel(KB_PILOT), "modules", f"首批应为 3–5 个模块，实际 {len(modules)}")
+    if not 1 <= len(modules) <= 5:
+        reporter.error(CHECK, rel(KB_PILOT), "modules", f"先行试点允许 1–5 个模块，实际 {len(modules)}")
+    project_id = data.get("project_id")
+    registry = lib.ROOT / "kb_content" / str(project_id) / "project" / "modules.yaml"
+    if not project_id or not registry.is_file():
+        reporter.error(CHECK, rel(KB_PILOT), "project_id", "必须引用已登记的项目模块清单")
+        return
+    registered = {item.get("id") for item in lib.load_yaml(registry)["modules"]}
+    module_ids = [module.get("module_id") for module in modules]
+    if len(set(module_ids)) != len(module_ids) or not set(module_ids) <= registered:
+        reporter.error(CHECK, rel(KB_PILOT), "module_id", "试点模块必须唯一且属于当前项目白名单")
     orders = [module.get("pilot_order") for module in modules]
     if len(orders) != len(set(orders)):
         reporter.error(CHECK, rel(KB_PILOT), "pilot_order", "试点顺序重复")
@@ -276,6 +285,8 @@ def _check_roster(data: dict[str, Any], pilot: dict[str, Any], reporter: Reporte
         reporter.error(CHECK, rel(ROSTER), "status", f"非法状态 {data.get('status')!r}")
     pilot_ids = {module.get("module_id") for module in pilot.get("modules", [])}
     roster_ids = {module.get("module_id") for module in data.get("modules", [])}
+    if data.get("project_id") != pilot.get("project_id"):
+        reporter.error(CHECK, rel(ROSTER), "project_id", "必须与 kb_pilot 项目一致")
     if pilot_ids != roster_ids:
         reporter.error(CHECK, rel(ROSTER), "modules", f"模块集合与 kb_pilot 不一致：缺少 {sorted(pilot_ids - roster_ids)}")
     if not ready:

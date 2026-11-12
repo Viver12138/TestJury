@@ -1,8 +1,6 @@
 project_id: minishop
 snapshot: 2026-11-11
-description: '候选知识冲突台账。冲突表示两个来源对同一行为给出不同描述，或文档声明与实现行为不一致。 本文件只登记，不裁决；所有 status=open 的条目在正式评审前必须处理。
-
-  '
+description: 四维状态分别记录人工决策、知识文档、项目实现和验证。历史 status 仅保留在 legacy_status，不参与发布判断。
 conflicts:
 - id: CONFLICT-001
   project_id: minishop
@@ -17,15 +15,19 @@ conflicts:
   - Minishop/README.md#L52-L53
   - Minishop/frontend/src/pages/product/ProductDetail.tsx#L70-L77
   impact: 涉及“立即购买”路径的用例，预期结果无法确定是“直接结算”还是“加购后去购物车”。
-  status: resolved
+  legacy_status: resolved
   owner: minishop_project_team
   resolution: 以当前实现为准：立即购买=加购+跳转购物车；README 与 REQ-ORDER-001 补写交互定义
   resolved_at: '2026-11-12'
   resolution_type: documented_current_behavior
-  implementation_status: knowledge_updated_readme_pending
+  implementation_note: knowledge_updated_readme_pending
   decided_by: 平台设计者（产品负责人）
   decided_at: '2026-11-11'
   review_note: 同 Q-01。维护者回写完成后方可置"已解决"。
+  decision_status: decided
+  documentation_status: synced
+  implementation_status: pending
+  verification_status: not_verified
 - id: CONFLICT-002
   project_id: minishop
   type: intent_vs_behavior
@@ -42,15 +44,19 @@ conflicts:
   - Minishop/backend/app/api/orders.py#L45-L59
   - Minishop/backend/app/api/payments.py#L15-L36
   impact: 库存边界、并发下单、支付顺序相关用例的预期结果存在两种合理解释。
-  status: resolved
+  legacy_status: resolved
   owner: minishop_project_team
   resolution: 不引入库存预占；超卖定性为已知限制，README/RULE-ORDER-003/009 明确"下单仅校验不占用、支付时 max 截断扣减"
   resolved_at: '2026-11-12'
   resolution_type: accepted_limitation
-  implementation_status: accepted_limitation_no_code_change
+  implementation_note: accepted_limitation_no_code_change
   decided_by: 平台设计者（产品负责人）
   decided_at: '2026-11-11'
   review_note: 同 Q-02。
+  decision_status: decided
+  documentation_status: synced
+  implementation_status: not_required
+  verification_status: not_verified
 - id: CONFLICT-003
   project_id: minishop
   type: documentation_drift
@@ -65,15 +71,19 @@ conflicts:
   - Minishop/frontend/src/App.tsx
   - Minishop/backend/app/database.py
   impact: 按文档导航会找不到路径；自动化/评审引用目录时可能出错。
-  status: resolved
+  legacy_status: resolved
   owner: minishop_project_team
   resolution: 更新 README 目录树：删除 components/、router/；database 改为 database.py 文件
   resolved_at: '2026-11-12'
   resolution_type: doc_fix_pending
-  implementation_status: knowledge_noted_readme_pending
+  implementation_note: knowledge_noted_readme_pending
   decided_by: 平台设计者（技术负责人）
   decided_at: '2026-11-11'
   review_note: 实测 frontend/src 仅 api/layouts/pages/store/types；backend/app 为 database.py 文件。
+  decision_status: decided
+  documentation_status: synced
+  implementation_status: pending
+  verification_status: not_verified
 - id: CONFLICT-004
   project_id: minishop
   type: internal_inconsistency
@@ -90,15 +100,19 @@ conflicts:
   - Minishop/backend/app/api/payments.py#L46
   - Minishop/backend/app/api/orders.py#L127
   impact: 按状态机设计用例时，“待发货”状态不可达；覆盖率与预期结果会失真。
-  status: resolved
+  legacy_status: resolved
   owner: minishop_project_team
   resolution: 确认为不可达状态；STATE-ORDER-001 标注"未启用"，后续版本决定删除或启用
   resolved_at: '2026-11-12'
   resolution_type: documented_unreachable
-  implementation_status: accepted_current_behavior
+  implementation_note: accepted_current_behavior
   decided_by: 平台设计者（技术负责人）
   decided_at: '2026-11-11'
   review_note: 同 Q-08。
+  decision_status: decided
+  documentation_status: synced
+  implementation_status: not_required
+  verification_status: not_verified
 - id: CONFLICT-005
   project_id: minishop
   type: deployment_inconsistency
@@ -113,15 +127,19 @@ conflicts:
   - Minishop/docker-compose.yml#L9
   - Minishop/seed_media
   impact: Docker 环境不可用，容器化用例无法执行；属于环境阻塞而非产品缺陷。
-  status: resolved
+  legacy_status: resolved
   owner: minishop_project_team
   resolution: 删除未使用配置：Dockerfile#L11 COPY、compose 挂载与 SEED_MEDIA_DIR、config.py#L15
   resolved_at: '2026-11-12'
   resolution_type: config_fix_pending
-  implementation_status: decision_recorded_config_fix_pending
+  implementation_note: decision_recorded_config_fix_pending
   decided_by: 平台设计者（技术负责人）
   decided_at: '2026-11-11'
   review_note: 同 Q-13。修复前 Docker 构建失败，容器环境不可用。
+  decision_status: decided
+  documentation_status: synced
+  implementation_status: pending
+  verification_status: not_verified
 - id: CONFLICT-006
   project_id: minishop
   type: field_semantics
@@ -138,15 +156,19 @@ conflicts:
   - Minishop/backend/app/api/coupons.py#L83
   - Minishop/backend/app/api/orders.py#L161-L166
   impact: “领完/发完/用满”三类场景无法从现有资料确定，券相关边界用例预期不稳定。
-  status: resolved
+  legacy_status: resolved
   owner: minishop_project_team
   resolution: total_quantity 确认为"发放总量"；领券按已领取数计数并统一领券/用券/可用券三处判断
   resolved_at: '2026-11-12'
   resolution_type: code_fix_pending
-  implementation_status: decision_recorded_code_fix_pending
+  implementation_note: decision_recorded_code_fix_pending
   decided_by: 平台设计者（产品负责人）
   decided_at: '2026-11-11'
   review_note: 同 Q-06。首版裁决误写"明确为使用总量"，与 Q-06 结论相反，本次更正。
+  decision_status: decided
+  documentation_status: synced
+  implementation_status: pending
+  verification_status: not_verified
 - id: CONFLICT-007
   project_id: minishop
   type: data_model_inconsistency
@@ -161,15 +183,19 @@ conflicts:
   - Minishop/backend/app/models/models.py#L215-L227
   - Minishop/backend/app/api/payments.py#L50-L74
   impact: 支付失败后再成功时，订单详情的 payment.status 断言可能不稳定。
-  status: resolved
+  legacy_status: resolved
   owner: minishop_project_team
   resolution: 订单详情展示成功/最新支付；关系改多对象或增加 current_payment_id
   resolved_at: '2026-11-12'
   resolution_type: code_fix_pending
-  implementation_status: decision_recorded_code_fix_pending
+  implementation_note: decision_recorded_code_fix_pending
   decided_by: 平台设计者（技术负责人）
   decided_at: '2026-11-11'
   review_note: 同 Q-05。实测确定性返回第一条 FAILED 并抛 SAWarning。
+  decision_status: decided
+  documentation_status: synced
+  implementation_status: pending
+  verification_status: not_verified
 - id: CONFLICT-008
   project_id: minishop
   type: metric_definition
@@ -182,15 +208,19 @@ conflicts:
   - Minishop/backend/app/api/admin.py#L28-L33
   - Minishop/README.md#L62
   impact: 统计类用例的预期值存在“含退款/不含退款”两种口径。
-  status: resolved
+  legacy_status: resolved
   owner: minishop_project_team
   resolution: 维持毛销售额口径（含 REFUNDED），在 README 与 Dashboard 说明中标注；净销售额另加字段
   resolved_at: '2026-11-12'
   resolution_type: metric_documented
-  implementation_status: documented_current_metric
+  implementation_note: documented_current_metric
   decided_by: 平台设计者（产品负责人）
   decided_at: '2026-11-11'
   review_note: 同 Q-09。
+  decision_status: decided
+  documentation_status: synced
+  implementation_status: pending
+  verification_status: not_verified
 - id: CONFLICT-009
   project_id: minishop
   type: doc_vs_implementation
@@ -205,15 +235,19 @@ conflicts:
   - Minishop/frontend/src/pages/product/ProductDetail.tsx#L45-L68
   - Minishop/backend/app/seed/seed.py#L120-L128
   impact: UI 主流程无法购买 8/9 个种子商品；UI 自动化只能选多规格商品或用 API 准备。
-  status: resolved
+  legacy_status: resolved
   owner: minishop_project_team
   resolution: 判定为缺陷：单规格商品默认选中 skus[0]；修复前 UI 用例仅用多规格商品或 API 造数
   resolved_at: '2026-11-12'
   resolution_type: code_fix_pending
-  implementation_status: decision_recorded_code_fix_pending
+  implementation_note: decision_recorded_code_fix_pending
   decided_by: 平台设计者（技术负责人）
   decided_at: '2026-11-11'
   review_note: 同 Q-10。
+  decision_status: decided
+  documentation_status: synced
+  implementation_status: pending
+  verification_status: not_verified
 - id: CONFLICT-010
   project_id: minishop
   type: state_transition_inconsistency
@@ -229,14 +263,18 @@ conflicts:
   - Minishop/backend/app/api/refunds.py#L20-L22
   - Minishop/backend/app/api/admin.py#L238-L243
   impact: 退款拒绝后的订单状态断言无法按“回到原状态”设计；与已发货/已完成语义冲突。
-  status: resolved
+  legacy_status: resolved
   owner: minishop_project_team
   resolution: 退款拒绝后恢复退款前状态（PAID/SHIPPED/COMPLETED）；需快照 pre_refund_status
   resolved_at: '2026-11-12'
   resolution_type: code_fix_pending
-  implementation_status: decision_recorded_code_fix_pending
+  implementation_note: decision_recorded_code_fix_pending
   decided_by: 平台设计者（产品负责人）
   decided_at: '2026-11-11'
   review_note: 同 Q-04。
+  decision_status: decided
+  documentation_status: synced
+  implementation_status: pending
+  verification_status: not_verified
 updated_at: '2026-11-12'
-status: resolved_with_pending_implementation
+status: decisions_recorded_with_pending_work

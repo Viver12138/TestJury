@@ -49,6 +49,22 @@ def _model(content: str) -> tuple[ChatReviewModel, FakeChatAdapter]:
     return model, adapter
 
 
+async def test_arbitration_requires_exact_candidate_coverage_and_keeps_case_context():
+    candidates = [{"candidate_id": "c1", "description": "冲突", "case": {"title": "金额计算"}},
+                  {"candidate_id": "c2", "description": "另一个冲突"}]
+    model, adapter = _model(json.dumps({"decisions": [
+        {"candidate_id": "c1", "chief_decision": "adopt", "chief_reason": "依据明确"}]}))
+    with pytest.raises(AdapterError, match="候选集合不完整"):
+        await model.arbitrate(candidates, None)
+    material = json.loads(adapter.requests[0].messages[-1].content)
+    assert material["candidates"][0]["case"]["title"] == "金额计算"
+    adapter.content = json.dumps({"decisions": [
+        {"candidate_id": c["candidate_id"], "chief_decision": "need_human", "chief_reason": "依据不足"}
+        for c in candidates]})
+    decisions, _ = await model.arbitrate(candidates, None)
+    assert set(decisions) == {"c1", "c2"}
+
+
 @pytest.mark.asyncio
 async def test_review_parses_issues_and_drops_decision_fields() -> None:
     content = json.dumps(

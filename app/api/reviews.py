@@ -10,8 +10,8 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from app.api.deps import get_decision_service, get_principal, get_review_service
 from app.core.auth import Principal, ensure_roles
 from app.core.enums import Role
-from app.core.errors import ApiError, ErrorCode
 from app.services.decisions import DecisionService
+from app.services.feedback import FeedbackService
 from app.services.reviews import ReviewService
 
 router = APIRouter(prefix="/v1", tags=["reviews"])
@@ -77,9 +77,14 @@ async def list_decisions(
 
 
 @router.post("/reviews/{review_id}/feedback")
-async def submit_feedback(review_id: str, payload: dict[str, Any] = Body(...)):
-    # M0 只保证接口存在且不误报成功；反馈实体与评测链路在 M5/M6 落地。
-    raise ApiError(ErrorCode.NOT_FOUND, "反馈接口在 M0 未实现")
+async def submit_feedback(review_id: str, request: Request, payload: dict[str, Any] = Body(...),
+                          principal: Principal = Depends(get_principal)):
+    return await FeedbackService(request.app.state.storage).submit(review_id, payload, principal)
+
+
+@router.get("/reviews/{review_id}/feedback")
+async def list_feedback(review_id: str, request: Request, principal: Principal = Depends(get_principal)):
+    return await FeedbackService(request.app.state.storage).list(review_id, principal)
 
 
 @router.delete("/reviews/{review_id}", status_code=204)

@@ -54,7 +54,9 @@ def test_empty_database_migrates_and_rolls_back(clean_database: str) -> None:
     tables = asyncio.run(_tables())
     assert CORE_TABLES <= tables
     assert "review_attachments" in tables
-    assert asyncio.run(_alembic_version()) == "0004_m1_masking_audit"
+    assert asyncio.run(_alembic_version()) == "0008_webhook_outbox"
+    assert "stage_checkpoints" in tables
+    assert {"knowledge_builds", "knowledge_vectors", "knowledge_active", "knowledge_events"} <= tables
 
     # 回滚 0004：只撤销脱敏审计列
     downgrade_0004 = run_alembic("downgrade", "0003_m1_audit_evidence")
@@ -89,7 +91,7 @@ def test_empty_database_migrates_and_rolls_back(clean_database: str) -> None:
     rebuilt = asyncio.run(_tables())
     assert CORE_TABLES <= rebuilt
     assert "review_attachments" in rebuilt
-    assert asyncio.run(_alembic_version()) == "0004_m1_masking_audit"
+    assert asyncio.run(_alembic_version()) == "0008_webhook_outbox"
 
 
 def test_repeated_upgrade_is_noop(clean_database: str) -> None:

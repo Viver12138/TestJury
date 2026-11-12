@@ -1,0 +1,66 @@
+{
+  "checked_at": "2026-11-12T08:35:31.159330+00:00",
+  "temporary_database": "testjury_restore_146d65cf5a3f",
+  "backup_sha256": "64c3d7d97b579a61e4cf765bdfef622c3e01c7f491fd3cf7d29a83379e95a470",
+  "previous_migration": "0006_stage_checkpoints",
+  "current_migration": "0008_webhook_outbox",
+  "tables": {
+    "review_jobs": {
+      "before": 3,
+      "after": 3,
+      "identical": true,
+      "sha256": "dc54f2abd8c1d26ee4a457d91197c22d3ae80ab1d0f784cbafb09b3c621a1e15"
+    },
+    "issues": {
+      "before": 2,
+      "after": 2,
+      "identical": true,
+      "sha256": "53775b2d54de8b31b1d25ef5eb59a55f8b2705c4959b2eb2c90e936f35391728"
+    },
+    "audit_log": {
+      "before": 2,
+      "after": 2,
+      "identical": true,
+      "sha256": "59fb0b219241a97dc8f26d57954e89bb0baa4242174a9b9a5149603e5220cc64"
+    },
+    "model_runs": {
+      "before": 8,
+      "after": 8,
+      "identical": true,
+      "sha256": "211662ca340d4c3106ed1568af295b05a7f2d6625670aa5e604c0ea61233eb1d"
+    },
+    "human_review_tasks": {
+      "before": 0,
+      "after": 0,
+      "identical": true,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "knowledge_builds": {
+      "before": 2,
+      "after": 2,
+      "identical": true,
+      "sha256": "7012ffdd04a05bf95375dd225aa07fd5c28b0cd898bdef16f1ba92741c9b0537"
+    },
+    "knowledge_vectors": {
+      "before": 456,
+      "after": 456,
+      "identical": true,
+      "sha256": "3804261783aaacec291ddb441d00928d28cedd52e7755a1423abec9e76351250"
+    },
+    "knowledge_active": {
+      "before": 1,
+      "after": 1,
+      "identical": true,
+      "sha256": "cc5223bd61b352bc996d2a3f24463c0de8fd90043d1415384ecb7ac3eb9c49f6"
+    },
+    "knowledge_events": {
+      "before": 2,
+      "after": 2,
+      "identical": true,
+      "sha256": "d69a1930125f30076cfbc6831eb4573bfd3cb209457e738183e0082c625f6c0a"
+    }
+  },
+  "historical_budget_rows": 8,
+  "passed": true,
+  "temporary_database_removed": true
+}

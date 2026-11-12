@@ -1,0 +1,13 @@
+{
+  "id": "G-001-positive",
+  "mode": "live",
+  "split": "dev",
+  "build_version": "kb-runtime-f8500a94a85ced5e4b82be27e2388052004d8e02a6e4b8d4bdb1ec6fda8e5f85",
+  "annotation_type": "delegated_ai",
+  "status": "failed",
+  "error": null,
+  "expected_count": 0,
+  "reported_count": 0,
+  "matched_count": 0,
+  "report": null
+}

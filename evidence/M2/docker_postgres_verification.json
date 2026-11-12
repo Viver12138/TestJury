@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-12",
+  "database_address": "127.0.0.1:55432",
+  "postgres_version": "16.15 (Debian 16.15-1.pgdg12+2)",
+  "isolated_database_removed": true,
+  "exit_code": 0,
+  "tests": {
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 8
+  }
+}

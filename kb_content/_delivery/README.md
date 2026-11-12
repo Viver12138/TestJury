@@ -2,6 +2,8 @@
 
 本目录存放 TestJury 知识库候选交付的过程与自检材料，不是业务知识正文。
 
+2026-11-12 后续开发已加入用户授权的 AI 技术复核和本地运行知识库；最新范围、证据与限制见 `docs/development-2026-11-12.md`。下面各报告保留其生成时的历史状态。
+
 | 文件 | 对应任务交付 | 说明 |
 |---|---|---|
 | `source_inventory.yaml` | 项目资料清单（机读） | 80 条资料，含分类、行数、SHA-256、证据等级 |
@@ -13,8 +15,10 @@
 | `06_final_report.md` | 最终报告 | 回答任务第 5 节的 6 个问题 |
 | `07_audit_report_2026-11-12.md` | 独立审核报告 | 2026-11-12 复核：漂移检测、元数据复验、事实核对、3 项低危整改 |
 | `08_review_application_2026-11-12.md` | 人工复核回写报告 | 应用复核表：24 approved / 13 待复审，冲突/缺口/待确认台账更新 |
+| `09_contract_remediation_2026-11-12.md` | 首批整改记录 | 当前状态、契约/证据/治理/基线、重跑方式与剩余发布条件 |
+| `source_binding.yaml` | 不可变来源绑定 | 仓库/完整 commit/快照与仓库哈希、受控人工决策及内部规范 |
 | `validation_result.json` | 自检原始结果 | 自动校验的机器输出 |
-| `../../MiniShop_知识库人工确认清单.xlsx` | 人工确认工作簿 | 7 个 sheet：填写说明、处理总览、待确认问题、知识冲突、知识缺口、文档审核、字典 |
+| `../../evidence/M2/manual_review/MiniShop_知识库人工确认清单_复核修正版.xlsx` | 原人工确认工作簿 | 四张业务表 77 行与原提取记录逐项一致；原表及比较结果受控保存 |
 
 ## 相关治理文件
 
@@ -25,7 +29,7 @@
 
 ## 重跑校验
 
-自动校验脚本未随交付打包（避免把工具混入知识命名空间）。校验逻辑与结果已记录在 `03_quality_report.md` 与 `validation_result.json`；重新校验时至少应检查：
+当前检查入口为 `scripts/check_kb.py`（已纳入 `scripts/check_contracts.py`），离线解析入口为 `scripts/build_kb_candidate.py`；工具保留在代码目录，不混入业务知识。旧 `03_quality_report.md` 与 `validation_result.json` 是原交付快照，不能代表本轮已满足发布要求。当前检查包括：
 
 1. YAML Front Matter 必需字段；
 2. 枚举合法性；

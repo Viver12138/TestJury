@@ -1,0 +1,7 @@
+# 新项目模板；复制到 design/kb_pilot.yaml 后填写真实资料，不登记虚构模块。
+version: "0.2"
+baseline: design-v1.13
+project_id: null
+status: proposed
+last_updated: null
+modules: []

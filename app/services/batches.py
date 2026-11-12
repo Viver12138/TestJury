@@ -56,22 +56,26 @@ class BatchService:
                 raise ApiError(ErrorCode.INVALID_CASE, f"cases[{index}] 必须是对象")
             request = {
                 "case": item,
-                "options": {"strict_kb": bool(options.get("strict_kb", False))},
+                "options": {"strict_kb": bool(options.get("strict_kb", False)),
+                            "budget_tokens": options.get("budget_tokens"), "webhook_url": options.get("webhook_url")},
             }
             normalized = validate_request(request, self.settings, caller_id=principal.caller_id)
-            normalized_items.append((request, normalized))
+            snapshot = await self.reviews.select_versions(normalized.case)
+            if normalized.options.get("strict_kb") and snapshot[1] is None:
+                raise ApiError(ErrorCode.KB_MODULE_MISSING, f"cases[{index}] 的基线没有已启用知识")
+            normalized_items.append((request, normalized, snapshot))
             hashes.append(
-                compute_input_hash(
+                compute_idempotency_key(compute_input_hash(
                     normalized.case,
                     normalized.test_scope,
                     normalized.automation_context,
                     normalized.options,
-                )
+                ), snapshot[0])
             )
 
         batch_key = compute_idempotency_key("|".join(sorted(hashes)), self.versions)
         batch = BatchRecord(
-            id=new_id("b-"),
+            id=new_id(),
             status="queued",
             total=len(normalized_items),
             caller_id=principal.caller_id or principal.actor_id,
@@ -92,7 +96,7 @@ class BatchService:
             for child in targets:
                 request = dict(child.request_payload)
                 request["options"] = {**(request.get("options") or {}), "force": True}
-                result = await self.reviews.submit(request, principal)
+                result = await self.reviews.submit(request, principal, batch_id=created.id)
                 new_job = await self.storage.get_job(result.body["review_id"])
                 if new_job is not None and new_job.id != child.id:
                     await self.storage.update_job(new_job.id, batch_id=created.id)
@@ -103,8 +107,8 @@ class BatchService:
                 "poll_url": f"/v1/review-batches/{created.id}",
             }
 
-        for request, _normalized in normalized_items:
-            result = await self.reviews.submit(request, principal)
+        for request, _normalized, snapshot in normalized_items:
+            result = await self.reviews.submit(request, principal, version_snapshot=snapshot, batch_id=created.id)
             review_id = result.body["review_id"]
             job = await self.storage.get_job(review_id)
             if job is None:  # pragma: no cover

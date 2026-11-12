@@ -1,0 +1,535 @@
+{
+  "id": "G-011-positive",
+  "mode": "mock",
+  "split": "regression",
+  "build_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f",
+  "code_fingerprint": "d920136a7736321fb1bae7929321033a289ad7119329e91a8f87fa2563406a70",
+  "dataset_version": "minishop-gold-3",
+  "dataset_files": {
+    "retrieval.jsonl": "bfef25226dfdd7644800fe1c0754fb30f451a2e1de124971e6154319782ee95f",
+    "review.jsonl": "e28ccaeb34632659948ac82bc2af40b9bb3e43ad1c9023ef3fbd20f33d745948"
+  },
+  "annotation_type": "delegated_ai",
+  "status": "done",
+  "error": null,
+  "expected_count": 0,
+  "reported_count": 0,
+  "matched_count": 0,
+  "report": {
+    "review_id": "0c3a3d12-f568-4a81-91b0-c4a9949521fb",
+    "case_id": "G-011-positive",
+    "case_version": 3,
+    "module": "order",
+    "test_type": "functional",
+    "test_type_source": "request",
+    "generation": 1,
+    "parent_review_id": null,
+    "status": "done",
+    "stage": "render",
+    "ai_verdict": "conditional",
+    "human_status": "pending",
+    "report_schema_version": "report-1.0",
+    "degraded": true,
+    "degraded_reasons": [
+      "arbitration_skipped"
+    ],
+    "participants": [
+      "chief_blind:qwen3.8-max",
+      "jury_a:deepseek-flash",
+      "jury_b:kimi-k3.1-pro"
+    ],
+    "topology": "multi",
+    "review_participants": [
+      {
+        "participant_id": "p-01",
+        "role_id": "chief_blind",
+        "status": "active",
+        "model": "qwen3.8-max",
+        "actual_model": "mock"
+      },
+      {
+        "participant_id": "p-02",
+        "role_id": "jury_a",
+        "status": "active",
+        "model": "deepseek-flash",
+        "actual_model": "mock"
+      },
+      {
+        "participant_id": "p-03",
+        "role_id": "jury_b",
+        "status": "active",
+        "model": "kimi-k3.1-pro",
+        "actual_model": "mock"
+      }
+    ],
+    "review_completeness": {
+      "blind": "3/3",
+      "vote": "3/3",
+      "arbitration": "skipped",
+      "arbitration_required": false,
+      "stages_completed": [
+        "input_check",
+        "kb_retrieve",
+        "blind_review",
+        "fusion",
+        "vote",
+        "verdict",
+        "render"
+      ],
+      "stages_skipped": [
+        "preprocess",
+        "arbitration"
+      ],
+      "stages_failed": [],
+      "stages_pending": [],
+      "complete": true,
+      "full_participation": true
+    },
+    "input_quality": {
+      "hard_errors": [],
+      "soft_issues": []
+    },
+    "versions": {
+      "kb": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f",
+      "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+      "kb_build_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f",
+      "rubric": "0.2.0",
+      "prompts": {
+        "preprocess": "p-m0-pre-01",
+        "chief_blind": "p-m0-chief-01",
+        "jury_a": "p-m0-jury-a-01",
+        "jury_b": "p-m0-jury-b-01",
+        "vote": "p-m0-vote-01",
+        "arbitration": "p-m0-arb-01"
+      },
+      "retrieval_config": "25cec85a",
+      "embedding_profile": "lexical-only",
+      "model_config": "7e35c71d",
+      "models": {
+        "chief_blind": "qwen3.8-max",
+        "jury_a": "deepseek-flash",
+        "jury_b": "kimi-k3.1-pro",
+        "vote": "qwen3.8-max",
+        "arbitration": "qwen3.8-max",
+        "preprocess": "deepseek-flash"
+      },
+      "price_config": "price-unverified-2026-11"
+    },
+    "summary": {
+      "total_issues": 0,
+      "blocker": 0,
+      "major": 0,
+      "suggestion": 0
+    },
+    "issues": [],
+    "human_review_items": [],
+    "kb_gaps": [],
+    "attachments": [],
+    "scope": {
+      "feature_point": "查看他人订单与取消他人订单的拒绝状态码是否相同？",
+      "scope_version": null,
+      "provided": true,
+      "coverage_claims_allowed": false,
+      "note": "v1 仅做单条用例评审，不输出功能点整体覆盖率"
+    },
+    "decision_summary": {
+      "human_status": "pending",
+      "latest_decision": null,
+      "history_count": 0
+    },
+    "appendix": {
+      "raw_opinions": {
+        "chief_blind": {
+          "summary": "chief_blind 盲评：发现 0 条问题",
+          "issues": []
+        },
+        "jury_a": {
+          "summary": "jury_a 盲评：发现 0 条问题",
+          "issues": []
+        },
+        "jury_b": {
+          "summary": "jury_b 盲评：发现 0 条问题",
+          "issues": []
+        }
+      },
+      "disagreements": [],
+      "model_runs": [
+        {
+          "role": "chief_blind",
+          "model": "mock",
+          "status": "ok",
+          "latency_ms": 0,
+          "tokens": {
+            "request": 0,
+            "response": 0
+          },
+          "cost_estimate": 0.0,
+          "parse_warnings": []
+        },
+        {
+          "role": "jury_a",
+          "model": "mock",
+          "status": "ok",
+          "latency_ms": 0,
+          "tokens": {
+            "request": 0,
+            "response": 0
+          },
+          "cost_estimate": 0.0,
+          "parse_warnings": []
+        },
+        {
+          "role": "jury_b",
+          "model": "mock",
+          "status": "ok",
+          "latency_ms": 0,
+          "tokens": {
+            "request": 0,
+            "response": 0
+          },
+          "cost_estimate": 0.0,
+          "parse_warnings": []
+        }
+      ],
+      "normalized_case": {
+        "case_id": "G-011-positive",
+        "case_version": 3,
+        "module": "order",
+        "test_type": "functional",
+        "title": "查看他人订单与取消他人订单的拒绝状态码是否相同？",
+        "priority": null,
+        "source": "manual",
+        "preconditions": [
+          "普通用户B已登录；订单10属于A且为PENDING_PAYMENT",
+          "每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。"
+        ],
+        "steps": [
+          {
+            "index": 1,
+            "action": "普通用户B执行 GET /api/orders/10，再 POST /api/orders/10/cancel；测试框架只读查询 orders(id=10).status",
+            "expected": "详情HTTP 403，无权查看该订单；取消HTTP 404，订单不存在；状态不变"
+          }
+        ],
+        "test_data": {
+          "fixture": "普通用户B已登录；订单10属于A且为PENDING_PAYMENT；每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。",
+          "isolation": "独立测试库"
+        },
+        "attachments": [],
+        "raw_text": null,
+        "kb_hint": null,
+        "project_id": "minishop",
+        "review_baseline": "current_implementation",
+        "product_version": "1.0.0",
+        "platform": "api"
+      },
+      "knowledge_pack": {
+        "build_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f",
+        "content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+        "retriever_version": "hybrid-bm25-rrf-3",
+        "project_id": "minishop",
+        "module": "order",
+        "baseline": {
+          "type": "current_implementation",
+          "product_version": "1.0.0",
+          "source_ref": "https://github.com/Viver12138/minishop.git",
+          "source_version": "e354437069504381f10a54d9c14baed755f3ba56"
+        },
+        "as_of": "2026-11-12",
+        "query": "查看他人订单与取消他人订单的拒绝状态码是否相同？\n普通用户B已登录；订单10属于A且为PENDING_PAYMENT\n每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。\n普通用户B执行 GET /api/orders/10，再 POST /api/orders/10/cancel；测试框架只读查询 orders(id=10).status 详情HTTP 403，无权查看该订单；取消HTTP 404，订单不存在；状态不变",
+        "evidence": [
+          {
+            "chunk_id": "3d1b29a2deeacce324a503ff9e060c87eb7762f67752ab8b9fc92447d3d343c8",
+            "project_id": "minishop",
+            "doc_id": "API-ORDER-004",
+            "module": "order",
+            "doc_type": "design",
+            "knowledge_type": "INTERFACE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L223-L260",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L223-L260",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "2. 请求方式与路径",
+            "chunk_index": 1,
+            "content_hash": "56030d1bc3165056b3ba2d2795cecd45edd756381ccdc34caa9d3e9f4d26e446",
+            "text": "# 2. 请求方式与路径\n\n```http\nPOST /api/orders/{order_id}/cancel\nPOST /api/orders/{order_id}/confirm\nAuthorization: Bearer <JWT>\n```\n\n无请求体。\n\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "interface_contract"
+            ],
+            "rrf_score": 0.0,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f"
+          },
+          {
+            "chunk_id": "b5977516ccf747133232d5071d78c81eec5c89995f5141495d7ce25bf2febfb7",
+            "project_id": "minishop",
+            "doc_id": "API-ORDER-003",
+            "module": "order",
+            "doc_type": "design",
+            "knowledge_type": "INTERFACE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L173-L220; Minishop/backend/app/api/common.py#L142-L184",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L173-L220",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/common.py#L142-L184",
+                "snapshot_sha256": "4adcca84be8ce74c3e07c5c13444b3956a5f9abf8a0c25a8891e0c983d4a80ee",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/common.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/common.py"
+              }
+            ],
+            "heading_path": "2. 请求方式与路径",
+            "chunk_index": 1,
+            "content_hash": "33e9eb14ca2cf3550c4ab48d06750df83f775ab82de085d8500e1ff8dbb64ddc",
+            "text": "# 2. 请求方式与路径\n\n```http\nGET /api/orders?status=<status>&page=1&page_size=10\nGET /api/orders/{order_id}\nAuthorization: Bearer <JWT>\n```\n\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "interface_contract"
+            ],
+            "rrf_score": 0.0,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f"
+          },
+          {
+            "chunk_id": "8ff5791fe7c52761dbc778957551c3471f8bf8eceb92f7fa8209444381ef6f6e",
+            "project_id": "minishop",
+            "doc_id": "RULE-ORDER-011",
+            "module": "order",
+            "doc_type": "rule",
+            "knowledge_type": "BUSINESS_RULE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L173-L260; Minishop/backend/app/api/admin.py#L114-L178; Minishop/backend/app/auth/dependencies.py#L13-L58",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L173-L260",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/admin.py#L114-L178",
+                "snapshot_sha256": "15e2b64089522e85d0f22a0032350bdb11164c1f91d5f62566c8ad99f1a6592b",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/admin.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/admin.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/auth/dependencies.py#L13-L58",
+                "snapshot_sha256": "7e13c803ab0a967c0ccdcb580b11eaf94a6475dbdeb3af92d839bd62a82cb923",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/auth/dependencies.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/auth/dependencies.py"
+              }
+            ],
+            "heading_path": "订单数据的访问控制与越权边界",
+            "chunk_index": 0,
+            "content_hash": "b04186b5973497c2871e265b2d1d7886e40c5ab43df2b309bae0fe4965e765aa",
+            "text": "\n# 1. 规则陈述\n\n普通用户只能查看和操作自己的订单；管理员可以查看任意订单并发货。不同接口对越权的响应不一致：订单详情返回 403，取消/确认收货返回 404，管理接口对普通用户返回 403。\n\n# 2. 适用范围\n\n- `GET /api/orders`\n- `GET /api/orders/{order_id}`\n- `POST /api/orders/{order_id}/cancel`\n- `POST /api/orders/{order_id}/confirm`\n- `GET /api/admin/orders`\n- `POST /api/admin/orders/{order_id}/ship`\n- 产品版本 `1.0.0`\n\n# 3. 前置条件\n\n- 请求已通过登录鉴权；\n- 目标订单存在（管理接口）。\n\n# 4. 触发条件\n\n用户访问订单列表、订单详情、取消、确认收货、管理端订单或发货接口。\n\n# 5. 规则结果\n\n| 接口 | 访问者 | 结果 |\n|---|---|---|\n| `GET /api/orders` | 任意登录用户 | 只返回 `user_id` 等于自己的订单 |\n| `GET /api/orders/{id}` | 订单所有者 | 200 |\n| `GET /api/orders/{id}` | 管理员 | 200 |\n| `GET /api/orders/{id}` | 其他用户 | 403 `无权查看该订单` |\n| `POST /api/orders/{id}/cancel` | 订单所有者 | 走取消逻辑 |\n| `POST /api/orders/{id}/cancel` | 其他用户 | 404 `订单不存在` |\n| `POST /api/orders/{id}/confirm` | 订单所有者 | 走确认逻辑 |\n| `POST /api/orders/{id}/confirm` | 其他用户 | 404 `订单不存在` |\n| `GET /api/admin/orders` | 管理员 | 返回所有用户订单，可带 `username` 过滤 |\n| `GET /api/admin/orders` | 普通用户 | 403 `需要管理员权限` |\n| `POST /api/admin/orders/{id}/ship` | 普通用户 | 403 `需要管理员权限` |\n\n# 6. 边界与例外\n\n- 订单列表接口不校验查询参数 `status` 的合法性，非法值返回空列表。\n- 管理端订单列表支持 `status`、`order_no` 模糊、`username` 模糊过滤；分页默认 10，最大 100。\n- 管理员也可以调用普通用户的订单详情接口查看他人订单。\n- 用户被禁用后，已有 token 在下次请求时返回 403 `账号已被禁用`。\n- 403 与 404 的混用是当前实现事实，不是笔误；测试预期必须按接口区分。\n\n# 7. 反例或禁止行为\n\n- 禁止普通用户通过修改 URL 中的订单 ID 查看他人订单。\n- 禁止普通用户调用 `/api/admin/**`。\n- 禁止把“列表为空”误判为“没有权限”。\n- 禁止在未登录时访问订单接口（应为 401，不是 403）。\n\n# 8. 验证方式\n\n1. 用户 A 创建订单，用户 B 用 A 的订单 ID 调用详情，预期 403。\n2. 用户 B 调用取消/确认，预期 404。\n3. 用户 B 调用 `/api/admin/orders`，预期 403。\n4. 管理员调用详情，预期 200。\n5. 无 token 调用任意订单接口，预期 401。\n6. 禁用用户后使用旧 token，预期 403。\n\n# 9. 来源依据\n\n- `Minishop/backend/app/api/orders.py#L173-L260`：列表过滤、详情 403、取消/确认 404。\n- `Minishop/backend/app/api/admin.py#L114-L178`：管理端订单列表与发货权限。\n- `Minishop/backend/app/auth/dependencies.py#L13-L58`：401/403 的产生位置。\n\n# 10. 未决问题\n\n- 是否应统一越权语义（全 404 防枚举，或全 403 明确拒绝）？\n- 管理员查看用户订单是否应记录操作日志？（`operation_logs` 表存在但未使用）\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.01639344262295082,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f"
+          },
+          {
+            "chunk_id": "a3af34e93c12ab692ad90dbf1bb366e9543c434849545072686b161766d1628a",
+            "project_id": "minishop",
+            "doc_id": "RULE-ORDER-007",
+            "module": "order",
+            "doc_type": "rule",
+            "knowledge_type": "BUSINESS_RULE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L223-L244",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L223-L244",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "只有待支付订单可以取消并归还优惠券",
+            "chunk_index": 0,
+            "content_hash": "ec838a8512b05ae63f5f9c558087235489ee14a8f2dd67352805f4861b660ccc",
+            "text": "\n# 1. 规则陈述\n\n只有订单所有者可以取消状态为 `PENDING_PAYMENT` 的订单；取消后订单进入 `CANCELLED` 终态，已占用的优惠券必须恢复为可用，券模板已使用数量回退 1。\n\n# 2. 适用范围\n\n- `POST /api/orders/{order_id}/cancel`\n- 产品版本 `1.0.0`\n\n# 3. 前置条件\n\n- 用户已登录；\n- 订单存在且 `user_id` 等于当前用户；\n- 订单状态为 `PENDING_PAYMENT`。\n\n# 4. 触发条件\n\n用户对待支付订单提交取消请求。\n\n# 5. 规则结果\n\n- 订单 `status = CANCELLED`，`cancelled_at` 为当前时间；\n- 若 `user_coupon_id` 非 0：\n  - 用户券 `status = UNUSED`；\n  - `used_order_id = 0`；\n  - `used_at = None`；\n  - 券模板 `used_quantity = max(used_quantity - 1, 0)`；\n- 不修改库存、销量、支付记录；\n- 订单不可恢复。\n\n# 6. 边界与例外\n\n- 非本人订单返回 **404**（不是 403），避免暴露订单存在性。\n- 状态不是 `PENDING_PAYMENT` 时返回 409 `只有待支付订单可以取消`。\n- 已创建但未支付的支付单不会被关闭，仍保留 `PENDING` 状态；后续调用支付成功会因订单已取消返回 409。\n- 券归还后如果券已过期，查询“我的优惠券”时会动态显示为 `EXPIRED`，但数据库状态仍是 `UNUSED`。\n- 若券模板已被删除或数据异常，代码对 `used_quantity` 的回退做了不小于 0 的保护。\n\n# 7. 反例或禁止行为\n\n- 禁止取消已支付及之后状态的订单。\n- 禁止用户取消他人订单。\n- 禁止在取消时恢复库存（下单未扣库存）。\n- 禁止把取消当作退款使用。\n\n# 8. 验证方式\n\n1. 待支付订单取消，确认状态、`cancelled_at`。\n2. 取消后查询用户券，确认 `UNUSED`、`used_order_id=0`。\n3. 取消后再次下单使用同一张券，确认可用。\n4. 已支付订单取消，确认 409。\n5. 用户 B 取消用户 A 的订单，确认 404。\n6. 取消前后查询 SKU 库存，确认不变。\n\n# 9. 来源依据\n\n- `Minishop/backend/app/api/orders.py#L223-L244`：取消逻辑、券归还、状态校验。\n- `Minishop/backend/app/api/payments.py#L89-L90`：取消订单拒绝支付。\n\n# 10. 未决问题\n\n- 取消时是否应同步关闭 `PENDING` 支付单？\n- 券归还后有效期是否顺延？\n- 是否需要管理员代取消能力？\n- 是否需要超时自动取消？\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.016129032258064516,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f"
+          }
+        ],
+        "warnings": [],
+        "profile": "lexical-only",
+        "limitations": [
+          "documentation:CONFLICT-001",
+          "documentation:CONFLICT-002",
+          "documentation:CONFLICT-003",
+          "documentation:CONFLICT-004",
+          "documentation:CONFLICT-005",
+          "documentation:CONFLICT-006",
+          "documentation:CONFLICT-007",
+          "documentation:CONFLICT-008",
+          "documentation:CONFLICT-009",
+          "documentation:CONFLICT-010",
+          "documentation:Q-01",
+          "documentation:Q-03",
+          "documentation:Q-04",
+          "documentation:Q-05",
+          "documentation:Q-06",
+          "documentation:Q-08",
+          "documentation:Q-09",
+          "documentation:Q-10",
+          "documentation:Q-12",
+          "documentation:Q-13",
+          "documentation:Q-15",
+          "embedding:not_completed",
+          "implementation:CONFLICT-001",
+          "implementation:CONFLICT-003",
+          "implementation:CONFLICT-005",
+          "implementation:CONFLICT-006",
+          "implementation:CONFLICT-007",
+          "implementation:CONFLICT-008",
+          "implementation:CONFLICT-009",
+          "implementation:CONFLICT-010",
+          "implementation:Q-01",
+          "implementation:Q-04",
+          "implementation:Q-05",
+          "implementation:Q-06",
+          "implementation:Q-09",
+          "implementation:Q-10",
+          "implementation:Q-11",
+          "implementation:Q-13",
+          "implementation:Q-14",
+          "implementation:Q-15",
+          "knowledge_gap:GAP-001",
+          "knowledge_gap:GAP-002",
+          "knowledge_gap:GAP-003",
+          "knowledge_gap:GAP-004",
+          "knowledge_gap:GAP-008",
+          "knowledge_gap:GAP-009",
+          "knowledge_gap:GAP-010",
+          "knowledge_gap:GAP-011",
+          "knowledge_gap:GAP-012",
+          "knowledge_gap:GAP-013",
+          "knowledge_gap:GAP-014",
+          "publication:not_completed",
+          "retrieval_acceptance:not_completed",
+          "review_acceptance:not_completed",
+          "review_baseline:not_selected_for_release",
+          "runtime_index:not_completed",
+          "source_repository_verification:not_run; use --source-root"
+        ],
+        "pack_hash": "ee85275f0ac7b5bda62f0a261b2c5e37e6ab241528dca62ab83620eb319daab3"
+      }
+    },
+    "created_at": "2026-11-12T07:42:02.113256+00:00",
+    "finished_at": "2026-11-12T07:42:02.184036+00:00",
+    "timings": {
+      "queue_ms": 0,
+      "execution_ms": 70,
+      "model_call_ms": 0
+    }
+  },
+  "model_errors": []
+}

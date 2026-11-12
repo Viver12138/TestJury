@@ -1,0 +1,307 @@
+{
+  "actor_type": "ai",
+  "authorization": "design/changes/2026-11-12-delegated-development.md",
+  "source_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+  "items": [
+    {
+      "id": "G-001-positive",
+      "previous_sha256": "ec6b419de8d63abbffe463a569e3926d4d7866f68835c634d2c0bf9e45d20734",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-001"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-001-negative",
+      "previous_sha256": "d5720952711eb67cef09a6b2a872dbe1eafa869dc1ce2dd455ff7d29b3c33d01",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-001"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-002-positive",
+      "previous_sha256": "39f0bf8ad0f5770f8a6c2206a837c234c08d491f2955a1e56e2e14ebd3161c23",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-002"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-002-negative",
+      "previous_sha256": "3d98da02f16b44c2beec6d9b82839ec3bbfcde42126b75eb692560c38d37f3fd",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-002"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-003-positive",
+      "previous_sha256": "abc5193d8830833d6d6c0fc133d6ff7355ab01ef77adfca664b412804eed0021",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-003"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-003-negative",
+      "previous_sha256": "13017d02a145d19902c10e210642f97598c84379c8413982dcaf1c6998101010",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-003"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-004-positive",
+      "previous_sha256": "6ceb060c3127018a699680538ae49b6dc58efca1656b3f604b31df46b33245ba",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-004"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-004-negative",
+      "previous_sha256": "0a28f38fb39757a38533053357e3a8ba018f5a1b9197b88ffce7add18ad24df0",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-004"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-005-positive",
+      "previous_sha256": "25d92b2064445d90e5a8eae14037882b57a345d05d909a3d381a75e1ba9e7680",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-005"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-005-negative",
+      "previous_sha256": "d5e95588d005b2ccbcfbae863ca5d2f598d00c5231e13aba3e4aef8bd7401dfa",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-005"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-006-positive",
+      "previous_sha256": "3a508f8e053e7afa58c0973e687dddb3d0490568a3a6e80a738360cdc3a94831",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-006"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-006-negative",
+      "previous_sha256": "51bc0435ff562410a073380ae0657275e44bd9bc6a77c5ce4b09392afcea2c09",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-006"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-007-positive",
+      "previous_sha256": "20b3780e2037a6f744f3190b6c04b435b74d6aefbbd0bb532986761730e33ad9",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-007"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-007-negative",
+      "previous_sha256": "a85bad2ff0e4fb2c31d58b200e8e83d65242917d701acbd73d67ce893fe86611",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-007"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-008-positive",
+      "previous_sha256": "fa3b4fe2007be481753b411b1cd1c430606072e92b33d188c713adeaaa0ce60e",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-008"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-008-negative",
+      "previous_sha256": "8d6d13cb34c83e9d17aa9bdee72c9f5e1901778e7002ae6898e360ec86b172a0",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-008"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-009-positive",
+      "previous_sha256": "dbfe7814df5e7763d6db138eeda7f85f8218fc251835d72820d07be3154656e0",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-009"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-009-negative",
+      "previous_sha256": "f6e2eb51a60ff806ea7c7d6c3d6bfd3aa7ce0f95d2a3c2b593877b13f796e5b2",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-009"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-010-positive",
+      "previous_sha256": "b4f4aee66462246bef69082f5027a48221cf2c326617d2e7ef074555e1f6463f",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-010"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-010-negative",
+      "previous_sha256": "6d32400ea7b2e18118e1e071d73a2bac169ad449ca9a6b21b242d9db9a9cab0f",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-010"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-011-positive",
+      "previous_sha256": "986ee4e4dbbc29cb29fe1e980fd8da1e9062000dcade919a6d0db3e3fd19f77e",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-011"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-011-negative",
+      "previous_sha256": "cf3c0ad979200e0cc7ec3a26421eccda1f02c850810b89c62ce48fdd8bfd096e",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "RULE-ORDER-011"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-012-positive",
+      "previous_sha256": "0a765b4a25be4cc54d9764ada249944409bc7338b0266142d2515e01757db060",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "STATE-ORDER-001"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-012-negative",
+      "previous_sha256": "be858e951312fb1ac4aa1c7b8517c79746d9eee32cc619426a885827365fbac0",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "STATE-ORDER-001"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-013-positive",
+      "previous_sha256": "573661ba28bb9f1cec9037e8f96ed8f730c88034f88e4cfa55b4e1b5136144c5",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "STATE-ORDER-001"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-013-negative",
+      "previous_sha256": "f3cb564ad1c02f27ee51560d7ff352eba9c20bdb0af2f40255f784fafc73c92f",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "STATE-ORDER-001"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-014-positive",
+      "previous_sha256": "2211352b21712d1b723d575011f394c3dd77ab0f897585c02456764ef08e4bb1",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "API-ORDER-003"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-014-negative",
+      "previous_sha256": "24688eb67a181d49c6ba37604ee448f1aa3afc1e21b87467d834bc258ab4e160",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "API-ORDER-003"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-015-positive",
+      "previous_sha256": "32f42be3a17b2ee399e9e0da4affd75f9814972885a0f1575e9ce1801f63bcb1",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "REQ-ORDER-001"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    },
+    {
+      "id": "G-015-negative",
+      "previous_sha256": "3e4783f300d8b378c489216c1d3a2644aa58671ec76a74d9ea887aeb5f0a9698",
+      "reviewer": "codex-delegated-reviewer",
+      "decision": "revised_and_reviewed",
+      "basis": [
+        "REQ-ORDER-001"
+      ],
+      "rationale": "补齐已声明断言的观测步骤与数据关联；保留原业务正反标签与场景划分。支付重试原正例缺少重试操作，属于有效缺陷，不再归为误报。"
+    }
+  ]
+}

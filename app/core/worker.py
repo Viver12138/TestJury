@@ -13,10 +13,11 @@ import uuid
 import structlog
 
 from app.config import Settings
+from app.core.budget import ModelBudget, active_budget
 from app.core.observability import REVIEW_JOBS, RUNNING_JOBS
 from app.core.state_machine import FencingMismatch
 from app.core.versioning import Versions
-from app.pipeline.orchestrator import ReviewPipeline, create_review_tasks_after_report
+from app.pipeline.orchestrator import ReviewPipeline, review_tasks_for_report
 from app.pipeline.projection import records_from_report
 from app.storage.models import ReviewJob, now
 from app.storage.port import Storage
@@ -51,14 +52,45 @@ class Worker:
         """执行一份已领取的任务；返回终态。"""
 
         RUNNING_JOBS.inc()
+        execution = asyncio.create_task(self._execute(job))
+
+        async def renew():
+            while True:
+                await asyncio.sleep(self.settings.queue_lease_seconds / 3)
+                alive = await self.storage.heartbeat(job.id, fencing_token=job.fencing_token,
+                                                      lease_seconds=self.settings.queue_lease_seconds)
+                if not alive:
+                    raise FencingMismatch(job.fencing_token, -1)
+
+        renewal = asyncio.create_task(renew())
         try:
-            return await self._execute(job)
+            done, _ = await asyncio.wait({execution, renewal}, return_when=asyncio.FIRST_COMPLETED)
+            if renewal in done:
+                renewal.result()
+            return await execution
+        except FencingMismatch:
+            return "fenced_out"
         finally:
+            for task in (execution, renewal):
+                if not task.done():
+                    task.cancel()
+            await asyncio.gather(execution, renewal, return_exceptions=True)
             RUNNING_JOBS.dec()
 
     async def _execute(self, job: ReviewJob) -> str:
         try:
-            result = await self.pipeline.run(job, self.versions)
+            frozen = job.topology_snapshot.get("versions")
+            if frozen and any(frozen.get(key) != self.versions.report_versions().get(key)
+                              for key in ("rubric", "prompts", "model_config", "retrieval_config")):
+                raise RuntimeError("frozen model/prompt/rubric configuration unavailable; refusing version substitution")
+            if (job.topology_snapshot.get("prompt_version_hash")
+                    and job.topology_snapshot["prompt_version_hash"] != self.versions.prompt_version_hash):
+                raise RuntimeError("frozen prompt implementation unavailable")
+            budget_token = active_budget.set(ModelBudget(self.storage, job, self.settings))
+            try:
+                result = await asyncio.wait_for(self.pipeline.run(job, self.versions), self.settings.job_timeout_seconds)
+            finally:
+                active_budget.reset(budget_token)
         except FencingMismatch:
             logger.warning("fencing_lost", review_id=job.id, worker=self.worker_id)
             return "fenced_out"
@@ -75,7 +107,7 @@ class Worker:
                 job.id,
                 fencing_token=job.fencing_token,
                 status="failed",
-                error="preprocess_failed",
+                error="budget_exceeded" if "budget_exceeded" in report.get("degraded_reasons", []) else "pipeline_failed",
                 finished_at=now(),
                 report_json=None,
             )
@@ -125,8 +157,8 @@ class Worker:
                 "finished_at": now(),
             },
             issues=issue_records,
+            review_tasks=review_tasks_for_report(job.id, report),
         )
-        await create_review_tasks_after_report(self.storage, job.id, report)
         REVIEW_JOBS.labels(status=status).inc()
         return status
 
@@ -151,7 +183,10 @@ class Worker:
     def start(self) -> None:
         if self._task is None or self._task.done():
             self._stop.clear()
-            self._task = asyncio.create_task(self._loop())
+            self._task = asyncio.create_task(self._run_pool())
+
+    async def _run_pool(self) -> None:
+        await asyncio.gather(*(self._loop() for _ in range(self.settings.worker_concurrency)))
 
     async def stop(self) -> None:
         self._stop.set()

@@ -1,0 +1,33 @@
+{
+  "exit_code": 0,
+  "result": {
+    "ok": true,
+    "checks_run": 32,
+    "notes": [
+      "docs: 决策阶段分布: M0=55（BIZ-001,BIZ-002,BIZ-003,BIZ-004,BIZ-005,BIZ-007,BIZ-008,BIZ-010,D99,D104,D143,D146,D147,D148,D149,D152,D153,D154,D155,D156,D157,D158,D164,D165,D166,D167,D168,D169,D170,D171,D172,D173,D174,D178,D179,D180,D187,D193,D194,D195,D203,D204,D205,D206,D208,D209,D210,D211,D212,D214,D216,D217,D219,D220,D221）；M1=10（D100,D122,D159,D161,D176,D188,D198,D222,D223,D224）；M2=7（D175,D181,D189,D197,D213,D215,D218）；M4=4（BIZ-009,BIZ-013,D137,D138）；M5=17（BIZ-011,BIZ-012,BIZ-014,PD-001,PD-002,D89,D101,D121,D135,D142,D150,D151,D162,D177,D190,D199,D201）；M6=10（D106,D140,D141,D160,D163,D182,D183,D191,D196,D207）；production=12（BIZ-006,BIZ-015,PD-003,PD-004,PD-005,D123,D184,D185,D186,D192,D200,D202）",
+      "rubric: Rubric 状态为 'draft'：按 rubric/README 与 docs/08 §7，生产模式必须使用 published 版本",
+      "verdict-cases: verdict 用例 36 条，规则 30 条，不变量 8 条，属性抽样 3200 次",
+      "m0-acceptance: M0 条件 10 项 / 契约项 5 项 / 用例 40 条 / CI Job 5 个",
+      "execution-plan: 执行台账：open 待决 9 项，验证项 13 项",
+      "knowledge: 37 documents; 73 release blockers; no active KB"
+    ],
+    "findings": [
+      {
+        "severity": "warn",
+        "check": "knowledge",
+        "file": "kb_content/",
+        "line": null,
+        "item": "source",
+        "message": "Git source .gitignore: changed; original bytes preserved in verified snapshot archive"
+      },
+      {
+        "severity": "warn",
+        "check": "knowledge",
+        "file": "kb_content/",
+        "line": null,
+        "item": "source",
+        "message": "Git source data/minishop.db: missing; original bytes preserved in verified snapshot archive"
+      }
+    ]
+  }
+}

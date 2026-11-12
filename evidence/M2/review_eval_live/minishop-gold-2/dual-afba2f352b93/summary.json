@@ -1,0 +1,20 @@
+{
+  "mode": "live",
+  "build_version": "kb-runtime-8683584cd4ebf696e6c78e5e12e73f9b30108f1e851d8edae761f6de064e9b92",
+  "cases": 6,
+  "dataset_version": "minishop-gold-2",
+  "code_fingerprint": "afba2f352b935e2c2a6ed82c337e7d14e32fa99ee137bddb7152eab6b550176f",
+  "reports": 6,
+  "expected_issues": 3,
+  "matched_issues": 3,
+  "diagnostic_recall": 1.0,
+  "clean_cases": 3,
+  "clean_cases_with_reported_issues": 3,
+  "reported_issues": 16,
+  "independent_human_validation": false,
+  "limitations": [
+    "category-level diagnostic matching",
+    "authored seed set, not blind independent gold",
+    "mock runs verify plumbing only"
+  ]
+}

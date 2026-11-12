@@ -11,24 +11,29 @@ from __future__ import annotations
 
 import asyncio
 import time
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from typing import Any
 
 import structlog
 
 from app.config import Settings
+from app.core.budget import active_budget
 from app.core.enums import (
     DegradedReason,
     Stage,
     StageStatus,
 )
 from app.core.observability import observe_stage
-from app.llm.base import AdapterError, ReviewModel
+from app.knowledge.gaps import report_gaps
+from app.knowledge.runtime import KnowledgeService
+from app.llm.base import AdapterError, ReviewModel, ReviewOpinion
 from app.llm.mock import MockChatClient
 from app.pipeline import arbitration as arbitration_mod
 from app.pipeline import fusion, render, vote
+from app.pipeline.checkpoints import Checkpoints
 from app.pipeline.input_check import soft_check
+from app.pipeline.projection import issue_id_for
 from app.pipeline.stages import STAGE_NAMES, build_completeness
 from app.pipeline.verdict import (
     IssueInput,
@@ -72,10 +77,12 @@ class ReviewPipeline:
         settings: Settings,
         *,
         model: ReviewModel | None = None,
+        knowledge: KnowledgeService | None = None,
     ) -> None:
         self.storage = storage
         self.settings = settings
         self.model = model or MockChatClient()
+        self.knowledge = knowledge
 
     # ── 阶段辅助 ──
 
@@ -90,6 +97,7 @@ class ReviewPipeline:
         fencing_token: int | None = None,
     ) -> None:
         started = now()
+        fencing_token = job.fencing_token if fencing_token is None else fencing_token
         await self.storage.upsert_stage(
             StageRecord(
                 review_id=job.id,
@@ -306,6 +314,7 @@ class ReviewPipeline:
 
     async def run(self, job: ReviewJob, versions: Any) -> PipelineResult:
         started = time.perf_counter()
+        checkpoints = Checkpoints(self.storage, job, versions)
         case = (job.normalized_case or {}) or {}
         degraded: list[str] = []
         states: dict[str, str] = {name: StageStatus.PENDING.value for name in STAGE_NAMES}
@@ -335,16 +344,43 @@ class ReviewPipeline:
             states[Stage.PREPROCESS.value] = StageStatus.SKIPPED.value
             await self._stage(job, Stage.PREPROCESS, StageStatus.SKIPPED)
 
-        # 3. 知识库检索（M0 未接入）
-        degraded.append(DegradedReason.KB_MODULE_MISSING.value)
-        states[Stage.KB_RETRIEVE.value] = StageStatus.SKIPPED.value
-        await self._stage(job, Stage.KB_RETRIEVE, StageStatus.SKIPPED)
+        # 3. Always retrieve the task's immutable build, including after a rollback.
+        evidence_pack = None
+        kb_covered = job.kb_build_version not in (None, "kb-none")
+        if kb_covered:
+            if self.knowledge is None:
+                raise RuntimeError("frozen knowledge service is unavailable")
+            await self._stage(job, Stage.KB_RETRIEVE, StageStatus.RUNNING, fencing_token=job.fencing_token)
+            query = "\n".join([case["title"], *case.get("preconditions", []),
+                                *[str(s.get("action", "")) + " " + str(s.get("expected") or "")
+                                  for s in case.get("steps", [])]])
+            params = job.topology_snapshot.get("retrieval", {})
+            async def retrieve():
+                return await asyncio.wait_for(self.knowledge.retrieve(
+                    job.kb_build_version, project=case["project_id"], module=case["module"], query=query,
+                    product_version=case["product_version"], platform=case.get("platform", "all"),
+                    top_k=params.get("top_k", 10), char_cap=params.get("char_cap", 30000),
+                    as_of=job.created_at.date().isoformat()), timeout=self.settings.stage_timeout_kb)
+
+            evidence_pack = await checkpoints.run("kb_retrieve", {"query": query, "params": params}, retrieve)
+            states[Stage.KB_RETRIEVE.value] = StageStatus.SUCCEEDED.value
+            await self._stage(job, Stage.KB_RETRIEVE, StageStatus.SUCCEEDED, output_ref=evidence_pack["pack_hash"])
+            if not evidence_pack["evidence"]:
+                degraded.append(DegradedReason.KB_MODULE_MISSING.value)
+        else:
+            degraded.append(DegradedReason.KB_MODULE_MISSING.value)
+            states[Stage.KB_RETRIEVE.value] = StageStatus.SKIPPED.value
+            await self._stage(job, Stage.KB_RETRIEVE, StageStatus.SKIPPED)
 
         # 4. 三路盲评
         await self._stage(job, Stage.BLIND_REVIEW, StageStatus.RUNNING, fencing_token=job.fencing_token)
         case_for_review = dict(case)
+        case_for_review["test_scope"] = job.test_scope
+        case_for_review["automation_context"] = job.automation_context
+        if evidence_pack:
+            case_for_review["_knowledge_pack"] = evidence_pack
         case_for_review["automation_context_provided"] = bool(job.automation_context)
-        roles = ["chief_blind", "jury_a", "jury_b"]
+        roles = list(job.topology_snapshot.get("roles") or self.settings.review_roles)
         opinions = []
         active_roles: list[str] = []
         failed_roles: list[str] = []
@@ -352,10 +388,16 @@ class ReviewPipeline:
         async def _review_role(role: str):
             call_started = time.perf_counter()
             try:
-                opinion = await asyncio.wait_for(
-                    self.model.review(role, case_for_review),
-                    timeout=self.settings.stage_timeout_blind,
-                )
+                async def review():
+                    opinion = await asyncio.wait_for(self.model.review(role, case_for_review),
+                                                     timeout=self.settings.stage_timeout_blind)
+                    await self._persist_opinion_run(job, role, "blind_review", opinion, versions)
+                    saved = asdict(opinion)
+                    if not self.settings.store_raw_model_io:
+                        saved.update(raw_request=None, raw_response=None)
+                    return saved
+
+                opinion = ReviewOpinion(**await checkpoints.run("blind:" + role, case_for_review, review))
                 return role, opinion, None, int((time.perf_counter() - call_started) * 1000)
             except TimeoutError:
                 return (
@@ -400,9 +442,6 @@ class ReviewPipeline:
                 continue
             active_roles.append(role)
             opinions.append(opinion)
-            await self._persist_opinion_run(
-                job, role, "blind_review", opinion, versions
-            )
             model_calls.append(
                 {
                     "role": role,
@@ -427,13 +466,16 @@ class ReviewPipeline:
             return await self._finish_failed(job, degraded, states, started)
         states[Stage.BLIND_REVIEW.value] = StageStatus.SUCCEEDED.value
         await self._stage(job, Stage.BLIND_REVIEW, StageStatus.SUCCEEDED, output_ref="blind_opinions")
-        blind_ratio = f"{len(active_roles)}/3"
+        blind_ratio = f"{len(active_roles)}/{len(roles)}"
 
         # 5. 融合
         await self._stage(job, Stage.FUSION, StageStatus.RUNNING, fencing_token=job.fencing_token)
-        candidates = fusion.fuse(
-            job.id, case, opinions, step_tolerance=self.settings.step_tolerance
-        )
+        async def fuse_candidates():
+            return {"items": [asdict(c) for c in fusion.fuse(
+                job.id, case, opinions, step_tolerance=self.settings.step_tolerance)]}
+
+        fused = await checkpoints.run("fusion", {"opinions": [asdict(o) for o in opinions]}, fuse_candidates)
+        candidates = [CandidateRecord(**c) for c in fused["items"]]
         # 控制单次评审的问题数量：按严重级优先，最多 8 条候选（减少无效投票与成本）
         severity_rank = {"blocker": 2, "major": 1, "suggestion": 0}
         candidates.sort(
@@ -449,16 +491,23 @@ class ReviewPipeline:
 
         # 6. 投票
         await self._stage(job, Stage.VOTE, StageStatus.RUNNING, fencing_token=job.fencing_token)
-        vote_records, vote_calls = await vote.run_vote(
-            job.id,
-            candidates,
-            self.model,
-            active_roles,
-            timeout_seconds=self.settings.stage_timeout_vote,
-        )
-        model_calls.extend(vote_calls)
-        for call in vote_calls:
+        async def persist_vote_call(call):
             await self._persist_vote_run(job, call, versions)
+
+        async def vote_candidates():
+            records, calls = await vote.run_vote(
+                job.id, candidates, self.model, active_roles, timeout_seconds=self.settings.stage_timeout_vote,
+                evidence_pack=evidence_pack, case=case, checkpoints=checkpoints,
+                persist_call=persist_vote_call, store_raw_model_io=self.settings.store_raw_model_io)
+            return {"records": [asdict(v) for v in records], "calls": calls}
+
+        voted = await checkpoints.run("vote", {"candidates": [asdict(c) for c in candidates], "roles": active_roles},
+                                      vote_candidates,
+                                      reusable=lambda value: all(c["status"] == "ok" for c in value["calls"]))
+        vote_records = [VoteRecord(**{**v, "created_at": datetime.fromisoformat(v["created_at"])})
+                        for v in voted["records"]]
+        vote_calls = voted["calls"]
+        model_calls.extend(vote_calls)
         await self.storage.add_votes(job.id, vote_records)
         participants = len(active_roles)
         vote_ratio = _global_vote_ratio(vote_records, participants, len(candidates))
@@ -472,15 +521,48 @@ class ReviewPipeline:
         arbitration_required = preliminary.arbitration_required
         arbitration_decisions: dict[str, dict[str, Any]] = {}
         if arbitration_required:
+            arbitration_failed = False
             await self._stage(
                 job, Stage.ARBITRATION, StageStatus.RUNNING, fencing_token=job.fencing_token
             )
             arbitration_decisions = arbitration_mod.run_arbitration(
                 [candidate.__dict__ for candidate in candidates], preliminary
             )
-            states[Stage.ARBITRATION.value] = StageStatus.SUCCEEDED.value
-            await self._stage(job, Stage.ARBITRATION, StageStatus.SUCCEEDED, output_ref="arbitration")
-            arbitration_value = "ok"
+            arbitrate = getattr(self.model, "arbitrate", None)
+            if arbitrate is not None and "chief_blind" in active_roles:
+                material = [{"candidate_id": c.id, "description": c.standardized_text,
+                             "case": case, "evidence_quote": c.evidence_quote,
+                             "suggestion": c.suggestion, "evidence_status": c.evidence_status,
+                             "kb_refs": c.kb_refs,
+                             "votes": [{"validity": v.validity, "severity": v.severity} for v in votes_by_candidate[c.id]]}
+                            for c in candidates if c.id in arbitration_decisions]
+                try:
+                    async def run_arbitration():
+                        decisions, run = await asyncio.wait_for(arbitrate(material, evidence_pack),
+                                                                timeout=self.settings.stage_timeout_arbitration)
+                        await self._persist_opinion_run(job, "chief_blind", "arbitration", run, versions)
+                        saved = asdict(run)
+                        if not self.settings.store_raw_model_io:
+                            saved.update(raw_request=None, raw_response=None)
+                        return {"decisions": decisions, "run": saved}
+
+                    arbitrated = await checkpoints.run("arbitration", {"material": material}, run_arbitration)
+                    decisions, run = arbitrated["decisions"], ReviewOpinion(**arbitrated["run"])
+                    arbitration_decisions.update(decisions)
+                    model_calls.append({"role": "chief_blind", "operation": "arbitration", "status": "ok",
+                                        "model": run.model, "cost_estimate": run.cost_estimate,
+                                        "latency_ms": run.latency_ms,
+                                        "tokens": {"request": run.input_tokens, "response": run.output_tokens}})
+                except (AdapterError, TimeoutError) as exc:
+                    arbitration_failed = True
+                    await self._persist_failed_run(job, "chief_blind", "arbitration", exc, versions)
+                    for decision in arbitration_decisions.values():
+                        decision.update(chief_decision="need_human", chief_reason="主审仲裁调用失败，保留分歧待复核")
+                    degraded.append(DegradedReason.MODEL_MISSING.value)
+            arbitration_status = StageStatus.FAILED if arbitration_failed else StageStatus.SUCCEEDED
+            states[Stage.ARBITRATION.value] = arbitration_status.value
+            await self._stage(job, Stage.ARBITRATION, arbitration_status, output_ref="arbitration")
+            arbitration_value = "failed" if arbitration_failed else "ok"
         else:
             states[Stage.ARBITRATION.value] = StageStatus.SKIPPED.value
             degraded.append(DegradedReason.ARBITRATION_SKIPPED.value)
@@ -500,7 +582,7 @@ class ReviewPipeline:
         completeness = build_completeness(
             states,
             raw_text=raw_text and not case.get("steps"),
-            kb_covered=False,
+            kb_covered=kb_covered,
             arbitration_required=arbitration_required,
             blind=blind_ratio,
             vote=vote_ratio,
@@ -523,15 +605,27 @@ class ReviewPipeline:
             failed_roles=failed_roles,
         )
         schema = load_report_schema(self.settings.report_schema_version)
+        if evidence_pack:
+            report["appendix"]["knowledge_pack"] = evidence_pack
+        report["kb_gaps"] = report_gaps(case, report["issues"], covered=kb_covered)
+        report["appendix"]["recovery"] = {"reused_outputs": checkpoints.reused, "attempt": job.attempt_count}
+        budget = active_budget.get()
+        if budget is not None:
+            report["appendix"]["budget"] = await budget.summary()
+            if budget.exhausted:
+                report["degraded"] = True
+                report["degraded_reasons"] = sorted(set(report["degraded_reasons"]) | {"budget_exceeded"})
+        frozen_versions = job.topology_snapshot.get("versions")
+        if frozen_versions:
+            report["versions"] = frozen_versions
         schema.validate(report)  # 失败直接抛出，不写半成品报告
 
-        markdown = render.render_markdown(report)
         await self._stage(job, Stage.RENDER, StageStatus.RUNNING, fencing_token=job.fencing_token)
         states[Stage.RENDER.value] = StageStatus.SUCCEEDED.value
         report["review_completeness"] = build_completeness(
             states,
             raw_text=raw_text and not case.get("steps"),
-            kb_covered=False,
+            kb_covered=kb_covered,
             arbitration_required=arbitration_required,
             blind=blind_ratio,
             vote=vote_ratio,
@@ -549,7 +643,7 @@ class ReviewPipeline:
             "execution_ms": elapsed_ms,
             "model_call_ms": sum(int(call.get("latency_ms") or 0) for call in model_calls),
         }
-        return PipelineResult(report=report, markdown=markdown)
+        return PipelineResult(report=report, markdown=render.render_markdown(report))
 
     async def _finish_failed(
         self,
@@ -558,6 +652,8 @@ class ReviewPipeline:
         states: dict[str, str],
         started: float,
     ) -> PipelineResult:
+        if active_budget.get() is not None and active_budget.get().exhausted:
+            degraded.append("budget_exceeded")
         completeness = build_completeness(
             states,
             raw_text=False,
@@ -871,16 +967,14 @@ def _build_report(
     return report
 
 
-async def create_review_tasks_after_report(
-    storage: Storage, review_id: str, report: dict[str, Any]
-) -> None:
+def review_tasks_for_report(review_id: str, report: dict[str, Any]) -> list[ReviewTaskRecord]:
     tasks: list[ReviewTaskRecord] = []
     for item in report.get("human_review_items") or []:
         tasks.append(
             ReviewTaskRecord(
-                id=new_id("t-"),
+                id=new_id(),
                 review_id=review_id,
-                issue_id=None,
+                issue_id=issue_id_for(review_id, item["issue_no"]),
                 review_level="issue",
                 priority=item.get("priority", "normal"),
                 status="pending",
@@ -888,8 +982,7 @@ async def create_review_tasks_after_report(
                 source="auto",
             )
         )
-    if tasks:
-        await storage.create_review_tasks(tasks)
+    return tasks
 
 
 def job_is_complete(job: ReviewJob) -> bool:

@@ -5,35 +5,36 @@ knowledge_type: PROJECT
 project_id: minishop
 module_id: null
 source_type: OTHER
-source_ref: Minishop/docker-compose.yml#L1-L22; Minishop/backend/Dockerfile#L1-L15; Minishop/frontend/vite.config.ts#L5-L17; Minishop/backend/app/config.py#L1-L23
+source_ref: Minishop/docker-compose.yml#L1-L22; Minishop/backend/Dockerfile#L1-L15;
+  Minishop/frontend/vite.config.ts#L5-L17; Minishop/backend/app/config.py#L1-L23
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E2
-status: in_review
+status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（技术负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - environment
-  - deployment
-  - local
-  - docker
+- environment
+- deployment
+- local
+- docker
 related_ids:
-  - TEST-ENV
-  - PROJECT-PLATFORMS
+- TEST-ENV
+- PROJECT-PLATFORMS
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: changes_applied_pending_reapproval
-change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过）"
+review_status: delegated_review_completed
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 ---
 
 # 1. 环境清单
@@ -137,6 +138,13 @@ CORS 白名单固定为 `http://localhost:3000`、`http://127.0.0.1:3000`、`htt
 - ~~`backend/seed_media` 缺失应通过补目录还是删除 `COPY` 修复~~ 已确认（2026-11-11，Q-13）：删除相关配置；仅保留“是否提供 /health、版本接口与迁移脚本”和生产安全项为未决。
 - 是否需要提供 `/health`、版本接口与数据库迁移脚本；
 - 生产密钥、HTTPS、反向代理安全头均未配置。
+
+
+# 本次授权技术复核适用性
+
+核对冻结 Dockerfile/compose/config 的 seed_media 缺口；历史 MiniShop 构建失败不代表 TestJury PostgreSQL 不可用。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

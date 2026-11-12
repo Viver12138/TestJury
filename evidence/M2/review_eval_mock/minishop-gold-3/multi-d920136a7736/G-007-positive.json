@@ -1,0 +1,558 @@
+{
+  "id": "G-007-positive",
+  "mode": "mock",
+  "split": "regression",
+  "build_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f",
+  "code_fingerprint": "d920136a7736321fb1bae7929321033a289ad7119329e91a8f87fa2563406a70",
+  "dataset_version": "minishop-gold-3",
+  "dataset_files": {
+    "retrieval.jsonl": "bfef25226dfdd7644800fe1c0754fb30f451a2e1de124971e6154319782ee95f",
+    "review.jsonl": "e28ccaeb34632659948ac82bc2af40b9bb3e43ad1c9023ef3fbd20f33d745948"
+  },
+  "annotation_type": "delegated_ai",
+  "status": "done",
+  "error": null,
+  "expected_count": 0,
+  "reported_count": 0,
+  "matched_count": 0,
+  "report": {
+    "review_id": "5ab6f11e-ab1b-406b-9f47-602fc8722758",
+    "case_id": "G-007-positive",
+    "case_version": 3,
+    "module": "order",
+    "test_type": "functional",
+    "test_type_source": "request",
+    "generation": 1,
+    "parent_review_id": null,
+    "status": "done",
+    "stage": "render",
+    "ai_verdict": "conditional",
+    "human_status": "pending",
+    "report_schema_version": "report-1.0",
+    "degraded": true,
+    "degraded_reasons": [
+      "arbitration_skipped"
+    ],
+    "participants": [
+      "chief_blind:qwen3.8-max",
+      "jury_a:deepseek-flash",
+      "jury_b:kimi-k3.1-pro"
+    ],
+    "topology": "multi",
+    "review_participants": [
+      {
+        "participant_id": "p-01",
+        "role_id": "chief_blind",
+        "status": "active",
+        "model": "qwen3.8-max",
+        "actual_model": "mock"
+      },
+      {
+        "participant_id": "p-02",
+        "role_id": "jury_a",
+        "status": "active",
+        "model": "deepseek-flash",
+        "actual_model": "mock"
+      },
+      {
+        "participant_id": "p-03",
+        "role_id": "jury_b",
+        "status": "active",
+        "model": "kimi-k3.1-pro",
+        "actual_model": "mock"
+      }
+    ],
+    "review_completeness": {
+      "blind": "3/3",
+      "vote": "3/3",
+      "arbitration": "skipped",
+      "arbitration_required": false,
+      "stages_completed": [
+        "input_check",
+        "kb_retrieve",
+        "blind_review",
+        "fusion",
+        "vote",
+        "verdict",
+        "render"
+      ],
+      "stages_skipped": [
+        "preprocess",
+        "arbitration"
+      ],
+      "stages_failed": [],
+      "stages_pending": [],
+      "complete": true,
+      "full_participation": true
+    },
+    "input_quality": {
+      "hard_errors": [],
+      "soft_issues": []
+    },
+    "versions": {
+      "kb": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f",
+      "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+      "kb_build_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f",
+      "rubric": "0.2.0",
+      "prompts": {
+        "preprocess": "p-m0-pre-01",
+        "chief_blind": "p-m0-chief-01",
+        "jury_a": "p-m0-jury-a-01",
+        "jury_b": "p-m0-jury-b-01",
+        "vote": "p-m0-vote-01",
+        "arbitration": "p-m0-arb-01"
+      },
+      "retrieval_config": "25cec85a",
+      "embedding_profile": "lexical-only",
+      "model_config": "7e35c71d",
+      "models": {
+        "chief_blind": "qwen3.8-max",
+        "jury_a": "deepseek-flash",
+        "jury_b": "kimi-k3.1-pro",
+        "vote": "qwen3.8-max",
+        "arbitration": "qwen3.8-max",
+        "preprocess": "deepseek-flash"
+      },
+      "price_config": "price-unverified-2026-11"
+    },
+    "summary": {
+      "total_issues": 0,
+      "blocker": 0,
+      "major": 0,
+      "suggestion": 0
+    },
+    "issues": [],
+    "human_review_items": [],
+    "kb_gaps": [],
+    "attachments": [],
+    "scope": {
+      "feature_point": "取消待支付订单之后使用过的优惠券如何处理？",
+      "scope_version": null,
+      "provided": true,
+      "coverage_claims_allowed": false,
+      "note": "v1 仅做单条用例评审，不输出功能点整体覆盖率"
+    },
+    "decision_summary": {
+      "human_status": "pending",
+      "latest_decision": null,
+      "history_count": 0
+    },
+    "appendix": {
+      "raw_opinions": {
+        "chief_blind": {
+          "summary": "chief_blind 盲评：发现 0 条问题",
+          "issues": []
+        },
+        "jury_a": {
+          "summary": "jury_a 盲评：发现 0 条问题",
+          "issues": []
+        },
+        "jury_b": {
+          "summary": "jury_b 盲评：发现 0 条问题",
+          "issues": []
+        }
+      },
+      "disagreements": [],
+      "model_runs": [
+        {
+          "role": "chief_blind",
+          "model": "mock",
+          "status": "ok",
+          "latency_ms": 0,
+          "tokens": {
+            "request": 0,
+            "response": 0
+          },
+          "cost_estimate": 0.0,
+          "parse_warnings": []
+        },
+        {
+          "role": "jury_a",
+          "model": "mock",
+          "status": "ok",
+          "latency_ms": 0,
+          "tokens": {
+            "request": 0,
+            "response": 0
+          },
+          "cost_estimate": 0.0,
+          "parse_warnings": []
+        },
+        {
+          "role": "jury_b",
+          "model": "mock",
+          "status": "ok",
+          "latency_ms": 0,
+          "tokens": {
+            "request": 0,
+            "response": 0
+          },
+          "cost_estimate": 0.0,
+          "parse_warnings": []
+        }
+      ],
+      "normalized_case": {
+        "case_id": "G-007-positive",
+        "case_version": 3,
+        "module": "order",
+        "test_type": "functional",
+        "title": "取消待支付订单之后使用过的优惠券如何处理？",
+        "priority": null,
+        "source": "manual",
+        "preconditions": [
+          "A 已登录；A 的订单 10 为PENDING_PAYMENT，使用用户券7；券USED且used_order_id=10，模板used_quantity=1",
+          "每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。",
+          "用户券7关联模板7，模板无其他订单使用。"
+        ],
+        "steps": [
+          {
+            "index": 1,
+            "action": "API POST /api/orders/10/cancel；只读查询 orders(id=10).status、user_coupons(id=7).status/used_order_id 和关联 coupons.used_quantity",
+            "expected": "HTTP 200；订单CANCELLED，券UNUSED、used_order_id=0，模板used_quantity=0"
+          }
+        ],
+        "test_data": {
+          "fixture": "A 已登录；A 的订单 10 为PENDING_PAYMENT，使用用户券7；券USED且used_order_id=10，模板used_quantity=1；每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。；用户券7关联模板7，模板无其他订单使用。",
+          "isolation": "独立测试库"
+        },
+        "attachments": [],
+        "raw_text": null,
+        "kb_hint": null,
+        "project_id": "minishop",
+        "review_baseline": "current_implementation",
+        "product_version": "1.0.0",
+        "platform": "api"
+      },
+      "knowledge_pack": {
+        "build_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f",
+        "content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+        "retriever_version": "hybrid-bm25-rrf-3",
+        "project_id": "minishop",
+        "module": "order",
+        "baseline": {
+          "type": "current_implementation",
+          "product_version": "1.0.0",
+          "source_ref": "https://github.com/Viver12138/minishop.git",
+          "source_version": "e354437069504381f10a54d9c14baed755f3ba56"
+        },
+        "as_of": "2026-11-12",
+        "query": "取消待支付订单之后使用过的优惠券如何处理？\nA 已登录；A 的订单 10 为PENDING_PAYMENT，使用用户券7；券USED且used_order_id=10，模板used_quantity=1\n每条用例使用独立新建测试库，无其他请求并发；测试框架支持所列只读数据库查询，前后快照在同一用例中比较。\n用户券7关联模板7，模板无其他订单使用。\nAPI POST /api/orders/10/cancel；只读查询 orders(id=10).status、user_coupons(id=7).status/used_order_id 和关联 coupons.used_quantity HTTP 200；订单CANCELLED，券UNUSED、used_order_id=0，模板used_quantity=0",
+        "evidence": [
+          {
+            "chunk_id": "3d1b29a2deeacce324a503ff9e060c87eb7762f67752ab8b9fc92447d3d343c8",
+            "project_id": "minishop",
+            "doc_id": "API-ORDER-004",
+            "module": "order",
+            "doc_type": "design",
+            "knowledge_type": "INTERFACE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L223-L260",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L223-L260",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "2. 请求方式与路径",
+            "chunk_index": 1,
+            "content_hash": "56030d1bc3165056b3ba2d2795cecd45edd756381ccdc34caa9d3e9f4d26e446",
+            "text": "# 2. 请求方式与路径\n\n```http\nPOST /api/orders/{order_id}/cancel\nPOST /api/orders/{order_id}/confirm\nAuthorization: Bearer <JWT>\n```\n\n无请求体。\n\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "interface_contract"
+            ],
+            "rrf_score": 0.0,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f"
+          },
+          {
+            "chunk_id": "a3af34e93c12ab692ad90dbf1bb366e9543c434849545072686b161766d1628a",
+            "project_id": "minishop",
+            "doc_id": "RULE-ORDER-007",
+            "module": "order",
+            "doc_type": "rule",
+            "knowledge_type": "BUSINESS_RULE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L223-L244",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L223-L244",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "只有待支付订单可以取消并归还优惠券",
+            "chunk_index": 0,
+            "content_hash": "ec838a8512b05ae63f5f9c558087235489ee14a8f2dd67352805f4861b660ccc",
+            "text": "\n# 1. 规则陈述\n\n只有订单所有者可以取消状态为 `PENDING_PAYMENT` 的订单；取消后订单进入 `CANCELLED` 终态，已占用的优惠券必须恢复为可用，券模板已使用数量回退 1。\n\n# 2. 适用范围\n\n- `POST /api/orders/{order_id}/cancel`\n- 产品版本 `1.0.0`\n\n# 3. 前置条件\n\n- 用户已登录；\n- 订单存在且 `user_id` 等于当前用户；\n- 订单状态为 `PENDING_PAYMENT`。\n\n# 4. 触发条件\n\n用户对待支付订单提交取消请求。\n\n# 5. 规则结果\n\n- 订单 `status = CANCELLED`，`cancelled_at` 为当前时间；\n- 若 `user_coupon_id` 非 0：\n  - 用户券 `status = UNUSED`；\n  - `used_order_id = 0`；\n  - `used_at = None`；\n  - 券模板 `used_quantity = max(used_quantity - 1, 0)`；\n- 不修改库存、销量、支付记录；\n- 订单不可恢复。\n\n# 6. 边界与例外\n\n- 非本人订单返回 **404**（不是 403），避免暴露订单存在性。\n- 状态不是 `PENDING_PAYMENT` 时返回 409 `只有待支付订单可以取消`。\n- 已创建但未支付的支付单不会被关闭，仍保留 `PENDING` 状态；后续调用支付成功会因订单已取消返回 409。\n- 券归还后如果券已过期，查询“我的优惠券”时会动态显示为 `EXPIRED`，但数据库状态仍是 `UNUSED`。\n- 若券模板已被删除或数据异常，代码对 `used_quantity` 的回退做了不小于 0 的保护。\n\n# 7. 反例或禁止行为\n\n- 禁止取消已支付及之后状态的订单。\n- 禁止用户取消他人订单。\n- 禁止在取消时恢复库存（下单未扣库存）。\n- 禁止把取消当作退款使用。\n\n# 8. 验证方式\n\n1. 待支付订单取消，确认状态、`cancelled_at`。\n2. 取消后查询用户券，确认 `UNUSED`、`used_order_id=0`。\n3. 取消后再次下单使用同一张券，确认可用。\n4. 已支付订单取消，确认 409。\n5. 用户 B 取消用户 A 的订单，确认 404。\n6. 取消前后查询 SKU 库存，确认不变。\n\n# 9. 来源依据\n\n- `Minishop/backend/app/api/orders.py#L223-L244`：取消逻辑、券归还、状态校验。\n- `Minishop/backend/app/api/payments.py#L89-L90`：取消订单拒绝支付。\n\n# 10. 未决问题\n\n- 取消时是否应同步关闭 `PENDING` 支付单？\n- 券归还后有效期是否顺延？\n- 是否需要管理员代取消能力？\n- 是否需要超时自动取消？\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.01639344262295082,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f"
+          },
+          {
+            "chunk_id": "5065e4f23f4640edf96f092aa9f57a44e8f68526f84344c5ffe5d9bdaf8b0356",
+            "project_id": "minishop",
+            "doc_id": "RULE-ORDER-006",
+            "module": "order",
+            "doc_type": "rule",
+            "knowledge_type": "BUSINESS_RULE",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/backend/app/api/orders.py#L116-L170; Minishop/backend/app/api/common.py#L19-L20",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L116-L170",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/common.py#L19-L20",
+                "snapshot_sha256": "4adcca84be8ce74c3e07c5c13444b3956a5f9abf8a0c25a8891e0c983d4a80ee",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/common.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/common.py"
+              }
+            ],
+            "heading_path": "创建订单的落库内容与副作用边界",
+            "chunk_index": 0,
+            "content_hash": "283d2426b2f7b5a3372f7b69c62835d9080d6bf83ec022d98dce08a6a2dd514c",
+            "text": "\n# 1. 规则陈述\n\n创建订单时，系统写入状态为 `PENDING_PAYMENT` 的订单与订单明细、保存地址和商品快照、占用优惠券；但**不扣减库存、不清空购物车、不创建支付单**。\n\n# 2. 适用范围\n\n- `POST /api/orders`\n- 产品版本 `1.0.0`\n\n# 3. 前置条件\n\n- 已通过 `RULE-ORDER-001` ~ `RULE-ORDER-005` 的全部校验；\n- `address_id` 有效且归属当前用户。\n\n# 4. 触发条件\n\n创建订单校验全部通过并提交事务。\n\n# 5. 规则结果\n\n## 订单主表\n\n- `order_no`：`YYYYMMDDHHMMSS` + 6 位随机数，唯一索引；\n- `status = PENDING_PAYMENT`；\n- `total_amount`、`discount_amount`、`pay_amount` 为服务端计算值；\n- `receiver_name`、`phone`、`address_snapshot` 为地址快照；\n- `user_coupon_id` 为所用用户券 ID，未用券为 0；\n- 时间字段：`created_at` 自动生成，其余完成时间字段为空。\n\n## 订单明细\n\n每一项保存 `product_id`、`sku_id`、商品名称快照、规格快照、成交单价、数量、小计。\n\n## 优惠券\n\n- 用户券 `status = USED`；\n- `used_order_id = 新订单 ID`；\n- `used_at` 为当前时间；\n- 券模板 `used_quantity += 1`。\n\n## 不发生的副作用\n\n- 不修改 `product_skus.stock`；\n- 不修改 `products.stock`、`products.sales`；\n- 不删除或修改购物车项；\n- 不创建支付记录；\n- 不发送站内消息。\n\n# 6. 边界与例外\n\n- 无幂等键：相同请求重复提交会创建多张订单，各自占用各自的券（若同一张券第二次提交，会因券已 `USED` 返回 409）。\n- 订单号随机后缀理论上可能碰撞，数据库唯一索引会拒绝，但接口未捕获该异常，可能返回 500。\n- 未使用优惠券时，`user_coupon_id=0`，不产生券占用。\n- 事务包含订单、明细、券更新；若中途异常，依赖数据库事务回滚。\n\n# 7. 反例或禁止行为\n\n- 禁止在创建订单阶段扣库存或占库存（当前没有实现，也不应被用例假设为已实现）。\n- 禁止在创建订单阶段清空购物车。\n- 禁止把订单金额在落库后再次按商品现价重算。\n\n# 8. 验证方式\n\n1. 创建订单后查询 `orders`、`order_items`、`user_coupons`、`coupons.used_quantity`。\n2. 对比创建前后 SKU 库存、商品销量、购物车记录，确认均未变化。\n3. 重复提交同一请求（无券），确认生成两张订单。\n4. 使用同一张券连续提交两次，第二次预期 409。\n5. 查询订单详情，核对地址快照与商品名称/规格快照。\n\n# 9. 来源依据\n\n- `Minishop/backend/app/api/orders.py#L116-L170`：创建订单、明细、券占用。\n- `Minishop/backend/app/api/common.py#L19-L20`：订单号生成规则。\n- `Minishop/backend/app/api/payments.py#L15-L36`：库存扣减发生在支付成功，而非下单。\n\n# 10. 未决问题\n\n- 下单后是否应清空购物车？\n- 是否需要幂等键防止重复下单？\n- 券占用与订单创建是否需要在同一事务中强制成功？\n\n> 已确认（2026-11-11，Q-03）：下单不清空购物车；立即购买=加购，同 SKU 累加，重复操作可能导致数量翻倍/超库存 400。\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.016129032258064516,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f"
+          },
+          {
+            "chunk_id": "6d370fe4ea1831a11cd2c5d93344bf40ffb732c832661bc2b71af77cddd40f98",
+            "project_id": "minishop",
+            "doc_id": "FLOW-ORDER-001",
+            "module": "order",
+            "doc_type": "flow",
+            "knowledge_type": "WORKFLOW",
+            "rule_status": "reviewed",
+            "evidence_level": "E2",
+            "product_version": [
+              "1.0.0"
+            ],
+            "platforms": [
+              "all"
+            ],
+            "effective_from": null,
+            "effective_until": null,
+            "source_ref": "Minishop/README.md#L54-L58; Minishop/frontend/src/pages/cart/Cart.tsx#L45-L51; Minishop/frontend/src/pages/order/OrderConfirm.tsx#L19-L62; Minishop/frontend/src/pages/payment/Payment.tsx#L18-L33; Minishop/backend/app/api/orders.py#L88-L260",
+            "source_version": "snapshot-2026-11-11",
+            "source_repository": "https://github.com/Viver12138/minishop.git",
+            "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+            "source_evidence": [
+              {
+                "source_ref": "Minishop/README.md#L54-L58",
+                "snapshot_sha256": "7d78ca14a2c5114628fca82b05aafb2c615114f2b554b52a49a00fe5c27f1ede",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "README.md",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/README.md"
+              },
+              {
+                "source_ref": "Minishop/frontend/src/pages/cart/Cart.tsx#L45-L51",
+                "snapshot_sha256": "0b202269ca0194f257159e1b4f3d925fd067d1b30ffb1502433b00753d00fc49",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "frontend/src/pages/cart/Cart.tsx",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/frontend/src/pages/cart/Cart.tsx"
+              },
+              {
+                "source_ref": "Minishop/frontend/src/pages/order/OrderConfirm.tsx#L19-L62",
+                "snapshot_sha256": "bdaabf9101333c7ba4f5fdb8c2c9dbd9f022ce907bd737443bcd8e729dc622ee",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "frontend/src/pages/order/OrderConfirm.tsx",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/frontend/src/pages/order/OrderConfirm.tsx"
+              },
+              {
+                "source_ref": "Minishop/frontend/src/pages/payment/Payment.tsx#L18-L33",
+                "snapshot_sha256": "eef90d9e0e74f30f1d842c3c2b844a9b19617bada880b3dc1439246c7b3a0199",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "frontend/src/pages/payment/Payment.tsx",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/frontend/src/pages/payment/Payment.tsx"
+              },
+              {
+                "source_ref": "Minishop/backend/app/api/orders.py#L88-L260",
+                "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                "repository": "https://github.com/Viver12138/minishop.git",
+                "repository_path": "backend/app/api/orders.py",
+                "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                "git_comparison": "matched",
+                "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553",
+                "snapshot_member": "Minishop/backend/app/api/orders.py"
+              }
+            ],
+            "heading_path": "下单到确认收货主流程",
+            "chunk_index": 0,
+            "content_hash": "3cb777b8805c195217df45a232d1b569ff9d141ddeaebec8d8cce02c4c2862a6",
+            "text": "\n# 1. 流程目标\n\n把用户选中的 SKU 转成订单，完成模拟支付、管理员发货和用户确认收货，使订单从 `PENDING_PAYMENT` 推进到 `COMPLETED`。\n\n# 2. 参与角色\n\n| 角色 | 职责 |\n|---|---|\n| 普通用户 `USER` | 加购、选地址/券、提交订单、支付、确认收货 |\n| 管理员 `ADMIN` | 查看订单、录入物流并发货 |\n| 系统 | 金额重算、库存扣减、状态推进、站内消息 |\n\n# 3. 前置条件\n\n- 用户已登录且账号 `ACTIVE`；\n- 用户有收货地址；\n- 目标 SKU 存在、商品上架、SKU 库存满足购买数量；\n- 若用券：券属于本人、未使用、未过期、达到门槛；\n- 管理员账号可登录后台。\n\n# 4. 主流程\n\n| 步骤 | 操作者 | 动作 | 系统响应 | 状态变化 | 可观察结果 |\n|---:|---|---|---|---|---|\n| 1 | 用户 | 在商品详情/列表选择 SKU 并加购 | `POST /api/cart/items` 返回 201 | 无订单状态 | 购物车出现该 SKU，数量合并 |\n| 2 | 用户 | 在购物车勾选商品并点击“去结算” | 前端把 `sku_id + quantity` 写入 `sessionStorage`，跳转 `/orders/confirm` | 无 | 结算页显示商品清单 |\n| 3 | 用户 | 选择地址、优惠券 | `POST /api/orders/preview` 返回 200 与金额 | 无 | 页面显示商品金额、优惠、应付 |\n| 4 | 用户 | 点击“提交订单” | `POST /api/orders` 返回 201 | `(新建) → PENDING_PAYMENT` | 跳转支付页，订单详情可见 |\n| 5 | 用户 | 在支付页点击“模拟支付” | `POST /api/payments` 返回 201，`status=PENDING` | 无订单状态变化 | 生成支付单号与待支付记录 |\n| 6 | 用户 | 选择“模拟支付成功” | `POST /api/payments/{id}/success` 返回 200 | `PENDING_PAYMENT → PAID` | 订单已支付；库存减少；销量增加；收到站内消息 |\n| 7 | 管理员 | 在后台对已支付订单点击发货，填写物流公司/运单号 | `POST /api/admin/orders/{id}/ship` 返回 200 | `PAID → SHIPPED` | 订单详情出现物流信息；用户收到站内消息 |\n| 8 | 用户 | 在订单详情点击“确认收货” | `POST /api/orders/{id}/confirm` 返回 200 | `SHIPPED → COMPLETED` | 订单已完成；物流状态已签收 |\n| 9 | 用户 | 对已完成订单发表评价（跨模块） | `POST /api/reviews` 返回 201 | 订单状态不变 | 商品评价列表出现该评价 |\n\n> **UI 交互说明（复核 2026-11-11）**：第 5、6 步由支付页一次点击连续触发两个请求（`create` + `success` 或 `create` + `fail`），中间没有独立选择界面；UI 用例不要把两步写成两次点击。\n\n# 5. 分支流程\n\n## 5.1 支付失败\n\n1. 用户在第 5 步后点击“模拟支付失败”。\n2. `POST /api/payments/{id}/fail` 返回 200。\n3. 支付单 `FAILED`，订单仍为 `PENDING_PAYMENT`。\n4. 用户可重新创建支付单并支付；旧 `FAILED` 记录保留。\n\n## 5.2 取消订单\n\n1. 订单仍为 `PENDING_PAYMENT` 时，用户点击取消。\n2. `POST /api/orders/{id}/cancel` 返回 200。\n3. 订单 `CANCELLED`；优惠券恢复 `UNUSED`；购物车不受影响。\n4. 取消后不能支付，也不能恢复。\n\n## 5.3 退款（跨模块，未纳入本批知识）\n\n订单 `PAID/SHIPPED/COMPLETED` 可申请退款，订单进入 `REFUNDING`；管理员同意后 `REFUNDED` 并恢复库存；拒绝后当前回 `PAID`（已确认应恢复退款前状态，Q-04，属缺陷待修复）。详见 `after_sales` 模块（本批未覆盖）。\n\n# 6. 异常流程\n\n| 异常 | 触发点 | 系统响应 | 用户可见结果 |\n|---|---|---|---|\n| 未登录 | 任意受保护接口 | 401 `未登录` / `登录已过期` | 跳转登录页 |\n| 账号禁用 | 任意受保护接口 | 403 `账号已被禁用` | 无法继续操作 |\n| 商品下架 | 预览/创建订单 | 400 `商品已下架` | 提示商品不可购买 |\n| SKU 失效 | 预览/创建订单 | 400 `商品规格无效` | 提示规格无效 |\n| 库存不足 | 预览/创建订单 | 409 `商品「X」库存不足` | 提示库存不足 |\n| 地址 ID 为 0 | 创建订单 | 400 `请选择收货地址` | 提示先选地址 |\n| 地址字段缺失/null/类型错误 | 创建订单 | 400 `VALIDATION_ERROR` | 参数校验失败 |\n| 地址非本人 | 预览/创建订单 | 400 `收货地址不存在` | 提示地址无效 |\n| 券不可用 | 预览/创建订单 | 400/409（见 `RULE-ORDER-004`） | 提示券不可用 |\n| 未达门槛 | 预览/创建订单 | 409 `未达优惠券门槛（满X可用）` | 提示门槛 |\n| 订单已取消 | 创建支付/支付成功 | 409 `订单已取消，无法支付` | 无法支付 |\n| 重复支付 | 支付成功 | 409 `订单已支付，请勿重复支付` | 不重复扣款 |\n| 非法发货 | 发货 | 409 `只有已支付/待发货的订单可以发货` | 后台报错 |\n| 非法确认 | 确认收货 | 409 `只有已发货订单可以确认收货` | 前台报错 |\n\n# 7. 回退、取消与重试\n\n| 场景 | 是否支持 | 说明 |\n|---|---|---|\n| 支付失败后重试 | ✅ | 新建支付单，旧记录保留 |\n| 待支付取消 | ✅ | 券归还，订单终态 |\n| 已支付取消 | ❌ | 只能走退款 |\n| 退款被拒绝后重试退款 | ❌ | 同一订单已有退款记录时再次申请返回 409 |\n| 发货撤销 | ❌ | 无接口 |\n| 确认收货撤销 | ❌ | 无接口 |\n| 订单超时自动取消 | ❌ | 无定时任务 |\n| 重复提交订单 | ⚠️ | 无幂等，可能生成多张订单 |\n\n# 8. 涉及的业务规则\n\n- `RULE-ORDER-001` 服务端金额重算\n- `RULE-ORDER-002` 地址归属与快照\n- `RULE-ORDER-003` SKU/商品/库存校验\n- `RULE-ORDER-004` 用券资格\n- `RULE-ORDER-005` 门槛与应付金额\n- `RULE-ORDER-006` 创建订单副作用\n- `RULE-ORDER-007` 取消与券归还\n- `RULE-ORDER-008` 支付金额与重复支付\n- `RULE-ORDER-009` 支付成功扣库存\n- `RULE-ORDER-010` 发货与确认收货\n- `RULE-ORDER-011` 订单访问控制\n\n# 9. 涉及的接口与数据\n\n| 用途 | 接口 |\n|---|---|\n| 加购 | `POST /api/cart/items` |\n| 预览 | `POST /api/orders/preview` |\n| 创建 | `POST /api/orders` |\n| 查询 | `GET /api/orders`、`GET /api/orders/{id}` |\n| 支付 | `POST /api/payments`、`/success`、`/fail` |\n| 发货 | `POST /api/admin/orders/{id}/ship` |\n| 确认 | `POST /api/orders/{id}/confirm` |\n| 数据 | `orders`、`order_items`、`payments`、`shipments`、`user_coupons`、`inventory_logs` |\n\n详见 `interfaces/order/`。\n\n# 10. 未决问题\n\n- 前端结算依赖 `sessionStorage`，同标签页普通刷新保留数据；新会话或无 checkout_items 时直接访问 `/orders/confirm` 无商品清单；是否应改为服务端购物车结算？\n- 下单后购物车是否应清空？\n- 是否需要订单超时关闭与库存预占？\n- 退款拒绝后的状态恢复（`SHIPPED`/`COMPLETED` 丢失）应如何定义？\n- 是否需要管理员取消订单能力？\n\n\n# 本次授权技术复核适用性\n\n核对 Payment.tsx 一次点击触发 create+success/fail；修正地址异常细分与 sessionStorage 刷新语义。\n\n本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。\n",
+            "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+            "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+            "retrieval_channels": [
+              "keyword"
+            ],
+            "rrf_score": 0.015873015873015872,
+            "rerank_score": null,
+            "runtime_version": "kb-runtime-87036ea3cb4a7862ffe03e0f60aae7f869b853d6713e526c43def4fa2981562f"
+          }
+        ],
+        "warnings": [],
+        "profile": "lexical-only",
+        "limitations": [
+          "documentation:CONFLICT-001",
+          "documentation:CONFLICT-002",
+          "documentation:CONFLICT-003",
+          "documentation:CONFLICT-004",
+          "documentation:CONFLICT-005",
+          "documentation:CONFLICT-006",
+          "documentation:CONFLICT-007",
+          "documentation:CONFLICT-008",
+          "documentation:CONFLICT-009",
+          "documentation:CONFLICT-010",
+          "documentation:Q-01",
+          "documentation:Q-03",
+          "documentation:Q-04",
+          "documentation:Q-05",
+          "documentation:Q-06",
+          "documentation:Q-08",
+          "documentation:Q-09",
+          "documentation:Q-10",
+          "documentation:Q-12",
+          "documentation:Q-13",
+          "documentation:Q-15",
+          "embedding:not_completed",
+          "implementation:CONFLICT-001",
+          "implementation:CONFLICT-003",
+          "implementation:CONFLICT-005",
+          "implementation:CONFLICT-006",
+          "implementation:CONFLICT-007",
+          "implementation:CONFLICT-008",
+          "implementation:CONFLICT-009",
+          "implementation:CONFLICT-010",
+          "implementation:Q-01",
+          "implementation:Q-04",
+          "implementation:Q-05",
+          "implementation:Q-06",
+          "implementation:Q-09",
+          "implementation:Q-10",
+          "implementation:Q-11",
+          "implementation:Q-13",
+          "implementation:Q-14",
+          "implementation:Q-15",
+          "knowledge_gap:GAP-001",
+          "knowledge_gap:GAP-002",
+          "knowledge_gap:GAP-003",
+          "knowledge_gap:GAP-004",
+          "knowledge_gap:GAP-008",
+          "knowledge_gap:GAP-009",
+          "knowledge_gap:GAP-010",
+          "knowledge_gap:GAP-011",
+          "knowledge_gap:GAP-012",
+          "knowledge_gap:GAP-013",
+          "knowledge_gap:GAP-014",
+          "publication:not_completed",
+          "retrieval_acceptance:not_completed",
+          "review_acceptance:not_completed",
+          "review_baseline:not_selected_for_release",
+          "runtime_index:not_completed",
+          "source_repository_verification:not_run; use --source-root"
+        ],
+        "pack_hash": "d73d913b35e58f7286121e90dd96f9b7c6de9d9538bd04695cdad452cdaa2b69"
+      }
+    },
+    "created_at": "2026-11-12T07:42:01.408175+00:00",
+    "finished_at": "2026-11-12T07:42:01.457827+00:00",
+    "timings": {
+      "queue_ms": 0,
+      "execution_ms": 49,
+      "model_call_ms": 0
+    }
+  },
+  "model_errors": []
+}

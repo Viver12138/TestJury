@@ -1,0 +1,171 @@
+version: review-lock-1
+record_type: imported_review_snapshot
+recorded_at: '2026-11-12'
+evidence_ref: kb_content/_delivery/_build/review_input_rows.json
+note: 固定已有审核内容供漂移检查，不构成新增人工签名；后续正文变化必须退回 in_review
+documents:
+  AUTO-LIMITATIONS:
+    content_hash: 0c8b1216c34ba1ba0f4804ba7ee0bf7ea50877d149bf47a04d92129c72848162
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  AUTO-LOCATOR:
+    content_hash: ed384c1dd8f2ff1defdec588e535cfc53dfc0eb2744bc21506e7fda7a7fa2b24
+    reviewer: 平台设计者（技术负责人）
+    reviewed_at: 2026-11-11
+  GLOSSARY-001:
+    content_hash: 4e8e13d674f9908bb1c3049fb02bccd5b8151e0ae8152acd07d375058b0bbc82
+    reviewer: 平台设计者（产品负责人）
+    reviewed_at: 2026-11-11
+  API-ORDER-001:
+    content_hash: 74ca8c5cb83c7e33ea8802c4fe12b724f0d33313abec66df4e6db6da0528223a
+    reviewer: 平台设计者（技术负责人）
+    reviewed_at: 2026-11-11
+  API-ORDER-002:
+    content_hash: 82e0cc02c89ba9aa7a35968013f9f19d0c87f49969a0cbf8f06f53c21ed89be2
+    reviewer: 平台设计者（技术负责人）
+    reviewed_at: 2026-11-11
+  API-ORDER-004:
+    content_hash: eed639586ebb78bbdba320441a77a09addd1bd76e38d05a9b3c208e291b3d517
+    reviewer: 平台设计者（技术负责人）
+    reviewed_at: 2026-11-11
+  API-ORDER-005:
+    content_hash: 6c2b43639216fc6bd875fc2440206861230538ba42d6ccda4599729c2f1d26c2
+    reviewer: 平台设计者（技术负责人）
+    reviewed_at: 2026-11-11
+  API-ORDER-006:
+    content_hash: e2251c4021b14fec566df23bd393e7b2ddc6797f16dd46001bc1d48cb200a421
+    reviewer: 平台设计者（技术负责人）
+    reviewed_at: 2026-11-11
+  DATA-ORDER-001:
+    content_hash: 0e4a3fbf1001e9c797e4d9fec2dbd5e569800d18546ecd00f0982e1fc6d316a9
+    reviewer: 平台设计者（技术负责人）
+    reviewed_at: 2026-11-11
+  REQ-ORDER-002:
+    content_hash: 343bae2e16014137597e471597b02c87e04af1647d3c4fc94abd50c0c4383529
+    reviewer: 平台设计者（产品负责人）
+    reviewed_at: 2026-11-11
+  REQ-ORDER-003:
+    content_hash: 1a82dc0a475d3b24d24f66d7bed5557c289a8dbcdbaf09a630939d4e3c83bb91
+    reviewer: 平台设计者（产品负责人）
+    reviewed_at: 2026-11-11
+  REQ-ORDER-004:
+    content_hash: 0fbf3ab8411e6f331879a1af0b629d7d36d5a5723760f25f9e32f48266f0df01
+    reviewer: 平台设计者（产品负责人）
+    reviewed_at: 2026-11-11
+  RULE-ORDER-003:
+    content_hash: e50ed57091093b23363c69b62e05f2f2372395a28b149d3915819fa93346477f
+    reviewer: 平台设计者（产品负责人）
+    reviewed_at: 2026-11-11
+  RULE-ORDER-004:
+    content_hash: ed76dee85196e546af9fa4c509d6e71319fa4520f371122af585a3fcd1eb58d5
+    reviewer: 平台设计者（产品负责人）
+    reviewed_at: 2026-11-11
+  RULE-ORDER-005:
+    content_hash: 3a6e936f12a87973de65c2d8ad229f38ed1f0ef819f1bfb9dd8df071a23f0df3
+    reviewer: 平台设计者（产品负责人）
+    reviewed_at: 2026-11-11
+  RULE-ORDER-006:
+    content_hash: a052296845c63aafb97e3d4979853dfd3668157139305489ca0a229f51ed0e98
+    reviewer: 平台设计者（产品负责人）
+    reviewed_at: 2026-11-11
+  RULE-ORDER-007:
+    content_hash: d93dca406a6709abe20f5199fb101acd98b86af8bb60aab4ad3bccf5d60e02d5
+    reviewer: 平台设计者（产品负责人）
+    reviewed_at: 2026-11-11
+  RULE-ORDER-009:
+    content_hash: d2a1f360c99798598607b90b456c509fd917b4028a358e3d17af506c2aec86ce
+    reviewer: 平台设计者（产品负责人）
+    reviewed_at: 2026-11-11
+  RULE-ORDER-010:
+    content_hash: 9d8abc1bac77e670307cb804dcad2eefd33bd44973ff7a92ec8764587a3d32d9
+    reviewer: 平台设计者（产品负责人）
+    reviewed_at: 2026-11-11
+  RULE-ORDER-011:
+    content_hash: 6d8f7ecd4d90c862b00703ba6cc4c916c6c5df5f911187bd2d2b097b85eb3dca
+    reviewer: 平台设计者（产品负责人）
+    reviewed_at: 2026-11-11
+  TEST-DATA:
+    content_hash: 9967da8ecf2eb3809f6492e56e7aee220e65ea01232a4525ed20f12c995a9c53
+    reviewer: 平台设计者（技术负责人）
+    reviewed_at: 2026-11-11
+  AUTO-FRAMEWORK:
+    content_hash: 41bdfa5e43ac1c57640fd2b628a715c9993d8d49e268f8e7238409b6cec67d2a
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  EXP-ORDER-001:
+    content_hash: cdd09b790d8fb9e5a4c1ef032933bc7a1fac47cbf90252bb48cc32f60251b458
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  API-ORDER-003:
+    content_hash: b8db9c4fd7ee58f8b7755dc9c03c86d37ba8417905e126f2727bc730590cd7c2
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  PROJECT-ENVIRONMENTS:
+    content_hash: 5fcb16dfcbc34dd3f0493a50b33eafa28807662be98231e99be48d9eae48470c
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  PROJECT-OVERVIEW:
+    content_hash: 1356ab8deb593d655c39cb393cb803a0b76a6e83d4c5500b445da2a4a77c0ff0
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  PROJECT-PLATFORMS:
+    content_hash: 461e2d194b71929242730070836fc5cb7c3fab4bc23a9a8fbabadd27bfa2d4fd
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  PROJECT-ROLES:
+    content_hash: 56e183c8804b9b631e02daa3cb89407b02927b78c75397bff5f2b413e3bda9e4
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  PROJECT-VERSIONS:
+    content_hash: 14867ae517842ae524349f64e3c6ef844a87f6d23b69405d128fa9c1ebec25fa
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  REQ-ORDER-001:
+    content_hash: a06ba9f8a72e8f3db81fb1da16d8772617a7b86ee3f85002f02a7d95d3e87def
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  RULE-ORDER-001:
+    content_hash: a1461ff6e28fbbe1766e83fce42d0aa07931e2d3762fc13b54bd840a9e208ce7
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  RULE-ORDER-002:
+    content_hash: 5cb761a39f72fb852267f136f7949f06f9c9e8699687c07de20a4e95335cf92a
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  RULE-ORDER-008:
+    content_hash: dc426247ed91c3addea11605596e8af2f35cc55a6c29a1d94e17c9a3d948712b
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  TEST-SPEC-PROJECT-001:
+    content_hash: c4ed8a140d7c776e23b476b039b35ae3fea00973a10f47e91571725b1fc4ff04
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  TEST-ENV:
+    content_hash: 703ddf8de77fc226397e5fb0bc75bb89dc7ff21f9c848660d178d2440a16d55c
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  FLOW-ORDER-001:
+    content_hash: 1b97db7bf49f5ebeb4c166d4c70200c617daa00b3539b80c8af15c0b19b81894
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai
+  STATE-ORDER-001:
+    content_hash: b081287564f2f3a04f340ab47bd63cfe2b4440fbefba5ac665f7fd205b4b1948
+    reviewer: codex-delegated-reviewer
+    reviewed_at: '2026-11-12'
+    review_type: delegated_ai

@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-12",
+  "container": "testjury-postgres",
+  "image": "pgvector/pgvector:pg16",
+  "status": "running",
+  "health": "healthy",
+  "host_port": 55432,
+  "postgres_version": "16.15",
+  "pgvector_version": "0.8.7",
+  "docker_engine_version": "29.8.1",
+  "wsl_version": "3.0.5.0",
+  "automatic_restart_performed": false,
+  "project_compose_configuration_modified": false,
+  "system_dns_modified": false,
+  "source": "official Docker Hub; all blob digests and decompressed layer hashes verified"
+}

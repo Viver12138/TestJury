@@ -5,38 +5,39 @@ knowledge_type: EXPERT_KNOWLEDGE
 project_id: minishop
 module_id: order
 source_type: EXPERT_REVIEW
-source_ref: Minishop/backend/app/api/orders.py; Minishop/backend/app/api/payments.py; Minishop/backend/app/api/admin.py; Minishop/backend/app/api/refunds.py; Minishop/frontend/src/pages/product/ProductDetail.tsx
+source_ref: Minishop/backend/app/api/orders.py; Minishop/backend/app/api/payments.py;
+  Minishop/backend/app/api/admin.py; Minishop/backend/app/api/refunds.py; Minishop/frontend/src/pages/product/ProductDetail.tsx
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E4
-status: in_review
+status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（产品负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - order
-  - risk
-  - expert
-  - code_review
+- order
+- risk
+- expert
+- code_review
 related_ids:
-  - RULE-ORDER-003
-  - RULE-ORDER-008
-  - RULE-ORDER-009
-  - CONFLICT-002
-  - CONFLICT-010
+- RULE-ORDER-003
+- RULE-ORDER-008
+- RULE-ORDER-009
+- CONFLICT-002
+- CONFLICT-010
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: changes_applied_pending_reapproval
-change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过）"
+review_status: delegated_review_completed
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 ---
 
 # 1. 性质声明
@@ -112,7 +113,7 @@ change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过�
 
 ## R-06 多支付记录与单对象关系
 
-**观察**：同一订单可有多条 `payments`（失败重试），但 `Order.payment` 是 `uselist=False`。SQLAlchemy 2.0.36 实测：存在 FAILED+SUCCESS 两条记录时确定性返回第一条（通常为 FAILED）并抛 `SAWarning`，属确定性缺陷而非“不确定”。
+**观察**：同一订单可有多条 `payments`（失败重试），但 `Order.payment` 是 `uselist=False`。历史复核观察到 FAILED+SUCCESS 场景返回 FAILED 并抛 SAWarning；无排序关系不保证固定选取哪一条，当前实现不满足成功/最新支付的目标。
 
 **证据**：`models.py#L192`、`payments.py#L50-L74`、`backend/app/api/common.py#L164-L174`。
 
@@ -128,7 +129,7 @@ change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过�
 
 1. 单规格商品 `spec_values={}`，`selected` 永远为空，`currentSku` 为 `undefined`，详情页无法加购；
 2. 种子商品图 SVG 的 `font-family` 引号嵌套导致 XML 非法，且 data URL 未编码；
-3. 结算页商品来自 `sessionStorage`，刷新/直达丢失。
+3. 结算页商品来自 sessionStorage；同一标签页普通刷新会保留。新会话、清空存储或没有 checkout_items 时直达无法恢复商品。
 
 **证据**：`ProductDetail.tsx#L45-L77`、`seed.py#L12-L25`、`OrderConfirm.tsx#L21-L24`。
 
@@ -207,6 +208,13 @@ change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过�
 - 多支付记录时订单详情应展示哪一条？
 - 券 `total_quantity` 到底限制“发放”还是“使用”？
 - 单规格商品无法加购是否为已知缺陷？修复计划？
+
+
+# 本次授权技术复核适用性
+
+保留 E4 风险线索级别；修正无排序支付选择与 sessionStorage 刷新语义，不据此断言目标行为已实现。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

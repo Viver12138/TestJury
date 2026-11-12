@@ -1,0 +1,39 @@
+project_id: minishop
+module_id: order
+content_stage: reviewed_candidate
+publication_status: unpublished
+active_build: null
+review_baseline: null
+updated_at: '2026-11-12'
+# candidate_* 表示离线内容可用范围；不授予正式检索或发布权限。
+capabilities:
+  - review_type: interface_contract
+    candidate_admission: conditional
+    formal_admission: blocked
+    restrictions: 排除 API-ORDER-003 订单详情；其余接口按明确选择的基线逐条引用
+    required_doc_ids: [API-ORDER-001, API-ORDER-002, API-ORDER-004, API-ORDER-005, API-ORDER-006]
+  - review_type: requirement_coverage
+    candidate_admission: conditional
+    formal_admission: blocked
+    restrictions: 仅核对已有反向整理需求，不作正式 PRD 覆盖完整性结论
+    required_doc_ids: [REQ-ORDER-002, REQ-ORDER-003, REQ-ORDER-004]
+  - review_type: business_scenario
+    candidate_admission: conditional
+    formal_admission: blocked
+    restrictions: 只使用已审核且来源可复核的规则；当前行为与目标规则必须区分
+    required_doc_ids: [RULE-ORDER-003, RULE-ORDER-004, RULE-ORDER-005, RULE-ORDER-006, RULE-ORDER-007]
+  - review_type: boundary_exception
+    candidate_admission: conditional
+    formal_admission: blocked
+    restrictions: 逐项核对缺口和已知限制，不推断完整异常覆盖
+    required_doc_ids: [RULE-ORDER-009, AUTO-LIMITATIONS]
+  - review_type: state_transition
+    candidate_admission: blocked
+    formal_admission: blocked
+    restrictions: STATE-ORDER-001 待复审；退款状态恢复未修复
+    required_doc_ids: [STATE-ORDER-001, RULE-ORDER-010]
+  - review_type: automation_feasibility
+    candidate_admission: blocked
+    formal_admission: blocked
+    restrictions: AUTO-FRAMEWORK 待复审；当前 e2e 脚本不构成冻结回归基线
+    required_doc_ids: [AUTO-FRAMEWORK, TEST-ENV, AUTO-LOCATOR]

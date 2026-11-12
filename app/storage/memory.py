@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 from datetime import timedelta
 from typing import Any
 
@@ -39,9 +40,12 @@ class MemoryStorage:
         self._global_lock = asyncio.Lock()
         self._stages: dict[str, dict[str, StageRecord]] = {}
         self._attempts: dict[str, list[StageAttempt]] = {}
+        self._checkpoints: dict[tuple[str, str, str], dict] = {}
         self._candidates: dict[str, list[CandidateRecord]] = {}
         self._votes: dict[str, list[VoteRecord]] = {}
         self._model_runs: dict[str, list[ModelRunRecord]] = {}
+        self._budget_reservations: dict[str, dict] = {}
+        self._webhooks: dict[str, dict] = {}
         self._issues: dict[str, list[IssueRecord]] = {}
         self._review_attachments: dict[str, dict[str, AttachmentRecord]] = {}
         self._decisions: dict[str, list[DecisionRecord]] = {}
@@ -125,6 +129,8 @@ class MemoryStorage:
                 raise ApiError(ErrorCode.NOT_FOUND, "评审任务不存在")
             self._stages.pop(review_id, None)
             self._attempts.pop(review_id, None)
+            self._checkpoints = {key: value for key, value in self._checkpoints.items() if key[0] != review_id}
+            self._webhooks = {key: value for key, value in self._webhooks.items() if value["review_id"] != review_id}
             self._candidates.pop(review_id, None)
             self._votes.pop(review_id, None)
             self._decisions.pop(review_id, None)
@@ -225,6 +231,89 @@ class MemoryStorage:
 
     # ── 阶段 ──
 
+    async def enqueue_webhooks(self) -> None:
+        async with self._global_lock:
+            for job in self._jobs.values():
+                url = (job.request_payload.get("options") or {}).get("webhook_url")
+                if not url or job.status not in {"done", "completed_with_warnings", "failed"}:
+                    continue
+                ident = f"{job.id}:review.{job.status}:{job.generation}"
+                self._webhooks.setdefault(ident, {"event_id": ident, "review_id": job.id, "url": url,
+                    "payload": {"review_id": job.id, "ai_verdict": job.ai_verdict,
+                                "human_status": (job.report_json or {}).get("human_status", job.human_status),
+                                "summary": job.report_summary or {}},
+                    "status": "pending", "attempts": 0, "next_attempt_at": now(), "lease_until": None, "last_error": None})
+
+    async def claim_webhook(self, lease_seconds: int, max_attempts: int) -> dict | None:
+        async with self._global_lock:
+            current = now()
+            for row in self._webhooks.values():
+                ready = ((row["status"] == "pending" and row["next_attempt_at"] <= current)
+                         or (row["status"] == "sending" and row["lease_until"] <= current))
+                if not ready:
+                    continue
+                if row["attempts"] >= max_attempts:
+                    row.update(status="failed", last_error="retry_limit")
+                    continue
+                row.update(status="sending", attempts=row["attempts"] + 1,
+                           lease_until=current + timedelta(seconds=lease_seconds))
+                return copy.deepcopy(row)
+            return None
+
+    async def finish_webhook(self, event_id: str, attempt: int, success: bool, delay: int,
+                             max_attempts: int, error: str | None) -> None:
+        async with self._global_lock:
+            row = self._webhooks.get(event_id)
+            if row is not None and row["attempts"] == attempt and row["status"] == "sending":
+                row.update(status="delivered" if success else "failed" if attempt >= max_attempts else "pending",
+                           next_attempt_at=now() + timedelta(seconds=delay), lease_until=None, last_error=error)
+
+    async def reserve_model_budget(self, review_id: str, fencing_token: int, reservation: dict, limits: dict) -> bool:
+        async with self._global_lock:
+            job = self._require_job(review_id)
+            if job.fencing_token != fencing_token or job.status != "processing":
+                raise FencingMismatch(fencing_token, job.fencing_token)
+            rows = list(self._budget_reservations.values())
+            own = [r for r in rows if r["review_id"] == review_id]
+            batch = [r for r in rows if job.batch_id and r["batch_id"] == job.batch_id]
+            daily = [r for r in rows if r["budget_day"] == now().date().isoformat()]
+
+            def used(records, kind):
+                return sum(r[kind + "_actual"] if r["status"] == "settled" else r[kind + "_reserved"] for r in records)
+
+            if (used(own, "tokens") + reservation["tokens_reserved"] > limits["review_tokens"]
+                    or used(own, "cost") + reservation["cost_reserved"] > limits["review_cost"]
+                    or used(daily, "cost") + reservation["cost_reserved"] > limits["daily_cost"]
+                    or (job.batch_id and used(batch, "cost") + reservation["cost_reserved"] > limits["batch_cost"])):
+                return False
+            self._budget_reservations[reservation["id"]] = {**reservation, "review_id": review_id, "batch_id": job.batch_id,
+                "budget_day": now().date().isoformat(), "status": "reserved", "tokens_actual": None, "cost_actual": None}
+            return True
+
+    async def settle_model_budget(self, reservation_id: str, tokens: int, cost: float) -> None:
+        async with self._global_lock:
+            row = self._budget_reservations[reservation_id]
+            if row["status"] == "reserved":
+                row.update(status="settled", tokens_actual=tokens, cost_actual=cost)
+
+    async def list_model_budget(self, review_id: str) -> list[dict]:
+        return copy.deepcopy([r for r in self._budget_reservations.values() if r["review_id"] == review_id])
+
+    async def get_checkpoint(self, review_id: str, key: str, input_digest: str) -> dict | None:
+        return copy.deepcopy(self._checkpoints.get((review_id, key, input_digest)))
+
+    async def put_checkpoint(self, review_id: str, key: str, input_digest: str,
+                             payload: dict, output_digest: str, fencing_token: int) -> None:
+        async with self._global_lock:
+            job = self._require_job(review_id)
+            if job.fencing_token != fencing_token or job.status != "processing":
+                raise FencingMismatch(fencing_token, job.fencing_token)
+            ident = (review_id, key, input_digest)
+            existing = self._checkpoints.get(ident)
+            if existing and existing["output_digest"] != output_digest:
+                raise ValueError("checkpoint output is immutable")
+            self._checkpoints.setdefault(ident, copy.deepcopy({"payload": payload, "output_digest": output_digest}))
+
     async def upsert_stage(self, stage: StageRecord) -> None:
         self._stages.setdefault(stage.review_id, {})[stage.stage] = stage
 
@@ -275,6 +364,7 @@ class MemoryStorage:
         fencing_token: int,
         fields: dict[str, Any],
         issues: list[IssueRecord],
+        review_tasks: list[ReviewTaskRecord] | None = None,
     ) -> ReviewJob:
         async with self._global_lock:
             job = self._require_job(review_id)
@@ -283,6 +373,7 @@ class MemoryStorage:
             updated = job.with_fields(**fields)
             self._jobs[review_id] = updated
             self._issues[review_id] = list(issues)
+            await self.create_review_tasks(review_tasks or [])
             return updated
 
     async def replace_issues(self, review_id: str, issues: list[IssueRecord]) -> None:

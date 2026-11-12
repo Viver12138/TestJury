@@ -23,7 +23,7 @@ gaps:
   owner_role: 产品负责人
   resolution_plan: 产品负责人补正式 PRD 与验收标准（平台设计者牵头）
   due_date: '2026-12-15'
-  review_note: REQ-ORDER-* 现为反向整理稿；PRD 到位前不得升级为 E1 业务事实
+  review_note: 本机原项目目录发现 完整电商平台_业务需求说明书_V1.0.docx，作为待核验候选；尚未确认权威性及与当前实现版本的一致性，不能据文件名升级为 E1
   updated_at: '2026-11-12'
 - id: GAP-002
   project_id: minishop
@@ -44,7 +44,7 @@ gaps:
   owner_role: 产品负责人
   resolution_plan: 本轮已由平台设计者给出决策；知识库维护者回写 reviewer/reviewed_at
   due_date: '2026-11-14'
-  review_note: 首版误判"已关闭"：清单填写只产生决策，需 Markdown 回写 + 37 份文档逐份审核完成后才可关闭
+  review_note: 本轮为 21 approved / 16 in_review；支付规则、测试规范及版本说明正文修订后待复审，不自动批准
   updated_at: '2026-11-12'
 - id: GAP-003
   project_id: minishop
@@ -124,13 +124,13 @@ gaps:
   - automation_feasibility
   risk: high
   owner: minishop_project_team
-  status: in_progress
+  status: closed
   required_by: 发布前
-  status_cn: 进行中
+  status_cn: 已补来源追溯
   owner_role: 技术负责人
-  resolution_plan: 技术负责人初始化 Git 仓库并补 tag/发布记录
+  resolution_plan: 已绑定完整 GitHub 提交；80 项原始来源含 SQLite 已按原 SHA-256 归档，见 source_binding.yaml 和 evidence/M2/source_snapshots/
   due_date: '2026-11-20'
-  review_note: 实测 Minishop/.git 不存在；建立前知识只能以 snapshot+文件哈希追溯
+  review_note: 仅关闭来源可取得与版本可定位缺口，不代表内容复审、检索验收或正式发布完成
   updated_at: '2026-11-12'
 - id: GAP-007
   project_id: minishop

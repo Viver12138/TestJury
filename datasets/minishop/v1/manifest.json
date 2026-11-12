@@ -1,0 +1,22 @@
+{
+  "version": "minishop-gold-1",
+  "annotation_type": "delegated_ai",
+  "author": "codex-delegated-reviewer",
+  "authorization": "design/changes/2026-11-12-delegated-development.md",
+  "source_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+  "baseline": "current_implementation",
+  "split_unit": "scenario_family",
+  "limitations": [
+    "代理编写并复核的种子黄金集，不是独立人工盲标",
+    "当前仅MiniShop order与冻结源码基线",
+    "不能以离线检索分数代替真实模型评审效果"
+  ],
+  "files": {
+    "retrieval.jsonl": "bfef25226dfdd7644800fe1c0754fb30f451a2e1de124971e6154319782ee95f",
+    "review.jsonl": "129065a44c22f4254863cbe2d4d9005b52d35cbe0314f9f333cc7196eac779cc"
+  },
+  "counts": {
+    "retrieval": 18,
+    "review": 30
+  }
+}

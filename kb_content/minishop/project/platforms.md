@@ -5,35 +5,36 @@ knowledge_type: PROJECT
 project_id: minishop
 module_id: null
 source_type: OTHER
-source_ref: Minishop/frontend/vite.config.ts#L5-L17; Minishop/frontend/src/App.tsx#L63-L101; Minishop/backend/app/main.py#L11-L15
+source_ref: Minishop/frontend/vite.config.ts#L5-L17; Minishop/frontend/src/App.tsx#L63-L101;
+  Minishop/backend/app/main.py#L11-L15
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - web
-  - api
+- web
+- api
 evidence_level: E2
-status: in_review
+status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（技术负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - platform
-  - web
-  - api
+- platform
+- web
+- api
 related_ids:
-  - PROJECT-OVERVIEW
-  - AUTO-FRAMEWORK
+- PROJECT-OVERVIEW
+- AUTO-FRAMEWORK
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: changes_applied_pending_reapproval
-change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过）"
+review_status: delegated_review_completed
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 ---
 
 # 1. 平台清单
@@ -86,6 +87,13 @@ change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过�
 
 - API 自动化：推荐，覆盖全部业务规则与状态转换。
 - UI 自动化：可行但存在已知障碍（无 `data-testid`、单规格商品无法加购、商品图损坏），详见 `AUTO-LIMITATIONS`。
+
+
+# 本次授权技术复核适用性
+
+核对 Vite 代理、App.tsx 路由及 main.py Swagger 无门控；compose 8000 映射事实保留。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

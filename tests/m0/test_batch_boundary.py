@@ -27,10 +27,10 @@ async def test_batch_items_are_independent_and_partial_failure_visible(async_cli
     assert all(job.generation == 1 for job in jobs)
 
     # 两条执行成功，一条失败 → partially_completed，成功结果保留
-    first, second, third = jobs
+    third = jobs[2]
     await app.state.storage.update_job(third.id, status="failed", error="mock failure")
-    assert await app.state.worker.execute(first) == "done"
-    assert await app.state.worker.execute(second) == "done"
+    assert await app.state.worker.run_once() == "done"
+    assert await app.state.worker.run_once() == "done"
 
     detail = (await async_client.get(f"/v1/review-batches/{batch_id}", headers=auth_headers())).json()
     assert detail["status"] == "partially_completed"

@@ -9,15 +9,22 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
+from decimal import Decimal
 from typing import Any
 from uuid import uuid4
 
 from app.core.enums import SEVERITY_RANK
+from app.knowledge.runtime import tokens
 from app.llm.base import ReviewOpinion
 from app.pipeline.verdict import Claim, aggregate_claim_evidence
 from app.storage.models import CandidateRecord
 
 SEVERITY_BY_RANK = {0: "suggestion", 1: "major", 2: "blocker"}
+
+
+def _correction_assertions(text: str) -> set[tuple[str, str]]:
+    return {(field, str(Decimal(value).normalize())) for field, value in re.findall(
+        r"\b([a-zA-Z_][a-zA-Z0-9_.]*)\s*=\s*(-?\d+(?:\.\d+)?)", text)}
 
 
 def _canonical_claims(issue: dict[str, Any]) -> list[dict[str, Any]]:
@@ -96,8 +103,35 @@ def fuse(
         ),
     )
 
+    # Same category/step is a search bucket, not proof of the same root cause.
+    clusters = []
+    for key, members in ordered:
+        groups: list[list[tuple[str, dict[str, Any]]]] = []
+        for member in members:
+            issue = member[1]
+            found = None
+            for group in groups:
+                other = group[0][1]
+                left, right = set(tokens(str(issue.get("rationale")))), set(tokens(str(other.get("rationale"))))
+                overlap = len(left & right) / max(1, len(left | right))
+                containment = len(left & right) / max(1, min(len(left), len(right)))
+                same_correction = bool(
+                    _correction_assertions(str(issue.get("suggestion") or ""))
+                    & _correction_assertions(str(other.get("suggestion") or "")))
+                same_supported_rule = (issue.get("kb_grounded") and other.get("kb_grounded")
+                                       and bool(set(issue.get("kb_refs") or []) & set(other.get("kb_refs") or [])))
+                if (issue.get("dimension") == other.get("dimension")
+                        and issue.get("evidence_quote") == other.get("evidence_quote")
+                        and (overlap >= 0.65 or (same_supported_rule and same_correction and containment >= 0.5))):
+                    found = group
+                    break
+            if found is None:
+                groups.append([member])
+            else:
+                found.append(member)
+        clusters.extend((key, group) for group in groups)
     candidates: list[CandidateRecord] = []
-    for candidate_no, ((step_index, category), members) in enumerate(ordered, start=1):
+    for candidate_no, ((step_index, category), members) in enumerate(clusters, start=1):
         strongest = max(
             members,
             key=lambda item: SEVERITY_RANK.get(str(item[1].get("severity")), 0),
@@ -155,7 +189,7 @@ def fuse(
                 fusion_basis={
                     "bucket": f"step={step_index},category={category}",
                     "tolerance": step_tolerance,
-                    "rule": "same_step_and_category",
+                    "rule": "same_step_category_dimension_quote_and_similar_claim",
                 },
                 category=category,
             )

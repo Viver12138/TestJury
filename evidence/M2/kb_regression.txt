@@ -1,0 +1,15 @@
+........................................................................ [ 20%]
+........................................................................ [ 41%]
+........................................................................ [ 62%]
+........................................................................ [ 83%]
+.....ss................................................                  [100%]
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  C:\Users\admin\Desktop\评审团\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [1] tests\m0\test_fencing.py:35: PostgreSQL 不可用；请先执行 docker compose -f deploy/docker-compose.yml up -d postgres
+SKIPPED [1] tests\m0\test_fencing.py:80: PostgreSQL 不可用；请先执行 docker compose -f deploy/docker-compose.yml up -d postgres
+341 passed, 2 skipped, 1 warning in 45.52s

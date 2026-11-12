@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from app.config import Settings
@@ -15,6 +15,7 @@ from app.core.auth import Principal
 from app.core.errors import ApiError, ErrorCode
 from app.core.idempotency import compute_idempotency_key, compute_input_hash
 from app.core.versioning import Versions
+from app.knowledge.runtime import KnowledgeService
 from app.pipeline.input_check import validate_request
 from app.pipeline.render import render_markdown
 from app.storage.models import AttachmentRecord, AuditRecord, ReviewJob, new_id
@@ -45,10 +46,23 @@ def _job_public(job: ReviewJob, *, replay: bool) -> dict[str, Any]:
 
 
 class ReviewService:
-    def __init__(self, storage: Storage, settings: Settings, versions: Versions) -> None:
+    def __init__(self, storage: Storage, settings: Settings, versions: Versions,
+                 knowledge: KnowledgeService | None = None) -> None:
         self.storage = storage
         self.settings = settings
         self.versions = versions
+        self.knowledge = knowledge
+
+    async def select_versions(self, case: dict) -> tuple[Versions, dict | None]:
+        versions, release = self.versions, None
+        if self.knowledge is not None and case.get("project_id"):
+            release = await self.knowledge.resolve(case["project_id"], case["review_baseline"], case["module"])
+            if release and release["baseline"]["product_version"] != case["product_version"]:
+                release = None
+            if release:
+                versions = replace(versions, kb_content_version=release["content_version"],
+                                   kb_build_version=release["version"], embedding_profile=release["profile"])
+        return versions, release
 
     async def submit(
         self,
@@ -56,13 +70,15 @@ class ReviewService:
         principal: Principal,
         *,
         idempotency_key: str | None = None,
+        version_snapshot: tuple[Versions, dict | None] | None = None,
+        batch_id: str | None = None,
     ) -> SubmitResult:
         """`idempotency_key` 仅供服务层测试注入（生产 API 不接受客户端指定）。"""
 
         normalized = validate_request(payload, self.settings, caller_id=principal.caller_id)
         attachments = await self._validate_attachments(normalized.case, principal)
-        if normalized.options.get("strict_kb"):
-            # M0 没有知识库覆盖任何模块，strict 模式必须明确拒绝（docs/03 §8）
+        versions, release = version_snapshot or await self.select_versions(normalized.case)
+        if normalized.options.get("strict_kb") and release is None:
             raise ApiError(
                 ErrorCode.KB_MODULE_MISSING,
                 "strict_kb=true 但该模块没有知识库覆盖",
@@ -75,12 +91,13 @@ class ReviewService:
             normalized.automation_context,
             normalized.options,
         )
-        computed_key = compute_idempotency_key(input_hash, self.versions)
+        computed_key = compute_idempotency_key(input_hash + ("|batch:" + batch_id if batch_id else ""), versions)
         key = idempotency_key or computed_key
 
-        roles = ("chief_blind", "jury_a", "jury_b")
+        roles = self.settings.review_roles
         job = ReviewJob(
             id=new_id(),
+            batch_id=batch_id,
             case_id=normalized.case["case_id"],
             case_version=normalized.case["case_version"],
             case_title=normalized.case["title"],
@@ -101,12 +118,21 @@ class ReviewService:
             topology_snapshot={
                 "roles": list(roles),
                 "models": {role: self.versions.models.get(role, "mock") for role in roles},
+                "versions": versions.report_versions(),
+                "prompt_version_hash": versions.prompt_version_hash,
+                "retrieval": {"top_k": self.settings.kb_context_top_k,
+                              "char_cap": self.settings.kb_context_token_cap * 2},
+                "review_baseline": release["baseline"] if release else None,
+                "budget": {"review_tokens": min(normalized.options.get("budget_tokens")
+                                                 or self.settings.review_budget_tokens, self.settings.review_budget_tokens),
+                           "review_cost": self.settings.review_budget_cost,
+                           "batch_cost": self.settings.batch_budget_cost, "daily_cost": self.settings.daily_budget_cost},
             },
             input_quality={},
             degraded=False,
             degraded_reasons=list(normalized.warnings),
-            kb_content_version=self.versions.kb_content_version,
-            kb_build_version=self.versions.kb_build_version,
+            kb_content_version=versions.kb_content_version,
+            kb_build_version=versions.kb_build_version,
             rubric_version=self.versions.rubric,
             prompt_versions=dict(self.versions.prompts),
             prompt_version_hash=self.versions.prompt_version_hash,

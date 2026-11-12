@@ -1,0 +1,18 @@
+{
+  "checked_at": "2026-11-12T16:19:59+0800",
+  "registry_version": "models-2026-11-11",
+  "results": [
+    {
+      "role": "jury_b",
+      "provider": "kimi",
+      "model_id": "kimi-k3.1-pro",
+      "status": "ok",
+      "returned_model": "kimi-k3.1-pro",
+      "latency_ms": 12253,
+      "input_tokens": 177,
+      "output_tokens": 110,
+      "json_ok": true,
+      "content_length": 36
+    }
+  ]
+}

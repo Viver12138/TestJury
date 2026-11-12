@@ -5,37 +5,38 @@ knowledge_type: BUSINESS_RULE
 project_id: minishop
 module_id: order
 source_type: OTHER
-source_ref: Minishop/backend/app/api/orders.py#L46-L59; Minishop/backend/app/api/orders.py#L83-L84; Minishop/backend/app/api/orders.py#L124-L130
+source_ref: Minishop/backend/app/api/orders.py#L46-L59; Minishop/backend/app/api/orders.py#L83-L84;
+  Minishop/backend/app/api/orders.py#L124-L130
 source_version: snapshot-2026-11-11
 product_version:
-  - "1.0.0"
+- 1.0.0
 platforms:
-  - all
+- all
 evidence_level: E2
-status: in_review
+status: approved
 owner: minishop_project_team
-reviewer: "平台设计者（产品负责人）"
+reviewer: codex-delegated-reviewer
 created_at: 2026-11-11
-updated_at: 2026-11-12
+updated_at: '2026-11-12'
 effective_from: null
 effective_until: null
-reviewed_at: 2026-11-11
+reviewed_at: '2026-11-12'
 review_cycle_days: 90
 tags:
-  - order
-  - amount
-  - pricing
-  - server_authoritative
+- order
+- amount
+- pricing
+- server_authoritative
 related_ids:
-  - REQ-ORDER-001
-  - RULE-ORDER-005
-  - API-ORDER-001
-  - API-ORDER-002
+- REQ-ORDER-001
+- RULE-ORDER-005
+- API-ORDER-001
+- API-ORDER-002
 sensitivity: internal
 content_language: zh-CN
 chunk_strategy: section
-review_status: changes_applied_pending_reapproval
-change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过）"
+review_status: delegated_review_completed
+change_reason: 2026-11-12 用户授权技术复核；具体依据见 evidence/M2/delegated_content_review.json
 ---
 
 # 1. 规则陈述
@@ -97,6 +98,13 @@ change_reason: "2026-11-12 人工复核回写（审核结论：修改后通过�
 - 是否需要引入 Decimal 或分为单位，避免浮点误差？
 - 单项小计是否需要单独四舍五入后再汇总？
 - 是否应拒绝包含未知价格字段的请求，而不是静默忽略？
+
+
+# 本次授权技术复核适用性
+
+核对订单计价与落库：预览 total_amount 未 round，pay_amount 已 round，订单与明细落库分别 round；SKU 价格为来源。
+
+本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。
 
 ---
 

@@ -19,7 +19,9 @@ from fastapi import FastAPI
 from app import __version__
 from app.api import attachments as attachments_api
 from app.api import batches as batches_api
+from app.api import console as console_api
 from app.api import health as health_api
+from app.api import knowledge as knowledge_api
 from app.api import review_tasks as review_tasks_api
 from app.api import reviews as reviews_api
 from app.config import Settings, get_settings
@@ -28,6 +30,8 @@ from app.core.errors import install_exception_handlers
 from app.core.logging import configure_logging
 from app.core.observability import RequestContextMiddleware
 from app.core.versioning import compute_versions
+from app.core.webhooks import WebhookWorker
+from app.knowledge.runtime import KnowledgeService, MemoryKnowledgeStore
 from app.llm.factory import build_chat_adapter
 from app.llm.masking import MaskingPolicy
 from app.llm.mock import MockChatClient
@@ -57,7 +61,7 @@ def _build_review_model(settings: Settings):
     if settings.review_model_mode == "mock":
         return MockChatClient()
     registry = ModelRegistry.load(settings.model_registry_path)
-    roles = ("chief_blind", "jury_a", "jury_b")
+    roles = settings.review_roles
     if settings.is_production and settings.enforce_model_admission:
         from app.llm.admission import enforce_model_admission
 
@@ -120,27 +124,52 @@ def create_app(
     storage = storage or _build_storage(settings)
     auth_repository = auth_repository or _build_auth_repository(settings)
 
-    review_service = ReviewService(storage, settings, versions)
+    knowledge = None
+    if settings.knowledge_enabled:
+        if settings.storage_backend == "memory":
+            knowledge_store = MemoryKnowledgeStore()
+        else:
+            from app.knowledge.postgres import PostgresKnowledgeStore
+
+            knowledge_store = PostgresKnowledgeStore(settings.database_url)
+        embedder = None
+        profile = "lexical-only"
+        if settings.knowledge_vector_enabled:
+            from app.llm.factory import build_embedding_adapter
+
+            embedder = build_embedding_adapter(ModelRegistry.load(settings.model_registry_path))
+            profile = versions.embedding_profile
+        knowledge = KnowledgeService(knowledge_store, embedder=embedder, profile=profile)
+    review_service = ReviewService(storage, settings, versions, knowledge)
     decision_service = DecisionService(storage, settings)
     task_service = ReviewTaskService(storage)
     batch_service = BatchService(storage, settings, versions, review_service)
     attachment_service = AttachmentService(storage, settings)
     review_model = _build_review_model(settings)
-    pipeline = ReviewPipeline(storage, settings, model=review_model)
+    pipeline = ReviewPipeline(storage, settings, model=review_model, knowledge=knowledge)
 
     from app.core.worker import Worker
 
     worker = Worker(storage, settings, versions, pipeline)
+    webhook_worker = WebhookWorker(storage, settings)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         await _seed_auth(settings, auth_repository)
         if (settings.run_worker if run_worker is None else run_worker):
             worker.start()
+            if settings.webhook_enabled:
+                webhook_worker.start()
         try:
             yield
         finally:
             await worker.stop()
+            await webhook_worker.stop()
+            if knowledge is not None:
+                for component in (knowledge.embedder, knowledge.reranker, knowledge.store):
+                    close_component = getattr(component, "aclose", None) or getattr(component, "close", None)
+                    if close_component is not None:
+                        await close_component()
             close_model = getattr(review_model, "aclose", None)
             if close_model is not None:
                 await close_model()
@@ -157,6 +186,7 @@ def create_app(
         lifespan=lifespan,
     )
     app.state.settings = settings
+    app.state.webhook_worker = webhook_worker
     app.state.versions = versions
     app.state.storage = storage
     app.state.auth_repository = auth_repository
@@ -166,6 +196,7 @@ def create_app(
     app.state.batch_service = batch_service
     app.state.attachment_service = attachment_service
     app.state.pipeline = pipeline
+    app.state.knowledge = knowledge
     app.state.review_model = review_model
     app.state.worker = worker
 
@@ -173,6 +204,8 @@ def create_app(
     install_exception_handlers(app)
 
     app.include_router(health_api.router)
+    app.include_router(console_api.router)
+    app.include_router(knowledge_api.router)
     app.include_router(reviews_api.router)
     app.include_router(batches_api.router)
     app.include_router(review_tasks_api.router)

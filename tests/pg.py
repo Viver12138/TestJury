@@ -12,11 +12,16 @@ import asyncpg
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TEST_DATABASE_URL = os.environ.get(
-    "TEST_DATABASE_URL", "postgresql://testjury:testjury@127.0.0.1:55432/testjury"
+    "TEST_DATABASE_URL", ""
 )
 
 
 def dsn() -> str:
+    from urllib.parse import urlparse
+
+    name = urlparse(TEST_DATABASE_URL).path.lstrip("/")
+    if not TEST_DATABASE_URL or not (name.startswith("testjury_verify_") or name.endswith("_test")):
+        raise RuntimeError("TEST_DATABASE_URL must explicitly select an isolated *_test/testjury_verify_* database")
     return TEST_DATABASE_URL
 
 

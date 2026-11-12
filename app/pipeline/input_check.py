@@ -12,6 +12,7 @@ from typing import Any
 from app.config import Settings
 from app.core.enums import TestType, TestTypeSource
 from app.core.errors import ApiError, ErrorCode
+from app.core.webhooks import validate_webhook_url
 
 PRIORITIES = {"P0", "P1", "P2", "P3"}
 CASE_SOURCES = {"manual", "auto"}
@@ -191,6 +192,14 @@ def validate_request(
     raw_options = payload.get("options") or {}
     if not isinstance(raw_options, dict):
         _fail(ErrorCode.INPUT_INVALID, "options 必须是对象", "options")
+    requested_budget = raw_options.get("budget_tokens")
+    if requested_budget is not None and (type(requested_budget) is not int or requested_budget < 1):
+        _fail(ErrorCode.INPUT_INVALID, "budget_tokens 必须是正整数", "options.budget_tokens")
+    if raw_options.get("webhook_url") is not None:
+        try:
+            validate_webhook_url(raw_options["webhook_url"], settings)
+        except ValueError as exc:
+            _fail(ErrorCode.INPUT_INVALID, str(exc), "options.webhook_url")
     options = {
         "force": bool(raw_options.get("force", False)),
         "strict_kb": bool(raw_options.get("strict_kb", False)),
@@ -213,6 +222,14 @@ def validate_request(
         "raw_text": raw_text or None,
         "kb_hint": case.get("kb_hint"),
     }
+    if case.get("project_id") is not None:
+        normalized_case["project_id"] = _require_text(case["project_id"], "case.project_id", max_length=100)
+        baseline = _require_text(case.get("review_baseline"), "case.review_baseline")
+        if baseline not in {"current_implementation", "target_specification"}:
+            _fail(ErrorCode.INPUT_INVALID, "未知评审基线", "case.review_baseline")
+        normalized_case["review_baseline"] = baseline
+        normalized_case["product_version"] = _require_text(case.get("product_version"), "case.product_version")
+        normalized_case["platform"] = _as_str(case.get("platform")) or "all"
     if test_scope is not None:
         normalized_scope = {
             "feature_point": test_scope.get("feature_point"),

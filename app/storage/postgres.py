@@ -8,9 +8,11 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 from dataclasses import replace
 from datetime import datetime
+from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
@@ -58,12 +60,15 @@ class _PooledStorage:
     def __init__(self, dsn: str) -> None:
         self._dsn = _normalize_dsn(dsn)
         self._pool: asyncpg.Pool | None = None
+        self._pool_lock = asyncio.Lock()
 
     async def _get_pool(self) -> asyncpg.Pool:
         if self._pool is None:
-            self._pool = await asyncpg.create_pool(
-                self._dsn, min_size=1, max_size=8, init=_init_connection
-            )
+            async with self._pool_lock:
+                if self._pool is None:
+                    self._pool = await asyncpg.create_pool(
+                        self._dsn, min_size=1, max_size=8, init=_init_connection
+                    )
         return self._pool
 
     async def close(self) -> None:
@@ -650,6 +655,104 @@ class PostgresStorage(_PooledStorage):
 
     # ── 候选与投票 ──
 
+    async def enqueue_webhooks(self) -> None:
+        pool = await self._get_pool()
+        await pool.execute("""INSERT INTO webhook_deliveries(event_id,review_id,url,payload)
+            SELECT id::text||':review.'||status||':'||generation::text, id,
+                   request_payload->'options'->>'webhook_url',
+                   jsonb_build_object('review_id',id::text,'ai_verdict',ai_verdict,
+                       'human_status',COALESCE(report_json->>'human_status',human_status),
+                       'summary',COALESCE(report_summary,'{}'::jsonb))
+            FROM review_jobs WHERE status IN ('done','completed_with_warnings','failed')
+                AND request_payload->'options'->>'webhook_url' IS NOT NULL ON CONFLICT DO NOTHING""")
+
+    async def claim_webhook(self, lease_seconds: int, max_attempts: int) -> dict | None:
+        pool = await self._get_pool()
+        async with pool.acquire() as conn, conn.transaction():
+            await conn.execute("UPDATE webhook_deliveries SET status='failed',last_error='retry_limit' "
+                               "WHERE attempts >= $1 AND (status='pending' OR (status='sending' AND lease_until<=now()))",
+                               max_attempts)
+            row = await conn.fetchrow("""WITH ready AS (
+                SELECT event_id FROM webhook_deliveries WHERE attempts<$2 AND
+                    ((status='pending' AND next_attempt_at<=now()) OR (status='sending' AND lease_until<=now()))
+                ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1)
+                UPDATE webhook_deliveries d SET status='sending',attempts=d.attempts+1,
+                    lease_until=now()+make_interval(secs=>$1) FROM ready
+                WHERE d.event_id=ready.event_id RETURNING d.*""", lease_seconds, max_attempts)
+            return dict(row) if row else None
+
+    async def finish_webhook(self, event_id: str, attempt: int, success: bool, delay: int,
+                             max_attempts: int, error: str | None) -> None:
+        pool = await self._get_pool()
+        state = "delivered" if success else "failed" if attempt >= max_attempts else "pending"
+        await pool.execute("UPDATE webhook_deliveries SET status=$3,next_attempt_at=now()+make_interval(secs=>$4), "
+                           "lease_until=NULL,last_error=$5 WHERE event_id=$1 AND attempts=$2 AND status='sending'",
+                           event_id, attempt, state, delay, error)
+
+    async def reserve_model_budget(self, review_id: str, fencing_token: int, reservation: dict, limits: dict) -> bool:
+        pool = await self._get_pool()
+        async with pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT pg_advisory_xact_lock(4823701)")
+            job = await conn.fetchrow("SELECT fencing_token, status, batch_id FROM review_jobs "
+                                      "WHERE id=$1::uuid FOR UPDATE", UUID(review_id))
+            if not job or job["fencing_token"] != fencing_token or job["status"] != "processing":
+                raise FencingMismatch(fencing_token, job["fencing_token"] if job else -1)
+            totals = await conn.fetchrow("""SELECT
+                COALESCE(SUM(COALESCE(tokens_actual,tokens_reserved)) FILTER(WHERE review_id=$1::uuid),0) AS own_tokens,
+                COALESCE(SUM(COALESCE(cost_actual,cost_reserved)) FILTER(WHERE review_id=$1::uuid),0) AS own_cost,
+                COALESCE(SUM(COALESCE(cost_actual,cost_reserved)) FILTER(WHERE batch_id=$2::uuid),0) AS batch_cost,
+                COALESCE(SUM(COALESCE(cost_actual,cost_reserved))
+                    FILTER(WHERE budget_day=(now() AT TIME ZONE 'UTC')::date),0) AS daily_cost
+                FROM model_budget_reservations WHERE review_id=$1::uuid OR batch_id=$2::uuid
+                    OR budget_day=(now() AT TIME ZONE 'UTC')::date""", UUID(review_id), job["batch_id"])
+            cost = Decimal(str(reservation["cost_reserved"]))
+            if (totals["own_tokens"] + reservation["tokens_reserved"] > limits["review_tokens"]
+                    or totals["own_cost"] + cost > Decimal(str(limits["review_cost"]))
+                    or totals["daily_cost"] + cost > Decimal(str(limits["daily_cost"]))
+                    or (job["batch_id"] and totals["batch_cost"] + cost > Decimal(str(limits["batch_cost"])))):
+                return False
+            await conn.execute("INSERT INTO model_budget_reservations "
+                               "(id,review_id,batch_id,model,tokens_reserved,cost_reserved) "
+                               "VALUES ($1::uuid,$2::uuid,$3::uuid,$4,$5,$6)",
+                               UUID(reservation["id"]), UUID(review_id), job["batch_id"], reservation["model"],
+                               reservation["tokens_reserved"], cost)
+            return True
+
+    async def settle_model_budget(self, reservation_id: str, tokens: int, cost: float) -> None:
+        pool = await self._get_pool()
+        await pool.execute("UPDATE model_budget_reservations SET tokens_actual=$2,cost_actual=$3,status='settled' "
+                           "WHERE id=$1::uuid AND status='reserved'", UUID(reservation_id), tokens, Decimal(str(cost)))
+
+    async def list_model_budget(self, review_id: str) -> list[dict]:
+        pool = await self._get_pool()
+        return [dict(r) for r in await pool.fetch("SELECT * FROM model_budget_reservations WHERE review_id=$1::uuid",
+                                                  UUID(review_id))]
+
+    async def get_checkpoint(self, review_id: str, key: str, input_digest: str) -> dict | None:
+        pool = await self._get_pool()
+        row = await pool.fetchrow("SELECT payload, output_digest FROM stage_checkpoints "
+                                  "WHERE review_id=$1::uuid AND stage_key=$2 AND input_digest=$3",
+                                  UUID(review_id), key, input_digest)
+        return dict(row) if row else None
+
+    async def put_checkpoint(self, review_id: str, key: str, input_digest: str,
+                             payload: dict, output_digest: str, fencing_token: int) -> None:
+        pool = await self._get_pool()
+        async with pool.acquire() as conn, conn.transaction():
+            job = await conn.fetchrow("SELECT fencing_token, status FROM review_jobs WHERE id=$1::uuid FOR UPDATE",
+                                      UUID(review_id))
+            if not job or job["fencing_token"] != fencing_token or job["status"] != "processing":
+                raise FencingMismatch(fencing_token, job["fencing_token"] if job else -1)
+            existing = await conn.fetchval("SELECT output_digest FROM stage_checkpoints "
+                                           "WHERE review_id=$1::uuid AND stage_key=$2 AND input_digest=$3",
+                                           UUID(review_id), key, input_digest)
+            if existing and existing != output_digest:
+                raise ValueError("checkpoint output is immutable")
+            await conn.execute("INSERT INTO stage_checkpoints "
+                               "(review_id,stage_key,input_digest,output_digest,payload,fencing_token) "
+                               "VALUES ($1::uuid,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING",
+                               UUID(review_id), key, input_digest, output_digest, payload, fencing_token)
+
     async def replace_candidates(
         self, review_id: str, candidates: list[CandidateRecord]
     ) -> None:
@@ -886,6 +989,7 @@ class PostgresStorage(_PooledStorage):
         fencing_token: int,
         fields: dict[str, Any],
         issues: list[IssueRecord],
+        review_tasks: list[ReviewTaskRecord] | None = None,
     ) -> ReviewJob:
         values: list[Any] = []
         assignments: list[str] = []
@@ -917,6 +1021,8 @@ class PostgresStorage(_PooledStorage):
                 )
                 for issue in issues:
                     await self._insert_issue(conn, issue)
+                for task in review_tasks or []:
+                    await self._insert_review_task(conn, task)
         return _row_to_job(row)
 
     async def _insert_issue(self, conn: asyncpg.Connection, issue: IssueRecord) -> None:
@@ -1155,33 +1261,19 @@ class PostgresStorage(_PooledStorage):
 
     async def create_review_tasks(self, tasks: list[ReviewTaskRecord]) -> None:
         pool = await self._get_pool()
-        async with pool.acquire() as conn:
+        async with pool.acquire() as conn, conn.transaction():
             for task in tasks:
-                await conn.execute(
-                    """
-                    INSERT INTO human_review_tasks
-                        (id, review_id, issue_id, review_level, priority, assignee,
-                         status, result, reason, source, due_at, version)
-                    VALUES ($1::uuid,$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-                    """,
-                    UUID(task.id),
-                    UUID(task.review_id),
-                    UUID(task.issue_id) if task.issue_id else None,
-                    task.review_level,
-                    task.priority,
-                    task.assignee,
-                    task.status,
-                    task.result,
-                    task.reason,
-                    task.source,
-                    task.due_at,
-                    task.version,
-                )
-                await conn.execute(
-                    "INSERT INTO human_review_events (task_id, action, actor) "
-                    "VALUES ($1::uuid,'create','system')",
-                    UUID(task.id),
-                )
+                await self._insert_review_task(conn, task)
+
+    async def _insert_review_task(self, conn, task: ReviewTaskRecord) -> None:
+        await conn.execute("""INSERT INTO human_review_tasks
+            (id, review_id, issue_id, review_level, priority, assignee, status, result, reason, source, due_at, version)
+            VALUES ($1::uuid,$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)""",
+            UUID(task.id), UUID(task.review_id), UUID(task.issue_id) if task.issue_id else None,
+            task.review_level, task.priority, task.assignee, task.status, task.result, task.reason, task.source,
+            task.due_at, task.version)
+        await conn.execute("INSERT INTO human_review_events (task_id, action, actor) VALUES ($1::uuid,'create','system')",
+                           UUID(task.id))
 
     async def list_review_tasks(
         self, *, status: str | None = None, assignee: str | None = None, limit: int = 100

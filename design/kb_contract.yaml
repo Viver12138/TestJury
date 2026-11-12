@@ -1,0 +1,32 @@
+# Metadata compatibility contract. Canonical enums remain in docs/17.
+version: kb-contract-1.0
+baseline: design-v1.13
+field_mapping:
+  id: doc_id
+  module_id: module
+  knowledge_type: doc_type
+knowledge_type_mapping:
+  PROJECT: design
+  REQUIREMENT: requirement
+  BUSINESS_RULE: rule
+  WORKFLOW: flow
+  INTERFACE: design
+  TEST_SPEC: design
+  AUTOMATION: design
+  GLOSSARY: term
+  HISTORICAL_BUG: history_bug
+  EXPERT_KNOWLEDGE: design
+status_mapping:
+  draft: draft
+  in_review: draft
+  approved: reviewed
+  deprecated: deprecated
+  superseded: deprecated
+  rejected: deprecated
+  archived: deprecated
+governance_enums:
+  decision_status: [pending, decided]
+  documentation_status: [pending, synced, reviewed]
+  implementation_status: [not_required, pending, implemented]
+  verification_status: [not_verified, passed, failed]
+baseline_types: [current_implementation, target_specification]

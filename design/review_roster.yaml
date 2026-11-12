@@ -1,47 +1,29 @@
-# 人工复核试点责任表（补充 16 Q-13）
-# 角色名不等于真实人员；上线前每个试点模块必须有主责/备份/抽检/仲裁。
-# 校验：scripts/check_execution_plan.py；status=ready 时人员字段必须非空。
-version: "0.1"
+# 角色名与旧复核签名不等于本次试点的实名责任人。
+version: '0.2'
 baseline: design-v1.13
-status: pending   # pending|ready
-last_updated: "2026-11-10"
-
-required_fields: [module_id, primary_reviewer, backup_reviewer, module_owner, sampler, arbitrator, status]
-
+project_id: minishop
+status: pending
+last_updated: '2026-11-12'
+delegated_development:
+  actor: codex-delegated-reviewer
+  actor_type: ai
+  authorization: design/changes/2026-11-12-delegated-development.md
+  scope: technical_content_and_seed_gold_review
+  evidence: evidence/M2/delegated_content_review.json
+  independent_human_roster: not_established
+required_fields:
+- module_id
+- primary_reviewer
+- backup_reviewer
+- module_owner
+- sampler
+- arbitrator
+- status
 modules:
-  - module_id: backpack
-    primary_reviewer: null
-    backup_reviewer: null
-    module_owner: null
-    sampler: null
-    arbitrator: null
-    status: pending
-  - module_id: dig
-    primary_reviewer: null
-    backup_reviewer: null
-    module_owner: null
-    sampler: null
-    arbitrator: null
-    status: pending
-  - module_id: voice_gift
-    primary_reviewer: null
-    backup_reviewer: null
-    module_owner: null
-    sampler: null
-    arbitrator: null
-    status: pending
-  - module_id: guild_war
-    primary_reviewer: null
-    backup_reviewer: null
-    module_owner: null
-    sampler: null
-    arbitrator: null
-    status: pending
-  - module_id: acupoint
-    primary_reviewer: null
-    backup_reviewer: null
-    module_owner: null
-    sampler: null
-    arbitrator: null
-    status: pending
-
+- module_id: order
+  primary_reviewer: null
+  backup_reviewer: null
+  module_owner: minishop_project_team
+  sampler: null
+  arbitrator: null
+  status: pending
