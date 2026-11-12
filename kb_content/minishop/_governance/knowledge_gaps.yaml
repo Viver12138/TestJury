@@ -1,0 +1,326 @@
+project_id: minishop
+snapshot: 2026-11-11
+description: 'MiniShop 项目知识库候选阶段的知识缺口台账。缺口表示“当前没有可追溯资料”， 不等于业务规则不存在；评审遇到缺口时应降低结论强度并标记原因。
+
+  '
+gaps:
+- id: GAP-001
+  project_id: minishop
+  module_id: null
+  topic: 正式 PRD 与功能规格
+  missing_knowledge_type: REQUIREMENT
+  description: '仓库只有 README 和实现代码，没有正式 PRD、需求规格说明书或验收标准。 当前 REQ-ORDER-* 是从 README 和代码反向整理的候选需求，不是经业务确认的原始需求。
+
+    '
+  affected_review_dimensions:
+  - business_correctness
+  - expected_result
+  risk: high
+  owner: minishop_project_team
+  status: in_progress
+  required_by: 正式评审前
+  status_cn: 进行中
+  owner_role: 产品负责人
+  resolution_plan: 产品负责人补正式 PRD 与验收标准（平台设计者牵头）
+  due_date: '2026-12-15'
+  review_note: REQ-ORDER-* 现为反向整理稿；PRD 到位前不得升级为 E1 业务事实
+  updated_at: '2026-11-12'
+- id: GAP-002
+  project_id: minishop
+  module_id: null
+  topic: 业务负责人审核记录
+  missing_knowledge_type: BUSINESS_RULE
+  description: '所有候选知识 status=in_review、reviewer=null。没有业务负责人对规则、流程、状态的确认记录， 因此不能把任何文档当作 E1 权威业务事实。
+
+    '
+  affected_review_dimensions:
+  - business_correctness
+  - expected_result
+  risk: high
+  owner: minishop_project_team
+  status: in_progress
+  required_by: 正式评审前
+  status_cn: 进行中
+  owner_role: 产品负责人
+  resolution_plan: 本轮已由平台设计者给出决策；知识库维护者回写 reviewer/reviewed_at
+  due_date: '2026-11-14'
+  review_note: 首版误判"已关闭"：清单填写只产生决策，需 Markdown 回写 + 37 份文档逐份审核完成后才可关闭
+  updated_at: '2026-11-12'
+- id: GAP-003
+  project_id: minishop
+  module_id: null
+  topic: 项目测试规范与测试策略
+  missing_knowledge_type: TEST_SPEC
+  description: '仓库没有测试计划、测试策略、用例设计规范或验收标准。testing/ 下的规范是本次按通用实践整理的候选稿， 不是项目方已批准的制度。
+
+    '
+  affected_review_dimensions:
+  - test_data
+  - boundary_exception
+  - automation_feasibility
+  risk: high
+  owner: minishop_project_team
+  status: in_progress
+  required_by: 正式评审前
+  status_cn: 进行中
+  owner_role: 测试负责人
+  resolution_plan: 测试负责人批准 testing/ 候选规范为项目制度
+  due_date: '2026-12-15'
+  review_note: 现稿按通用实践整理，未经项目方批准
+  updated_at: '2026-11-12'
+- id: GAP-004
+  project_id: minishop
+  module_id: null
+  topic: 测试用例库、检索黄金集、评审黄金集
+  missing_knowledge_type: TEST_SPEC
+  description: '仓库没有测试用例目录、人工标注的检索黄金集、评审黄金集。无法执行 Recall@10、nDCG@10 或 K0/K1 对照评测。
+
+    '
+  affected_review_dimensions:
+  - expected_result
+  - boundary_exception
+  risk: high
+  owner: minishop_project_team
+  status: in_progress
+  required_by: 检索试点前
+  status_cn: 进行中
+  owner_role: 测试负责人
+  resolution_plan: 测试负责人建立用例库与检索/评审黄金集
+  due_date: '2026-12-31'
+  review_note: 缺黄金集则 Recall@10、nDCG@10、K0/K1 对照评测无法执行。设计者实测新增前置条件：现有 e2e_test.py 因种子券#1 已过期在 L81 抛 StopIteration 中止、且退出码恒
+    0，不能直接当作回归基线；黄金集须建立在"重建种子库或动态取数"之上
+  updated_at: '2026-11-12'
+- id: GAP-005
+  project_id: minishop
+  module_id: null
+  topic: 历史缺陷与根因记录
+  missing_knowledge_type: HISTORICAL_BUG
+  description: '仓库没有缺陷系统链接、缺陷编号、修复记录或根因分析。当前 expert_knowledge 中的风险来自代码走查， 只能作为 E4 线索，不是历史缺陷。
+
+    '
+  affected_review_dimensions:
+  - boundary_exception
+  - business_correctness
+  risk: medium
+  owner: minishop_project_team
+  status: open
+  required_by: 后续版本
+  status_cn: 待处理
+  owner_role: 测试负责人
+  resolution_plan: 测试负责人接入缺陷系统后补录历史缺陷与根因
+  due_date: null
+  review_note: 后续版本；当前 expert_knowledge 为代码走查线索（E4），不得当作历史缺陷
+  updated_at: '2026-11-12'
+- id: GAP-006
+  project_id: minishop
+  module_id: null
+  topic: Git 仓库与版本追溯
+  missing_knowledge_type: PROJECT
+  description: 'Minishop 目录不是 Git 仓库，没有 commit、tag、分支或发布记录。知识无法用 git_commit 追溯， 只能记录工作区快照日期与文件哈希。
+
+    '
+  affected_review_dimensions:
+  - business_correctness
+  - automation_feasibility
+  risk: high
+  owner: minishop_project_team
+  status: in_progress
+  required_by: 发布前
+  status_cn: 进行中
+  owner_role: 技术负责人
+  resolution_plan: 技术负责人初始化 Git 仓库并补 tag/发布记录
+  due_date: '2026-11-20'
+  review_note: 实测 Minishop/.git 不存在；建立前知识只能以 snapshot+文件哈希追溯
+  updated_at: '2026-11-12'
+- id: GAP-007
+  project_id: minishop
+  module_id: null
+  topic: 数据库设计与迁移
+  missing_knowledge_type: INTERFACE
+  description: '没有数据库设计文档、ER 图、字段字典或迁移脚本。表结构只能从 SQLAlchemy 模型和 SQLite 反推； 结构变更无法追溯。
+
+    '
+  affected_review_dimensions:
+  - test_data
+  - expected_result
+  risk: medium
+  owner: minishop_project_team
+  status: open
+  required_by: 后续版本
+  status_cn: 待处理
+  owner_role: 技术负责人
+  resolution_plan: 技术负责人补 ER 图、字段字典与迁移脚本
+  due_date: null
+  review_note: 后续版本；现结构只能从 SQLAlchemy 模型反推
+  updated_at: '2026-11-12'
+- id: GAP-008
+  project_id: minishop
+  module_id: null
+  topic: UI 设计稿与交互规格
+  missing_knowledge_type: REQUIREMENT
+  description: '没有页面设计稿、交互说明、文案规范或响应式要求。页面预期结果只能从 React 代码推断， UI 自动化的稳定定位也缺少测试 ID。
+
+    '
+  affected_review_dimensions:
+  - expected_result
+  - automation_feasibility
+  risk: medium
+  owner: minishop_project_team
+  status: open
+  required_by: UI 评审前
+  status_cn: 待处理
+  owner_role: 产品负责人
+  resolution_plan: 产品负责人补 UI 设计稿、交互规格与 test-id 约定
+  due_date: null
+  review_note: UI 评审前；现页面预期只能从 React 代码推断
+  updated_at: '2026-11-12'
+- id: GAP-009
+  project_id: minishop
+  module_id: null
+  topic: 独立 API 文档与错误码目录
+  missing_knowledge_type: INTERFACE
+  description: '没有手写 API 文档和统一错误码目录；OpenAPI 由 FastAPI 自动生成，错误码主要是 HTTP 状态 + 自然语言 message，没有稳定业务错误码。
+
+    '
+  affected_review_dimensions:
+  - expected_result
+  - automation_feasibility
+  risk: medium
+  owner: minishop_project_team
+  status: open
+  required_by: 接口评审前
+  status_cn: 待处理
+  owner_role: 技术负责人
+  resolution_plan: 技术负责人补独立 API 文档与统一业务错误码目录
+  due_date: null
+  review_note: 接口评审前；现仅 HTTP 状态 + 自然语言 message
+  updated_at: '2026-11-12'
+- id: GAP-010
+  project_id: minishop
+  module_id: null
+  topic: 非功能需求
+  missing_knowledge_type: REQUIREMENT
+  description: '没有性能、并发、安全、可用性、容量、兼容性指标。评审无法判断超时、并发超卖、弱口令、 金额精度等是否违反明确要求。
+
+    '
+  affected_review_dimensions:
+  - business_correctness
+  - boundary_exception
+  risk: medium
+  owner: minishop_project_team
+  status: open
+  required_by: 非功能评审前
+  status_cn: 待处理
+  owner_role: 产品负责人
+  resolution_plan: 产品负责人补性能/并发/安全/金额精度等非功能指标
+  due_date: null
+  review_note: 非功能评审前；金额使用 Float 的精度风险需在此明确取舍
+  updated_at: '2026-11-12'
+- id: GAP-011
+  project_id: minishop
+  module_id: null
+  topic: 非交易模块的完整业务知识
+  missing_knowledge_type: BUSINESS_RULE
+  description: '本批只覆盖 order 及下单所需的最小前置约束。catalog、cart、address、coupon、auth、 after_sales、review、admin、messaging、favorite、inventory
+    的完整规则、流程和异常未提取。
+
+    '
+  affected_review_dimensions:
+  - business_correctness
+  - preconditions
+  - boundary_exception
+  risk: high
+  owner: minishop_project_team
+  status: open
+  required_by: 扩展评审范围前
+  status_cn: 待处理
+  owner_role: 产品负责人
+  resolution_plan: 产品负责人按模块补全非交易域业务规则
+  due_date: null
+  review_note: 扩展评审范围前；本批仅覆盖 order 域
+  updated_at: '2026-11-12'
+- id: GAP-012
+  project_id: minishop
+  module_id: order
+  topic: 订单超时关闭与库存预占规则
+  missing_knowledge_type: BUSINESS_RULE
+  description: '不清楚订单是否需要超时自动关闭、是否需要下单锁定库存、超卖是否可接受。代码没有实现， README 也未定义；评审不能自行假设。
+
+    '
+  affected_review_dimensions:
+  - business_correctness
+  - boundary_exception
+  risk: high
+  owner: minishop_project_team
+  status: in_progress
+  required_by: 交易域评审前
+  status_cn: 进行中
+  owner_role: 产品负责人
+  resolution_plan: 决策已给出（无预占、无超时）；维护者回写 REQ-ORDER-004、RULE-ORDER-003/009
+  due_date: '2026-11-14'
+  review_note: 首版误判"已关闭"；回写完成后方可关闭
+  updated_at: '2026-11-12'
+- id: GAP-013
+  project_id: minishop
+  module_id: order
+  topic: 优惠券 start_time 是否生效
+  missing_knowledge_type: BUSINESS_RULE
+  description: 'coupons 表有 start_time 字段，但领券和用券都只校验 end_time。没有资料说明未生效券 是否允许领取/使用。
+
+    '
+  affected_review_dimensions:
+  - business_correctness
+  - boundary_exception
+  risk: medium
+  owner: minishop_project_team
+  status: in_progress
+  required_by: 券场景评审前
+  status_cn: 进行中
+  owner_role: 产品负责人
+  resolution_plan: 决策已给出（未生效券不应可领用）；维护者回写 RULE-ORDER-004
+  due_date: '2026-11-14'
+  review_note: 种子数据无未来 start_time 券，用例须经 admin API 造数
+  updated_at: '2026-11-12'
+- id: GAP-014
+  project_id: minishop
+  module_id: null
+  topic: Docker 部署可执行性
+  missing_knowledge_type: TEST_SPEC
+  description: 'backend/Dockerfile 依赖 backend/seed_media，但该目录不存在；Compose 挂载路径也不一致。 没有资料说明预期修复方式或容器环境是否为正式测试环境。
+
+    '
+  affected_review_dimensions:
+  - automation_feasibility
+  - expected_result
+  risk: medium
+  owner: minishop_project_team
+  status: in_progress
+  required_by: 容器化测试前
+  status_cn: 进行中
+  owner_role: 技术负责人
+  resolution_plan: 技术负责人删除 Dockerfile/compose/config.py 中无效 seed_media 配置
+  due_date: '2026-11-15'
+  review_note: 修复前容器环境不作为正式测试环境
+  updated_at: '2026-11-12'
+- id: GAP-015
+  project_id: minishop
+  module_id: null
+  topic: 产品发布日期与变更历史
+  missing_knowledge_type: PROJECT
+  description: '只能确认版本号 1.0.0，无法确认发布日期、变更内容、历史版本或兼容性策略。
+
+    '
+  affected_review_dimensions:
+  - business_correctness
+  - expected_result
+  risk: medium
+  owner: minishop_project_team
+  status: downgraded
+  required_by: 版本差异评审前
+  status_cn: 已降级
+  owner_role: 项目经理
+  resolution_plan: 项目经理：本快照内不可知，待 GAP-006 建 Git 后重新评估
+  due_date: null
+  review_note: 首版误判"已关闭"；无发布记录不能凭填写关闭，按已降级处理
+  updated_at: '2026-11-12'
+updated_at: '2026-11-12'
