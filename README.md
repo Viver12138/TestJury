@@ -4,7 +4,7 @@
 > **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
 > **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
 > **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.13 + M2 本地技术预览**（MiniShop 知识检索、网页评审、版本冻结、受控发布与复核反馈已接入；生产效果验收尚未完成）· 2026-11-12
+> **状态**：**design-v1.13 + M2 本地技术预览**（MiniShop 知识检索、网页双模型评审、版本冻结、受控发布与复核反馈已接入；本地收尾记录已更新，生产补齐暂缓）· 2026-11-13
 
 当前开发与验收记录见 [交付进度](docs/development-2026-11-12.md)。本机入口为 [TestJury](http://127.0.0.1:8088)。黄金集及授权技术复核由 AI 代理完成，身份与历史人工记录分别保存。
 
@@ -470,7 +470,7 @@ python scripts/check_m0_acceptance.py
 
 - 已回填 `design/m0_acceptance.yaml`：40 条用例 `result=passed`；本地执行环境与时间见文件头。
 - **M0 通过只代表工程正确**：不代表评审质量、业务有效性或生产可用（`docs/08` §5.3）。
-- 2026-11-12 已加入知识库加载、混合检索、阶段及逐票恢复、本地部署和备份恢复比对；重排真实连接、性能压测与生产验收尚未完成。最新范围见 [开发记录](docs/development-2026-11-12.md)。
+- 2026-11-12 已加入知识库加载、混合检索、阶段及逐票恢复、本地部署和备份恢复比对。2026-11-13 继续完成双模型效果复核与本地部署检查；最新范围和使用方式见 [本地版本收尾记录](docs/local-preview-2026-11-13.md)，历史见 [开发记录](docs/development-2026-11-12.md)。生产补齐按用户要求暂缓。
 - 真实模型已接入：`REVIEW_MODEL_MODE=live` 时按 `config/models.yaml` 调用 Qwen3.8-Max、DeepSeek-Flash、Kimi-K3.1-Pro；仍为 `testing`，未完成 V-01 正式准入与数据准入。
 - `STORAGE_BACKEND=memory` 仅用于单测与本地演示；生产默认 `postgres` 且禁止 memory。
 - Rubric 仍为 `0.2.0 draft`：生产模式加载会被拒绝，待 V-03B 审核发布。

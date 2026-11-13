@@ -2,6 +2,8 @@
 
 日期：2026-11-12。授权身份：`codex-delegated-reviewer`（AI 技术复核）。历史人工签署与本轮代理复核分别保存。
 
+2026-11-13 接续记录：`delegated_diagnostic_adjudication_v4_targeted.json` 对 8 条定向复测的 9 条发现逐条复核（5 个有效、4 个重复）；`local_deployment_2026-11-13.json` 验证本地更新前后历史数据不变；`container_smoke_2026-11-13.json` 验证新镜像且核对容器内源码；`local_browser/2026-11-13/` 保存新版本页面验收。具体范围见 `docs/local-preview-2026-11-13.md`，旧记录不覆盖。
+
 | 证据 | 证明范围 |
 |---|---|
 | `source_snapshots/`、`manual_review/` | 冻结源码归档和原始人工确认工作簿，保留原件 |

@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "browser": "Edge",
+  "mode": "live",
+  "topology": "dual",
+  "records": [
+    {
+      "source_case": "G-002-negative",
+      "review_id": "28ec5915-0bc8-4499-88a6-3a4fb683a86a",
+      "issues": 1,
+      "complete": true,
+      "download_matches_api": true,
+      "history_loaded": true,
+      "gaps_loaded": true,
+      "page_errors": [],
+      "feedback_saved": true,
+      "feedback_actor": "service",
+      "original_report_preserved": true,
+      "report_sha256": "34f06fdc8db9f91088f310b836c4bc07c4756c10d95b9a011691cdf638ff1ff9"
+    },
+    {
+      "source_case": "G-006-positive",
+      "review_id": "ffa3678a-0b2e-40a1-b326-5122d4e45327",
+      "issues": 0,
+      "complete": true,
+      "download_matches_api": true,
+      "history_loaded": true,
+      "gaps_loaded": true,
+      "page_errors": [],
+      "feedback_saved": false,
+      "feedback_actor": null,
+      "original_report_preserved": null,
+      "report_sha256": "01c223fdb5a260fbd7b6ea552d757b1ff264ee0c0d78d9747b4ba06e6deb2f7d"
+    }
+  ]
+}

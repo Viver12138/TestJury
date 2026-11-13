@@ -1,0 +1,252 @@
+{
+  "actor": "codex-delegated-reviewer",
+  "actor_type": "ai",
+  "reviewed_on": "2026-11-13",
+  "authorization": "design/changes/2026-11-12-delegated-development.md",
+  "independent_human_validation": false,
+  "dataset_version": "minishop-gold-4",
+  "scope": "8 targeted cases, not full v4 evaluation",
+  "original_reports_mutated": false,
+  "gold_labels_mutated": false,
+  "source_execution_evidence": "evidence/M2/minishop_gold_source_verification_v4.json",
+  "source_execution_sha256": "57376ad3c8663811513989b9e176192ff3ada320ec16839c3dcf45b03c6e0ee4",
+  "report_hash_format": "UTF-8 with LF line endings",
+  "counts": {
+    "valid": 5,
+    "duplicate": 4
+  },
+  "records": [
+    {
+      "case_id": "G-002-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-4/dual-dfbf1454cab7/G-002-negative.json",
+      "report_sha256": "baec457b641fd178c58340e07ccfda65293e4fd0d33cec9975bc01711c978167",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "用户B使用用户A的地址应返回400、收货地址不存在，不能新增订单；原预期201成功与冻结实现冲突。",
+          "source_family": "address",
+          "severity_assessment": "blocker符合当前rubric：与E1/E2依据直接冲突，导致该测试目的判定错误；重复项不重复计数。"
+        }
+      ],
+      "case_review": "用户B使用用户A的地址应返回400、收货地址不存在，不能新增订单；原预期201成功与冻结实现冲突。"
+    },
+    {
+      "case_id": "G-006-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-4/dual-dfbf1454cab7/G-006-negative.json",
+      "report_sha256": "d70f19a188f7bed31e3b8b8f7a303de51deec986bfc103f9d251b24b0ce2d944",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "创建订单不扣SKU库存，库存应仍为10；v4已补齐购物车quantity=1，两个发现均指向同一个库存错误。",
+          "source_family": "create_effect",
+          "severity_assessment": "blocker符合当前rubric：与E1/E2依据直接冲突，导致该测试目的判定错误；重复项不重复计数。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "reason": "创建订单不扣SKU库存，库存应仍为10；v4已补齐购物车quantity=1，两个发现均指向同一个库存错误。",
+          "source_family": "create_effect",
+          "severity_assessment": "blocker符合当前rubric：与E1/E2依据直接冲突，导致该测试目的判定错误；重复项不重复计数。",
+          "duplicate_of": 1
+        }
+      ],
+      "case_review": "创建订单不扣SKU库存，库存应仍为10；v4已补齐购物车quantity=1，两个发现均指向同一个库存错误。"
+    },
+    {
+      "case_id": "G-006-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-4/dual-dfbf1454cab7/G-006-positive.json",
+      "report_sha256": "ce05b3f3185d01d00d0fdb5be6fe642f3f4eff3c3bca0736059c096d43166af3",
+      "decisions": [],
+      "case_review": "v4明确观察并断言购物车quantity=1，创建不扣库存的预期正确；未发现新的范围内问题。"
+    },
+    {
+      "case_id": "G-007-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-4/dual-dfbf1454cab7/G-007-positive.json",
+      "report_sha256": "af48e9d1195db7e50388bdb7554fc602e3865bca74d6a070ade9736f2a2cb555",
+      "decisions": [],
+      "case_review": "取消后的券状态UNUSED、used_order_id=0及订单状态足以验证声明目的，used_at额外审计字段不作为必选项。"
+    },
+    {
+      "case_id": "G-009-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-4/dual-dfbf1454cab7/G-009-negative.json",
+      "report_sha256": "54f1b9317c51f8ed0f9d30c39b6584c956aa282c7d9bae876d598064338ed958",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "SKU数量2、初始库存10，支付后SKU及商品库存应为8、销量2并新增change_quantity=-2的日志；两个发现均指向同一组反向副作用断言。",
+          "source_family": "deduct",
+          "severity_assessment": "blocker符合当前rubric：与E1/E2依据直接冲突，导致该测试目的判定错误；重复项不重复计数。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "reason": "SKU数量2、初始库存10，支付后SKU及商品库存应为8、销量2并新增change_quantity=-2的日志；两个发现均指向同一组反向副作用断言。",
+          "source_family": "deduct",
+          "severity_assessment": "blocker符合当前rubric：与E1/E2依据直接冲突，导致该测试目的判定错误；重复项不重复计数。",
+          "duplicate_of": 1
+        }
+      ],
+      "case_review": "SKU数量2、初始库存10，支付后SKU及商品库存应为8、销量2并新增change_quantity=-2的日志；两个发现均指向同一组反向副作用断言。"
+    },
+    {
+      "case_id": "G-010-positive",
+      "report": "evidence/M2/review_eval_live/minishop-gold-4/dual-dfbf1454cab7/G-010-positive.json",
+      "report_sha256": "12d7ac517b710e05c83488d917f77310b93a413b507e5fb87839bd4f92c47dff",
+      "decisions": [],
+      "case_review": "发货前订单状态限制及精确错误文案与源码事实一致；知识片段未写文案不代表用例文案错误。"
+    },
+    {
+      "case_id": "G-011-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-4/dual-dfbf1454cab7/G-011-negative.json",
+      "report_sha256": "ee79b9128bedc57178181b45f11cd25bca50adf66a64f2d5a2841c4c5806293e",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "他人订单详情返回403，而取消返回404、订单不存在；两条发现均纠正取消接口的同一错误状态码和文案。",
+          "source_family": "ownership",
+          "severity_assessment": "blocker符合当前rubric：与E1/E2依据直接冲突，导致该测试目的判定错误；重复项不重复计数。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "reason": "他人订单详情返回403，而取消返回404、订单不存在；两条发现均纠正取消接口的同一错误状态码和文案。",
+          "source_family": "ownership",
+          "severity_assessment": "blocker符合当前rubric：与E1/E2依据直接冲突，导致该测试目的判定错误；重复项不重复计数。",
+          "duplicate_of": 1
+        }
+      ],
+      "case_review": "他人订单详情返回403，而取消返回404、订单不存在；两条发现均纠正取消接口的同一错误状态码和文案。"
+    },
+    {
+      "case_id": "G-012-negative",
+      "report": "evidence/M2/review_eval_live/minishop-gold-4/dual-dfbf1454cab7/G-012-negative.json",
+      "report_sha256": "97bd3651566b0ad919a0a20a975d9b1b1464d35c191a8051c98cf9b27f027ed8",
+      "decisions": [
+        {
+          "issue_no": 1,
+          "decision": "valid",
+          "reason": "支付成功后的订单状态为PAID，PENDING_SHIPMENT不可达；两条发现均纠正同一订单状态，额外paid_at建议不作为新缺陷。",
+          "source_family": "unreachable",
+          "severity_assessment": "blocker符合当前rubric：与E1/E2依据直接冲突，导致该测试目的判定错误；重复项不重复计数。"
+        },
+        {
+          "issue_no": 2,
+          "decision": "duplicate",
+          "reason": "支付成功后的订单状态为PAID，PENDING_SHIPMENT不可达；两条发现均纠正同一订单状态，额外paid_at建议不作为新缺陷。",
+          "source_family": "unreachable",
+          "severity_assessment": "blocker符合当前rubric：与E1/E2依据直接冲突，导致该测试目的判定错误；重复项不重复计数。",
+          "duplicate_of": 1
+        }
+      ],
+      "case_review": "支付成功后的订单状态为PAID，PENDING_SHIPMENT不可达；两条发现均纠正同一订单状态，额外paid_at建议不作为新缺陷。"
+    }
+  ],
+  "comparison": {
+    "matched_case_count": 8,
+    "v3_counts": {
+      "valid": 5,
+      "duplicate": 6,
+      "valid_unlabeled_gold_defect": 2,
+      "unsupported_requirement": 6
+    },
+    "v4_counts": {
+      "valid": 5,
+      "duplicate": 4
+    },
+    "cases": [
+      {
+        "case_id": "G-002-negative",
+        "v3_report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-002-negative.json",
+        "v3_report_sha256": "9551f655aded457bae0f60aca7fa5cbf27ad6850f1e0c8f5358eafdabc6fb10a",
+        "v3_findings": 2,
+        "v4_findings": 1,
+        "v3_complete": true,
+        "v4_complete": true,
+        "input_changed": false
+      },
+      {
+        "case_id": "G-006-negative",
+        "v3_report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-006-negative.json",
+        "v3_report_sha256": "c0a171a4b16ab7be545dcd2fff404a11afbd7e9398e0b5ac93808f0fa06f040b",
+        "v3_findings": 3,
+        "v4_findings": 2,
+        "v3_complete": true,
+        "v4_complete": true,
+        "input_changed": true
+      },
+      {
+        "case_id": "G-006-positive",
+        "v3_report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-006-positive.json",
+        "v3_report_sha256": "f140bfe890433cba786fd8e735add9324f1a18b85bb765bfab8f435538cb97b4",
+        "v3_findings": 2,
+        "v4_findings": 0,
+        "v3_complete": true,
+        "v4_complete": true,
+        "input_changed": true
+      },
+      {
+        "case_id": "G-007-positive",
+        "v3_report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-007-positive.json",
+        "v3_report_sha256": "7e6b343f6f52e52e103e18ecb7a56583e14baa7baddcbfa156b1741870c6929c",
+        "v3_findings": 1,
+        "v4_findings": 0,
+        "v3_complete": true,
+        "v4_complete": true,
+        "input_changed": false
+      },
+      {
+        "case_id": "G-009-negative",
+        "v3_report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-009-negative.json",
+        "v3_report_sha256": "e0b9e759ed79d649b002425fab633919fab77d4c521370030cfc0fd4ef894788",
+        "v3_findings": 3,
+        "v4_findings": 2,
+        "v3_complete": true,
+        "v4_complete": true,
+        "input_changed": false
+      },
+      {
+        "case_id": "G-010-positive",
+        "v3_report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-010-positive.json",
+        "v3_report_sha256": "0d9e232d656ca1b0a479363325e976c41dc6f142f5902b653099888229c0bc76",
+        "v3_findings": 1,
+        "v4_findings": 0,
+        "v3_complete": true,
+        "v4_complete": true,
+        "input_changed": false
+      },
+      {
+        "case_id": "G-011-negative",
+        "v3_report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-011-negative.json",
+        "v3_report_sha256": "af371eee07916c6476604ab060e626bfbc51835e8283d8bccf22a8dab2d167fd",
+        "v3_findings": 3,
+        "v4_findings": 2,
+        "v3_complete": true,
+        "v4_complete": true,
+        "input_changed": false
+      },
+      {
+        "case_id": "G-012-negative",
+        "v3_report": "evidence/M2/review_eval_live/minishop-gold-3/dual-e29585b1afc7/G-012-negative.json",
+        "v3_report_sha256": "d67d2d64549f1f645c2970f6551078a23ed8e9126d7e6f1c2f9fb4a4b89e87c1",
+        "v3_findings": 4,
+        "v4_findings": 2,
+        "v3_complete": false,
+        "v4_complete": true,
+        "input_changed": false
+      }
+    ]
+  },
+  "decision": "Suitable for local technical preview with explicit duplicate findings limitation; no production acceptance.",
+  "duplicate_handling": "Duplicate issue numbers are linked to the valid issue in this AI review record. Raw reports remain immutable. Automatic fusion remains conservative; no manual verdict is forged.",
+  "limitations": [
+    "Developer is also dataset author; not independent blind labels",
+    "G-006 inputs and application implementation both changed; comparison does not isolate a causal effect",
+    "4 duplicate findings remain in raw reports; 5 unique valid findings are not 9 independent defects",
+    "Five blocker judgments are a scoped AI assessment, not population severity calibration",
+    "No full v4 live rerun or production operations acceptance is claimed"
+  ]
+}
