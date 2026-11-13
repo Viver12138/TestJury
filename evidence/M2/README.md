@@ -10,6 +10,8 @@ Excel 报告导出版本：`excel_report_export_2026-11-13/` 保存单条及整�
 
 无相关知识降级版本：`delegated_verification/testjury_verify_5d82ce6d4ccd/` 完整回归 460 项通过，覆盖逐条降级、混合批次、空检索和结果标注；`container_smoke_general_2026-11-13.json` 校验对应镜像与当前源码。用户提供的工作簿和完整报告仅在本机保存。
 
+`knowledge_fallback_2026-11-13/` 为登录表格的脱敏浏览器与 Excel 验证：10 条被接收并标为通用评审，快照时 4 条已有报告，其他用例仍在运行；不代表全批次已完成或全部模型参与完整。用户原始内容未提交。
+
 | 证据 | 证明范围 |
 |---|---|
 | `source_snapshots/`、`manual_review/` | 冻结源码归档和原始人工确认工作簿，保留原件 |

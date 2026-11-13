@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "cases": 10,
+  "all_general": true,
+  "all_missing_knowledge_notices": true,
+  "knowledge_source_notice_rows": 10,
+  "export_sha256": "3adc57ede87d1ce198efa18d7ebddc1cfabd45aa75f3839f16fb86c212123c4c",
+  "exported_user_data_committed": false
+}
