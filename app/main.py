@@ -20,6 +20,7 @@ from app import __version__
 from app.api import attachments as attachments_api
 from app.api import batches as batches_api
 from app.api import console as console_api
+from app.api import excel_import as excel_import_api
 from app.api import health as health_api
 from app.api import knowledge as knowledge_api
 from app.api import review_tasks as review_tasks_api
@@ -205,6 +206,7 @@ def create_app(
 
     app.include_router(health_api.router)
     app.include_router(console_api.router)
+    app.include_router(excel_import_api.router)
     app.include_router(knowledge_api.router)
     app.include_router(reviews_api.router)
     app.include_router(batches_api.router)

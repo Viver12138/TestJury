@@ -16,4 +16,5 @@ async def console():
 async def configuration(request: Request):
     settings = request.app.state.settings
     return {"mode": settings.review_model_mode, "topology": settings.review_topology,
-            "knowledge_enabled": settings.knowledge_enabled}
+            "knowledge_enabled": settings.knowledge_enabled,
+            "access_mode": "local" if settings.local_access_without_key else "api_key"}

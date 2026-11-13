@@ -153,6 +153,7 @@ class Settings(BaseSettings):
 
     # ── 开发引导 ──
     bootstrap_api_keys: str = ""
+    local_access_without_key: bool = False
 
     # ── 校验 ──
 
@@ -168,6 +169,8 @@ class Settings(BaseSettings):
         if self.webhook_enabled and (len(self.webhook_secret) < 32 or not self.webhook_allowed_hosts.strip()):
             raise ValueError("完成通知需要允许列表和至少32字符的签名密钥")
         if self.app_env is AppEnv.PROD:
+            if self.local_access_without_key:
+                raise ValueError("生产环境禁止 LOCAL_ACCESS_WITHOUT_KEY")
             if self.storage_backend == "memory":
                 raise ValueError("生产环境禁止 STORAGE_BACKEND=memory")
             if self.bootstrap_api_keys.strip():

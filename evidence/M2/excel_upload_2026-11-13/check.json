@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "mode": "live",
+  "topology": "dual",
+  "access_mode": "local",
+  "browser": "Edge",
+  "no_credential_field": true,
+  "no_manual_case_form": true,
+  "xls_preview": true,
+  "xlsx_drag_preview": true,
+  "malformed_file_rejected": true,
+  "preview_creates_no_jobs": true,
+  "template_download": true,
+  "batch_id": "54f422f8-64bc-418f-a9e7-8108e7cd94ee",
+  "batch_resume_after_refresh": true,
+  "repeated_submission_reuses_batch": true,
+  "download_matches_api": true,
+  "reports": [
+    {
+      "case_id": "EXCEL-G-006-positive",
+      "review_id": "a51eadb4-575c-46cd-862d-bc4355ecc2da",
+      "findings": 0,
+      "complete": true,
+      "report": "evidence/M2/excel_upload_2026-11-13/EXCEL-G-006-positive.json",
+      "sha256": "dcc07f93723c1c546a5abb50e0fca6b26508fa368a400d5e00bfc1260bf0771f"
+    },
+    {
+      "case_id": "EXCEL-G-002-negative",
+      "review_id": "6dd773ee-51ef-4e26-be67-3482462f1d6d",
+      "findings": 2,
+      "complete": true,
+      "report": "evidence/M2/excel_upload_2026-11-13/EXCEL-G-002-negative.json",
+      "sha256": "f46622d4e3a51653eaec89954874d7c0f64382d392746990e3feba12d590d515"
+    }
+  ],
+  "page_errors": [],
+  "scope": "Excel browser workflow; not independent quality acceptance"
+}

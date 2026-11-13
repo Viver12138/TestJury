@@ -59,5 +59,5 @@ python scripts/check_contracts.py --json     # 机器可读输出
 - `evaluate_review_gold.py`：执行真实模型或 Mock 黄金用例评审；区分流程验证与效果验证。
 - `verify_isolated.py`：新建独立数据库运行测试并清理，仅删除本脚本创建的临时库。
 - `benchmark_queue.py`：需要可创建临时库的 PostgreSQL 连接（`VERIFY_ADMIN_DATABASE_URL`）；以 Mock 模型测量服务层提交与队列并发，保存任务数、耗时及清理证据，不包含 HTTP、真实知识检索或供应商耗时。
-- `serve_local.py`：升级数据库结构、加载验收过的本地知识版本并启动网页；不清空数据，保留已有启用版本。
+- `serve_local.py`：升级数据库结构、加载验收过的本地知识版本并启动 Excel 上传网页；默认仅本机免凭证，可用 `LOCAL_REQUIRE_API_KEY=true` 恢复凭证要求；不清空数据，保留已有启用版本。
 - `verify_minishop_gold.py`：在临时 SQLite 数据库验证归档 MiniShop 的 15 个黄金集业务事实，认证使用测试身份，不连接原项目数据库；支持 `--dataset` 与 `--output`，修订数据集时另存证据，不覆盖旧版记录。

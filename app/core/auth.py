@@ -10,7 +10,9 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from ipaddress import ip_address
 from typing import Protocol
+from urllib.parse import urlsplit
 
 import structlog
 from fastapi import Request
@@ -106,6 +108,21 @@ def _extract_bearer(request: Request) -> str:
 
 
 async def authenticate_request(request: Request) -> Principal:
+    if request.app.state.settings.local_access_without_key and not request.headers.get("authorization"):
+        try:
+            local = request.client is not None and ip_address(request.client.host).is_loopback
+        except ValueError:
+            local = False
+        if not local:
+            raise ApiError(ErrorCode.UNAUTHORIZED, "免凭证访问仅限本机")
+        # Do not trust forwarded addresses or cross-origin browser requests.
+        origin = request.headers.get("origin")
+        if origin and origin != f"{request.url.scheme}://{request.url.netloc}":
+            raise ApiError(ErrorCode.FORBIDDEN, "请从本机 TestJury 页面提交")
+        if urlsplit(str(request.url)).hostname not in {"localhost", "127.0.0.1", "::1"}:
+            raise ApiError(ErrorCode.FORBIDDEN, "请使用本机地址访问 TestJury")
+        return Principal("local-reviewer", ActorType.SERVICE, frozenset({"reviewer"}),
+                         "local-reviewer", auth_source="local_preview")
     raw_key = _extract_bearer(request)
     repository: AuthRepository | None = getattr(request.app.state, "auth_repository", None)
     if repository is None:  # pragma: no cover - 装配错误

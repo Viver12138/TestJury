@@ -66,6 +66,7 @@ def main():
     settings = Settings(_env_file=ROOT / '.env', app_env='dev', database_url=database_url,
                         storage_backend='postgres', review_model_mode=os.environ.get('LOCAL_MODEL_MODE','live'),
                         review_topology=os.environ.get('LOCAL_TOPOLOGY','dual'), knowledge_enabled=True,
+                        local_access_without_key=os.environ.get('LOCAL_REQUIRE_API_KEY', 'false').lower() != 'true',
                         knowledge_vector_enabled=release['profile'] != 'lexical-only',
                         knowledge_delegated_acceptance=True, kb_context_top_k=4, kb_context_token_cap=4000,
                         bootstrap_api_keys=json.dumps(keys), run_worker=True)
