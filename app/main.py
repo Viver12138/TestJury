@@ -23,6 +23,7 @@ from app.api import console as console_api
 from app.api import excel_import as excel_import_api
 from app.api import health as health_api
 from app.api import knowledge as knowledge_api
+from app.api import report_exports as report_exports_api
 from app.api import review_tasks as review_tasks_api
 from app.api import reviews as reviews_api
 from app.config import Settings, get_settings
@@ -207,6 +208,7 @@ def create_app(
     app.include_router(health_api.router)
     app.include_router(console_api.router)
     app.include_router(excel_import_api.router)
+    app.include_router(report_exports_api.router)
     app.include_router(knowledge_api.router)
     app.include_router(reviews_api.router)
     app.include_router(batches_api.router)

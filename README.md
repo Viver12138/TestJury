@@ -1,38 +1,169 @@
-# 评审团 Agent · 设计文档
+# TestJury · 测试用例评审
 
-> **输入**：一份功能测试用例
-> **输出**：一份评审报告（结构化 JSON + 人读 Markdown）
-> **核心**：v1 严格限定**功能测试用例**质量评审；1 名主审 `qwen-max` + 2 名陪审 `deepseek-flash` / `kimi-k3` 独立盲评与投票；正式生产默认拓扑待 A–E 对照实验确定，主审仲裁按条件触发；AI 只出评审意见，不代替最终审批
-> **形态**：FastAPI 异步 HTTP 服务，PostgreSQL + pgvector
-> **状态**：**design-v1.13 + M2 本地技术预览**（MiniShop 知识检索、网页双模型评审、版本冻结、受控发布与复核反馈已接入；本地收尾记录已更新，生产补齐暂缓）· 2026-11-13
+上传 Excel 测试用例，使用 Qwen + DeepSeek 双模型结合项目知识库评审，再将结果导出为 Excel 报告。
 
-当前本地页面采用 **Excel 上传 → 预览 → 批量评审**，无需填写访问凭证。格式与使用说明见 [Excel 上传指南](docs/excel-upload-2026-11-13.md)。
+> **状态**：**design-v1.13 · 本地技术预览** · 更新于 2026-11-13
+>
+> 当前接入 MiniShop 订单与交易场景。默认双模型，Kimi 暂停；本地页面免凭证访问，生产补齐暂缓。
 
-当前开发与验收记录见 [交付进度](docs/development-2026-11-12.md)。本机入口为 [TestJury](http://127.0.0.1:8088)。黄金集及授权技术复核由 AI 代理完成，身份与历史人工记录分别保存。
+## 使用流程
 
----
+1. 打开 [本地工作台](http://127.0.0.1:8088)，下载模板或上传 `.xlsx`、`.xls` 文件。
+2. 查看解析预览，核对标题、前置条件、操作步骤和预期结果。
+3. 点击 **开始批量评审**，查看每条用例的执行进度。刷新页面后可以继续查看当前批次。
+4. 完成后查看问题、依据和修改建议，下载 **单条 Excel 报告** 或 **整批 Excel 报告**。
 
-## 1. 一句话定位
+提交页面只接收文件。历史报告、知识待核实线索和复核反馈均可在页面中查看。详细格式见 [Excel 上传与报告指南](docs/excel-upload-2026-11-13.md)。
 
-一个**异步 HTTP 服务**：测试流水线把功能测试用例 POST 进来，服务调度三个模型独立盲评，系统融合候选问题并组织投票，由主审终审，产出一份**带证据引用、可追溯、可人工复核**的评审报告。
+### Excel 输入
 
-评审的对象是**用例质量**（覆盖是否完整、步骤是否可执行、预期是否可判定、能否自动化），不是功能本身是否正确。
+推荐使用页面提供的模板：
 
-### 1.1 版本体系（避免设计版本与产品版本混用）
+| 用例编号 | 用例标题 | 前置条件 | 操作步骤 | 预期结果 |
+|---|---|---|---|---|
+| TC-001 | 客户端修改金额后按服务端计价 | 用户已登录，地址归属正确，SKU 单价 100、数量 2，无优惠券 | 提交订单并传入 pay_amount=0.01 | HTTP 201，应付金额为 200 |
 
-| 版本维度 | 当前值 | 用途 |
+- 支持 `.xlsx`、`.xls`，每个文件最多 **50 条用例、10 MB**。
+- 必须包含标题和操作步骤列；兼容“用例名称”“测试步骤”“期望结果”等常见列名。
+- 支持同一用例连续多行、编号和标题合并单元格，以及对应的多行操作与预期。
+- 缺失预期会保留并提示；格式错误会给出工作表和行号说明。
+- 默认项目为 `minishop`、模块为 `order`，评审基线为已冻结的当前实现。
+
+### Excel 输出
+
+单条和整批报告均为 `.xlsx`，包含以下工作表：
+
+| 工作表 | 内容 |
+|---|---|
+| 评审汇总 | 用例、任务状态、AI 结论、人工审批状态、问题数量和来源位置 |
+| 用例步骤 | 原始标题、前置条件、操作步骤、预期结果和测试数据 |
+| 问题明细 | 严重程度、原文引用、问题说明、修改建议、证据和投票情况 |
+| 知识依据 | 引用文档、源码位置和知识原文 |
+| 导出说明 | 导出范围、时间和状态含义；超长文本另附分段工作表 |
+
+整批导出包含未完成、失败和取消的任务，反映下载时的进度。导出直接读取已保存的结果，不产生新的模型调用。
+
+## 已实现能力
+
+| 能力 | 当前实现 |
+|---|---|
+| 双模型评审 | Qwen + DeepSeek 独立盲评、候选问题融合、独立投票、条件仲裁 |
+| 知识检索 | Git/Markdown 内容、关键词与 1024 维向量混合检索、证据引用和版本冻结 |
+| 批量处理 | 每条用例独立评审，后台队列、进度查询、重复提交复用结果 |
+| 故障恢复 | 持久化阶段及投票恢复点、租约续期、重试和旧执行者写入保护 |
+| 费用控制 | 聊天调用前预留额度，控制单条、批次和每日估算费用 |
+| 报告与反馈 | 单条/批量 Excel 导出、历史查询、问题反馈与知识线索聚合 |
+
+评审关注业务规则、步骤可执行性、预期可判定性和自动化可行性。AI 结论与人工审批分别保存，零发现也不表示用例已经获得审批。
+
+## 本地启动
+
+需要 Python **3.11+**、Docker Desktop，以及可调用的 Qwen、DeepSeek 服务。以下命令以 Windows PowerShell 为例。
+
+### 已配置好的本机
+
+在项目目录运行：
+
+```powershell
+docker compose -f deploy/docker-compose.yml up -d postgres
+.\.venv\Scripts\python.exe scripts/serve_local.py
+```
+
+访问 [http://127.0.0.1:8088](http://127.0.0.1:8088)。若现有服务已经运行，直接打开页面即可。
+
+本地启动入口默认启用真实双模型和本机免凭证访问，监听 `127.0.0.1:8088`。普通服务入口默认仍要求 API Key。若需要恢复本地凭证要求，可在启动前设置 `$env:LOCAL_REQUIRE_API_KEY='true'`；本机免凭证身份为服务身份，不能执行人工审批。
+
+### 首次配置
+
+```powershell
+git clone https://github.com/Viver12138/TestJury.git
+cd TestJury
+py -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+Copy-Item .env.example .env
+docker compose -f deploy/docker-compose.yml up -d postgres
+```
+
+在 `.env` 中填写 `QWEN_API_KEY`、`DEEPSEEK_API_KEY`。模型与适配器配置见 [config/models.yaml](config/models.yaml)；默认双模型无需配置 Kimi。
+
+首次启动前需要生成本地知识版本及配套检索验证文件，以下步骤会调用向量服务：
+
+```powershell
+.\.venv\Scripts\python.exe scripts/prepare_knowledge_release.py --baseline current_implementation --dataset datasets/minishop/v4 --vector --output .tmp/knowledge-vector-release-final.json
+.\.venv\Scripts\python.exe scripts/serve_local.py
+```
+
+启动脚本会执行正常数据库迁移，保留已有数据及启用知识版本。默认数据库为 `127.0.0.1:55432/testjury`；可用 `LOCAL_DATABASE_URL` 和 `LOCAL_KNOWLEDGE_RELEASE` 指定其他本地连接及知识文件。密钥、原始数据库备份和 `.tmp/` 内容不进入仓库。
+
+## 开发与验证
+
+```powershell
+# 完整测试：自动创建并清理独立临时数据库
+.\.venv\Scripts\python.exe scripts/verify_isolated.py
+
+# 文档、枚举、规则与知识契约
+.\.venv\Scripts\python.exe scripts/check_contracts.py
+
+# 代码检查
+.\.venv\Scripts\python.exe -m ruff check app tests
+```
+
+完整测试需先启动 PostgreSQL。测试入口使用隔离库；不要将会重建 schema 的测试指向正在使用的应用数据库。单元测试与 CI 使用 Mock，真实评测需单独执行并计费。
+
+当前完整隔离回归 **455 项通过**，包括 Excel 导入、批量评审和 Excel 报告导出。浏览器已验证免凭证上传、进度恢复、单条及整批下载；导出的用例、问题和建议与已保存报告逐项核对。执行记录见 [M2 证据索引](evidence/M2/README.md)。
+
+## API 概览
+
+| 方法 | 路径 | 用途 |
 |---|---|---|
-| 设计基线版本 | `design-v1.13` | 本仓库设计文档整体迭代版本；各文档文首 `vX.Y` 即此版本 |
-| 产品版本 | `product-v1.0`（规划） | 实际交付给用户的产品范围；见 `docs/00` §10 |
-| Rubric 版本 | `rubric-0.2.0` | 评审标准；`rubric/rubric.yaml` |
-| 报告格式版本 | `report-1.0` | `schemas/report.schema.json` |
-| 知识库数据版本 | `kb-<content_hash>` | 每次发布的内容快照 |
+| GET | `/v1/imports/excel-template` | 下载 Excel 模板 |
+| POST | `/v1/imports/excel` | 上传并预览 Excel，文件字段为 `file` |
+| POST | `/v1/review-batches` | 创建批量评审 |
+| GET | `/v1/review-batches/{batch_id}` | 查看批次进度 |
+| GET | `/v1/review-batches/{batch_id}/report.xlsx` | 下载整批 Excel 报告 |
+| GET | `/v1/reviews/{review_id}` | 查看单条状态及结构化报告 |
+| GET | `/v1/reviews/{review_id}/report.xlsx` | 下载单条 Excel 报告 |
+| GET | `/livez`、`/readyz` | 查看存活、数据库和队列就绪状态 |
 
-- 设计基线版本**不代表**产品功能已交付；产品版本按 `docs/00` 的 v1/v1.5/v2 路线单独管理。
-- 报告、Rubric、知识库各自版本化，互不替代（见 `docs/01` §10、`docs/22`）。
-- 发布沟通必须写明维度，例如"design-v1.6 冻结、product-v1.0 未发布"。
+保留 JSON 提交及 Markdown 报告接口供程序接入。完整基础契约见 [API 文档](docs/03-API契约.md)，Excel 新增接口见 [上传与报告指南](docs/excel-upload-2026-11-13.md)。
 
-## 2. 共识决策记录
+## 范围与当前限制
+
+- 当前接入 [MiniShop](https://github.com/Viver12138/minishop)，知识内容位于 [kb_content/minishop](kb_content/minishop/README.md)。黄金集 [datasets/minishop/v4](datasets/minishop/v4/README.md) 包含 18 条检索样例和 30 条评审种子，旧版与原始诊断结果保留。
+- 黄金集及本轮技术复核由用户授权的 AI 开发者完成，尚无独立人工盲标。现有检索分数、类别匹配和测试通过数不作为生产效果验收结论。
+- 自动融合仍可能保留同一问题的重复描述，复核记录会标明关联；模型输出需要结合依据判断。
+- 生产补齐按用户要求暂缓，包括向量/重排费用预算、真实通知接收方和生产运行验收。重排本地未启用，Webhook 默认关闭。
+- `design-v1.13` 是设计基线，当前交付状态为本地技术预览；Rubric、知识库和报告格式分别版本化。
+
+## 项目结构
+
+```text
+app/          API、Excel 导入导出、评审流水线、知识检索、存储和网页
+config/       模型、Prompt 等运行配置
+kb_content/   项目知识内容与来源绑定
+datasets/     版本化检索样例与评审黄金集
+tests/        单元、契约、迁移与流程测试
+scripts/      本地启动、验证、知识构建和维护工具
+deploy/       Dockerfile 与本地 PostgreSQL 配置
+docs/         产品说明、设计文档和操作记录
+design/       机器可读契约、决策及执行台账
+evidence/     历史验证和评测证据
+```
+
+## 文档导航
+
+- [Excel 上传与报告指南](docs/excel-upload-2026-11-13.md)
+- [本地部署、恢复与已知限制](docs/local-preview-2026-11-13.md)
+- [历史开发记录](docs/development-2026-11-12.md)
+- [脚本说明](scripts/README.md)
+- [验证证据](evidence/M2/README.md)
+
+<details>
+<summary>展开完整设计文档与历史决策索引</summary>
+
+以下决策表保留设计基线的历史编号，供契约检查和设计追溯使用。其中三模型、重排及正式验收规划不代表当前启用配置；当前实现以本页前文和最新操作指南为准。
+
+## 2. 共识决策记录（历史设计基线）
 
 | # | 决策项 | 结论 |
 |---|---|---|
@@ -202,8 +333,6 @@
 | 164 | 附件卷 | 所有 API/Worker 共享同一附件卷；多机前必须换对象存储 |
 | 165 | Schema 同步 | 报告 Schema 补 `cancelled`、issue 证据/置信度/校验状态、participants |
 | 166 | 复核状态 | 统一 `pending/in_progress/completed/cancelled`；不再用 `done` |
-
-> **v1.13 设计变更（2026-11-10，已批准）**：D222 授权表与附件"内容寻址 + 评审绑定"、D223 `issues` 投影同事务且可重建、D224 模型 Adapter 协议与注册表。变更记录见 [design/changes/2026-11-10-m1-implementation-gaps.md](design/changes/2026-11-10-m1-implementation-gaps.md)。
 | 167 | 复核结果 | Issue 5 种、Report 3 种（含 `reject`）；DB CHECK + API 层级校验 |
 | 168 | 幂等历史 | README #49 / D28 的旧幂等字段名全部改为 `idempotent_replay` |
 | 169 | 健康检查 | `/livez` 存活；`/readyz` 就绪；`/healthz` 等同 readyz；依赖失败 503 |
@@ -336,182 +465,4 @@
 | [schemas/README.md](schemas/README.md) | 报告 JSON Schema 与版本化规则 |
 | [design/decisions.yaml](design/decisions.yaml) | 机器可读决策索引（与 docs/08 对齐） |
 
-## 4. 明确不做（v1）
-
-- **不自动改写用例**：只给修改建议，不产出改写后的用例文本。
-- **不做功能点覆盖率评分/报表**：v1 只评审单条用例；覆盖评审 v1.5 另立。
-- **不做非功能测试类型正式评审**：性能/安全/兼容/可靠性/可用性等类型在 v1 被 `422 UNSUPPORTED_TEST_TYPE` 拒绝，不用功能 Rubric 强行出结论（`docs/00` §6）。
-- **不做自动化脚本生成/执行/环境配置**：只给自动化可行性提示与限制说明。
-- **不做自动审批 / 自动放行**：AI 结论是机器评审意见；最终审批由测试负责人或调用方负责。
-- **不做第四个模型 / 多 Agent 辩论**：三模型机制未通过评测前不扩复杂度。
-- **不做自动 Prompt 调优 / 自动阈值调整**：评测集未冻结前不做。
-- **不做复评 diff**：同一用例修改后重新提交视为新评审，不做版本对比（v1.5）。
-- **不做知识库编辑界面**：知识库以 Markdown 文件 + Git 管理，发布走脚本（v2）。
-- **不做多团队隔离**：单一内部团队使用（v2）。
-
-## 5. 待定事项与风险
-
-| # | 事项 | 说明 / 应对 |
-|---|---|---|
-| R1 | **知识库素材尚未提供** | 建议最小可用集先覆盖 5 个模块，候选：背包/仓库、挖宝、语音聊天室+打赏、帮会同盟/约战/宣战、奇穴装配（均来自现有测试点） |
-| R2 | **黄金集没有现成真值** | 30 份种子集需 1–2 名测试专家标注 2–3 小时；只够流程验证，正式验收前需扩到冻结集；上线后靠复核回写积累 |
-| R3 | **模型档次不齐** | `deepseek-flash` 偏轻量，可能拖低业务视角；建议上线前用同一批用例做一次盲测，季度轮换一次视角绑定做校准 |
-| R4 | **主审自我偏好** | 主审既盲评、又投票、又仲裁，天然偏向自己的判断；用"三方等权 + 驳回留痕 + 阻断项人工复核"三约束兜底 |
-| R5 | **上下文长度** | 主审要读三份原始意见 + 三份投票 + 用例 + 证据包，需确认 `qwen-max` 的实际窗口与输出上限 |
-| R6 | **成本无上限但需可观测** | 全量记录 token 与耗时；知识库单次注入上限 15k token 作为第一道闸；成本与预算见 `docs/10` §10 |
-| R7 | **纯文本用例解析质量** | 预处理模型拆步骤可能拆错；拆分结果随报告返回供人核对，拆不出则降级为整篇评审 |
-| R8 | **检索效果未验证** | 检索黄金集未建前，"模型不行"的判断不可信；先建 ≥100 条查询-知识对（见 08 §5） |
-| R9 | **中文关键词检索** | v1 用 trigram + 精确匹配；zhparser 需编译安装，切换前对比检索集指标 |
-| R10 | **检索配置漂移** | 检索参数（Top-K、RRF k、rerank 阈值）必须版本化，变更即触发检索回归 |
-| R11 | **`test_scope` 维护成本** | v1 只用于"未覆盖已列场景"提示；初期只覆盖 3–5 个高频模块的功能点 |
-| R12 | **投票轮成本** | 投票轮增加 3 次调用与输出长度；候选清单需控制条数，避免 token 失控 |
-| R13 | **v1 单条范围的预期管理** | 调用方可能期待功能覆盖率；报告固定 `coverage_claims_allowed=false` |
-| R14 | **历史缺陷被误用** | 依赖 `evidence_type` + Prompt + 服务端校验；抽检 `historical_bug` 用法 |
-| R15 | **审批流程未落地** | `review_decisions` 建了但没人用；上线前确认审批角色与责任人 |
-| R16 | **trigram 召回上限** | 长文本/语义改写召回弱于向量；靠检索集对比，不凭感觉切换 |
-| R17 | **投票锚定** | 记录初审与投票差异，统计翻转率；材料去来源化后用评测集验证 |
-| R18 | **严重级分歧** | 跨两级（blocker vs suggestion）转人工；统计高估/低估率 |
-| R19 | **投影漂移** | `issues` 与 `report_json` 定期一致性校验，支持从事实源重建 |
-| R20 | **性能门槛未压测** | 先按阶段观测 P50/P95/P99，压测后再写发布门槛 |
-| R21 | **知识库同级冲突** | 不自行选择权威规则；冲突证据留档并转 `need_human` |
-| R22 | **成立性/严重级被合并** | 两字段独立落库与统计，避免"成立但严重级错"被掩盖 |
-| R23 | **报告投影漂移** | 定期校验 `report_json ↔ issues`，投影只读 |
-| R24 | **性能目标冲突** | 模型超时与端到端目标先压测再定，不拍脑袋 |
-| R25 | **旧客户端仍传 `X-Role`** | 服务端忽略该头；迁移期记录告警，避免误以为已授权 |
-| R26 | **候选与投影漂移** | 投票/候选/投影分表后，定期校验 `review_candidates → issues` 回链完整 |
-| R27 | **模型验收未完成** | 真实 Model ID 未 `verified` 前，评测结论只能标"待验证" |
-| R28 | **提示注入** | 用例/知识库视为不可信数据；输出仍走服务端校验，不执行文本指令 |
-| R29 | **校验分层错位** | 硬校验必须在 API 层完成；Worker 返回 422 是设计缺陷 |
-| R30 | **候选向量过期** | 候选合并/重建后旧向量残留；按 candidate 级联删除或用 profile 重建 |
-| R31 | **claim 证据复杂** | 证据按主张绑定会增加数据量；先用 3–5 个模块验证可维护性 |
-| R32 | **8 次调用超时** | 20 分钟是估算，需压测；阶段 Checkpoint 未验证前不承诺恢复 |
-| R33 | **模型对照实验缺失** | 未做 A–E 组实验前，不能宣称多模型优于单模型 |
-| R34 | **字典漂移** | 枚举在 02/03/11/17 多处维护；改一处必须同步校验脚本 |
-| R35 | **claim 聚合复杂** | 证据按主张绑定增加数据与标注成本；先小范围验证可维护性 |
-| R36 | **条件仲裁口径** | 跳过仲裁与"主审同意"不同；报告必须写 `arbitration_required=false` |
-| R37 | **超时预算未压测** | 20 分钟为估算；阶段超时含重试，需压测校准 |
-| R38 | **端到端门槛未验证** | 21 号文档的数字是初始门槛，需用冻结集校准后再作为发布依据 |
-| R39 | **跨文档冲突未清完** | 23 份文档仍有字段/枚举/状态差异；冻结前需跑一致性检查脚本 |
-| R40 | **三模型价值未验证** | 未完成 A–E 实验前，不能把完整三模型当作既定生产架构 |
-| R41 | **审批身份未落地** | 共用 API Key 无法证明审批人；上线前必须接入个人身份 |
-| R42 | **指标同名不同义** | 07 与 21 的门槛必须同源；改一处需同步另一处 |
-| R43 | **Decision Trace 未实现** | 报告可读性与人工复核效率依赖判断链，需列入 v1 |
-| R44 | **Rubric 与文档漂移** | `rubric.yaml` 已落地；CI 必须校验规则 ID、枚举与 Prompt 引用，否则仍会分叉 |
-| R45 | **指标改名后的历史数据** | FDR 替代 FPR 后，旧报告指标需重算，不能直接比较 |
-| R46 | **生产拓扑未定** | 默认三模型只是候选；A–E 实验前不得写入容量与成本承诺 |
-| R47 | **模型未验证** | `unverified` 模型不得进入生产拓扑；接入前逐项实测 |
-| R48 | **历史重评缺失** | Rubric/KB 更新后旧报告是否重评需显式触发，不能自动覆盖 |
-| R49 | **旧 Worker 写入** | 仅靠 locked_by 不足；fencing_token 未实现前，恢复场景不得上线 |
-| R50 | **批量幂等未验证** | force/force_all/部分失败的行为需在 Mock 环境先验证 |
-| R51 | **报告 Schema 漂移** | `schemas/report.schema.json` 已落地；旧报告兼容与 Schema 变更需 CI 校验 |
-| R52 | **部署/迁移未演练** | 27 号的迁移、备份、回滚流程需在空库与旧库各跑一次 |
-| R53 | **真实模型测试成本** | 26 号要求核心测试不依赖真实 API；真实模型只用于验收流水线 |
-| R54 | **报告 Schema 多版本** | 旧报告不迁移；渲染器与 API 必须按版本读取，新增字段保持向后兼容 |
-| R55 | **预算预留不足** | 核心阶段额度需在任务开始时预留，否则仍会出现"投票没预算" |
-| R56 | **附件未实现** | v1 只存引用与指纹；OCR/图片理解不在范围，避免误以为已支持 |
-| R57 | **指标改名影响历史** | FDR 与 FPR 不可互换；旧报告指标需重算并标注口径 |
-| R58 | **统计功效不足** | 三模型实验样本不足时只能作探索性结论，不能据此冻结架构 |
-| R59 | **契约脚本与文档一起漂移** | 检查器和被检查文件同时改错时仍会通过；用 `tests/contract/test_contract_drift.py` 变异测试兜底，脚本变更必须跑全量 |
-| R60 | **Verdict 用例与实现脱节** | 实现后可能只跑少量用例；ACC-M0-011 要求全量对照，改 `design/verdict_cases.yaml` 必须同步 `verdict.py` 与 `docs/12` |
-| R61 | **参考判定器被误用** | `scripts/verdict_reference.py` 只是规范对照，不是生产实现；`app/` 不得 import，代码评审拦截 |
-| R62 | **决策索引覆盖不全** | `design/decisions.yaml` 只索引跨模块契约与门禁相关决策；不得宣称是 docs/08 的全量镜像 |
-| R63 | **M0 用例只跑 happy path** | 每条用例必须带失败判定；ACC-M0-017 用变异测试证明检查能失败，不允许"能启动即通过" |
-| R64 | **业务范围蔓延** | 新增测试类型、覆盖分析、自动化或审批能力必须先进 `docs/00` 与 BIZ 决策，不能由技术实现悄然扩大职责 |
-| R65 | **test_type 误判** | 调用方未显式声明时按 `functional` 处理，可能让非功能用例被误评；报告展示 `test_type`，调用方应显式传值，非功能类型必须被 422 拒绝 |
-| R66 | **Rubric 0.2.0 未发布** | 当前为 `draft`，生产加载前必须由 `kb_reviewer` 审核并置 `published`，否则服务端拒绝启动生产模式 |
-| R67 | **设计版本被误当产品版本** | `design-v1.6` 只表示设计基线；产品 `product-v1.0` 未交付，对外表述必须写明维度 |
-| R68 | **complete 被误读为业务可用** | `complete=true` 只表示流程完整；参与度看 `full_participation`，业务价值看分层验收（docs/08 §5.3） |
-| R69 | **兼容模式长期化** | `TEST_TYPE_DEFAULT_POLICY=compat` 只允许过渡期使用，必须有退出时间/版本边界；默认 strict |
-| R70 | **供应商可调用≠可外发** | `verification_status=verified` 但 `data_admission_status!=approved` 的模型不得进入生产拓扑 |
-| R71 | **四状态混用** | "脚本通过"只到 verified；accepted 必须有验收证据，不得用设计完成或 CI 通过冒充 |
-| R72 | **实验后选口径** | A–E 阈值必须在 `experiment_protocol.yaml` 签署前填死，未签署不得启动正式实验 |
-| R73 | **台账代替执行** | `execution_plan.yaml` 通过只代表结构自洽；Q/V 项仍需真实决策、实验与验收 |
-| R74 | **责任人空位长期化** | `kb_pilot.yaml`/`review_roster.yaml` 的 owner 为空即阻断对应阶段，不能以"待指定"进入试点 |
-| R75 | **结构检查被当门禁** | `check_contracts.py` 通过只说明台账自洽；阶段准入必须跑 `check_execution_gate.py --stage` |
-| R76 | **阶段依赖倒置** | S2 不得依赖 Rubric 生产发布；生产级证据只能出现在 S4 |
-| R77 | **状态覆盖历史** | 状态转换只能追加历史，不得覆盖旧证据；版本变化必须重验 |
-| R78 | **统计口径事后调整** | A–E 的样本量/α/异常样本/停止规则必须在协议 signed 前冻结 |
-
-## 6. M0 实现状态与运行方式（2026-11-10）
-
-### 6.1 已实现范围
-
-| 模块 | 实现 |
-|---|---|
-| 工程骨架 | FastAPI 应用工厂、pydantic-settings 配置（缺 `DATABASE_URL` 快速失败）、structlog JSON 日志、统一错误 envelope、`/livez` `/readyz` `/healthz` `/metrics` |
-| 数据层 | PostgreSQL + pgvector Alembic 迁移（`0001_m0_initial`）、幂等部分唯一索引、状态/枚举 CHECK、报告锁定触发器、队列索引 |
-| 契约层 | `app.core.enums` 与 docs/17 同源校验；报告 Schema 加载/校验/冻结副本；Rubric 加载、Schema+业务校验、版本绑定、生产拒绝 draft |
-| 结论 | `app/pipeline/verdict.py` 唯一入口，36 条真值表用例与参考判定器一致；属性测试、禁止组合、决策字段信任边界 |
-| 权限 | API Key 授权表（sha256 摘要）、服务端角色、`X-Role` 仅记录、系统身份不得审批、审批人与提交人分离 |
-| 状态机 | 任务/阶段/复核任务迁移校验；租约与 `fencing_token` 条件写入（真实 PG 双 Worker 测试） |
-| 流水线 | 输入硬校验/软校验、三路 Mock 盲评、规则分桶融合、独立投票、条件仲裁、服务端结论、报告 JSON + Markdown、人工复核任务 |
-| 提交契约 | S1–S7 幂等/代次矩阵（200 重放、202 新建、409 运行中、422 同键不同体）、批量只做聚合、附件内容寻址去重 |
-
-### 6.2 本地运行
-
-```bash
-# 1. 依赖（Python >= 3.11）
-uv venv .venv
-uv pip install --python .venv/Scripts/python.exe -e ".[dev]"
-
-# 2. PostgreSQL 16 + pgvector（端口 55432）
-docker compose -f deploy/docker-compose.yml up -d postgres
-export DATABASE_URL=postgresql+asyncpg://testjury:testjury@127.0.0.1:55432/testjury
-
-# 3. 迁移与启动（Mock 模型）
-.venv/Scripts/python.exe -m alembic -c alembic.ini upgrade head
-.venv/Scripts/python.exe -m app.bootstrap     # 默认需要配置 BOOTSTRAP_API_KEYS
-
-# 4. 测试（无真实模型调用；新建并删除独立临时数据库，不重置应用库）
-.venv/Scripts/python.exe scripts/verify_isolated.py
-python scripts/check_contracts.py
-python scripts/check_m0_acceptance.py
-```
-
-### 6.3 验收边界
-
-- 已回填 `design/m0_acceptance.yaml`：40 条用例 `result=passed`；本地执行环境与时间见文件头。
-- **M0 通过只代表工程正确**：不代表评审质量、业务有效性或生产可用（`docs/08` §5.3）。
-- 2026-11-12 已加入知识库加载、混合检索、阶段及逐票恢复、本地部署和备份恢复比对。2026-11-13 继续完成双模型效果复核与本地部署检查；最新范围和使用方式见 [本地版本收尾记录](docs/local-preview-2026-11-13.md)，历史见 [开发记录](docs/development-2026-11-12.md)。生产补齐按用户要求暂缓。
-- 真实模型已接入：`REVIEW_MODEL_MODE=live` 时按 `config/models.yaml` 调用 Qwen3.8-Max、DeepSeek-Flash、Kimi-K3.1-Pro；仍为 `testing`，未完成 V-01 正式准入与数据准入。
-- `STORAGE_BACKEND=memory` 仅用于单测与本地演示；生产默认 `postgres` 且禁止 memory。
-- Rubric 仍为 `0.2.0 draft`：生产模式加载会被拒绝，待 V-03B 审核发布。
-
-### 6.4 设计与实现差异（v1.13 已收口三处）
-
-v1.13 已批准并回写设计：`api_keys` 授权表、附件“内容寻址 + 评审绑定”、`issues` 投影同事务且可重建（D222–D224，见 [变更记录](design/changes/2026-11-10-m1-implementation-gaps.md)）。
-
-仍存在、且**尚未**回写设计的差异：
-
-| 差异 | 现状 | 后续动作 |
-|---|---|---|
-| 存储适配器实现 | 已回写 docs/06：运行时 `asyncpg` 直连，SQLAlchemy 2.0 仅作 Alembic 迁移引擎；不再声称 ORM 运行时 | 已收口（2026-11-11） |
-| 真实模型 | **已接入并跑通**：`qwen3.8-max` / `deepseek-flash` / `kimi-k3.1-pro`（Kimi 指定 pro）；最终验收运行 `770b119b…`：3/3 盲评、3/3 投票、27 次调用 0 失败、成本 ¥1.2035 | V-01 A–E 有证据；V-01F 数据准入（Q-09）未完成，父项不标 verified/accepted |
-| 知识库检索 | MiniShop order 已接入不可变知识版本、1024 维向量、BM25/RRF 与引用包；任务固定版本 | 18 条检索样例通过；真实评审效果另行验收，重排未启用 |
-| CI 远端执行 | `.github/workflows/contracts.yml` 已定义 contract/unit/migration/mock-e2e/ci-all；本地等价命令全部通过，未在 GitHub 远端实际运行 | 首次 push 后确认各 Job 通过 |
-
-### 6.5 M1 前置与真实模型联调
-
-| 能力 | 入口 | 验证 |
-|---|---|---|
-| M1 工程收口 | [evidence/M1/closure-2026-11-11.md](evidence/M1/closure-2026-11-11.md) | P0/P1 审查项关闭；327 passed；远端 CI 全绿（run 42982761632）；V-01F 仍 pending |
-| V-01 子项 | [design/v01_acceptance.yaml](design/v01_acceptance.yaml) | A–E verified、F pending（数据准入） |
-| 真实评审 | `.env` 设 `REVIEW_MODEL_MODE=live`；模型见 [config/models.yaml](config/models.yaml) | 三路盲评 + 投票真实调用；`TC-LIVE-006`：blind 3/3、vote 3/3、27 次调用 0 失败、成本约 ¥1.04、结论 `need_human`（模型间成立性分歧） |
-| 模型连通性 | `python scripts/check_model_connectivity.py` | [evidence/V-01/model-smoke-2026-11-11.json](evidence/V-01/model-smoke-2026-11-11.json) |
-| 报告投影 | Worker `finalize_report`：报告字段与 `issues` 同事务写入；ID 由 `uuid5(review_id, issue_no)` 生成 | `tests/m0/test_projection.py`、`tests/integration/test_postgres_e2e.py` |
-| 投影重建 | `python scripts/rebuild_projection.py --all [--check]` | `tests/migration/test_projection_rebuild.py` |
-| 一致性检查 | `python scripts/check_consistency.py [--review <id>]` | 同上；漂移退出码 1 |
-| 附件绑定 | 上传 → `case.attachments[]` 引用校验（存在/摘要/归属）→ 报告展示（`analyzed_by_ai=false`）→ 删除评审级联绑定 | `tests/m0/test_attachments.py` |
-| 模型适配器 | `app/llm/base.py` 协议；`registry.py` 注册表校验；`adapters/` OpenAI 兼容 Chat/Embedding + HTTP Rerank；`retry.py` 仅重试可重试错误 | `tests/unit/test_model_registry.py`、`tests/unit/test_llm_adapters.py`（MockTransport，无供应商调用） |
-
-> `.env` 的 `REVIEW_MODEL_MODE=live` 走真实模型；单测/CI 默认 `mock`，不调用供应商。
-
-## 7. 测试项目
-
-> 旧 **TestLab Arcade** 项目资料已按用户要求从当前仓库删除（2026-11-11），不再作为测试项目或评测数据使用。
->
-MiniShop 已接入，冻结源码为 `e354437069504381f10a54d9c14baed755f3ba56`。知识内容见 [kb_content/minishop](kb_content/minishop/README.md)，当前黄金集为 [datasets/minishop/v3](datasets/minishop/v3)，包含 18 条检索和 30 条评审种子，均标注 AI 复核身份。
-
-本地工作台：[http://127.0.0.1:8088](http://127.0.0.1:8088)。当前默认 Qwen + DeepSeek 双模型，Kimi 按用户要求暂停使用。运行方式、证据和未完成事项见 [开发记录](docs/development-2026-11-12.md) 与 [验收证据索引](evidence/M2/README.md)。技术预览可运行，不代表生产效果已验收。
-
-
+</details>

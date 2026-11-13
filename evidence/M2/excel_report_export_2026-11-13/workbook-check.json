@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "cases": 2,
+  "issues": 2,
+  "single_and_batch_content_consistent": true,
+  "stored_report_fields_matched": true,
+  "no_formula_cells": true,
+  "files": {
+    "EXCEL-G-002-negative.xlsx": "5fc9e0b93a16f6cf3453f95be139739d804872a778fbd58ceccd93b0c2a12d86",
+    "EXCEL-G-006-positive.xlsx": "7894fbca4927cd97127e7ed11b3a91d4fa5993f5d9b3c4846b51c2a1ea02e891",
+    "TestJury-batch-report.xlsx": "3dc013644a694acc3e2f5d964c84fecf406b06e3706dbc942b52033995db96dc"
+  }
+}

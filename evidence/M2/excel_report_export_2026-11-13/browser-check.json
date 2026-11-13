@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "browser": "Edge",
+  "batch_id": "54f422f8-64bc-418f-a9e7-8108e7cd94ee",
+  "exported_cases": 2,
+  "no_credential_required": true,
+  "single_download_xlsx": true,
+  "batch_download_xlsx": true,
+  "original_reports_unchanged": true,
+  "no_new_reviews": true,
+  "page_errors": []
+}
