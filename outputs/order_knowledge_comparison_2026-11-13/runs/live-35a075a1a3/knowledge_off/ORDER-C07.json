@@ -1,0 +1,1116 @@
+{
+  "case_id": "ORDER-C07",
+  "condition": "knowledge_off",
+  "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+  "case_sha256": "5dbe16899ef95b5a68275bb404fbff24f515d20238e8ac5911fb6e1947bad524",
+  "job": {
+    "id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+    "case_id": "ORDER-C07",
+    "case_version": 1,
+    "module": "order",
+    "test_type": "functional",
+    "test_type_source": "request",
+    "status": "done",
+    "stage": "render",
+    "input_hash": "5fe63058c3c546487a2d29b2ff7b78a99713cb70f51f68c8ea5304c1b3621cac",
+    "idempotency_key": "82e2ea76d63fe5c642c43fe092e5994d9754710d2f12359dd08e38d6c86fb919",
+    "request_payload": {
+      "case": {
+        "steps": [
+          {
+            "index": 1,
+            "action": "POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1；只读查询A购物车中SKU1的存在性与quantity",
+            "expected": "HTTP 201，A购物车中的SKU1记录已删除"
+          }
+        ],
+        "title": "创建订单后的购物车保留情况",
+        "module": "order",
+        "source": "manual",
+        "case_id": "ORDER-C07",
+        "platform": "api",
+        "test_data": {
+          "excel_source": {
+            "rows": [
+              8
+            ],
+            "sheet": "下单测试用例",
+            "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+          }
+        },
+        "test_type": "functional",
+        "project_id": "minishop",
+        "case_version": 1,
+        "preconditions": [
+          "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+          "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+          "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。",
+          "A的购物车中存在SKU1，quantity=2；记录该购物车项存在且数量为2。"
+        ],
+        "product_version": "1.0.0",
+        "review_baseline": "current_implementation"
+      },
+      "options": {
+        "strict_kb": false
+      },
+      "test_scope": {
+        "feature_point": "创建订单后的购物车保留情况",
+        "required_scenarios": []
+      },
+      "automation_context": {
+        "framework": "API + 独立测试数据库",
+        "state_query_capabilities": [
+          "HTTP JSON",
+          "数据库只读查询"
+        ]
+      }
+    },
+    "report_schema_version": "report-1.0",
+    "generation": 1,
+    "parent_review_id": null,
+    "superseded_by": null,
+    "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+    "case_title": "创建订单后的购物车保留情况",
+    "ai_verdict": "conditional",
+    "human_status": "pending",
+    "current_decision_id": null,
+    "degraded": true,
+    "degraded_reasons": [
+      "arbitration_skipped",
+      "kb_module_missing"
+    ],
+    "participants": [
+      "chief_blind:qwen3.8-max",
+      "jury_a:deepseek-flash"
+    ],
+    "topology": "dual",
+    "topology_snapshot": {
+      "roles": [
+        "chief_blind",
+        "jury_a"
+      ],
+      "budget": {
+        "batch_cost": 60.0,
+        "daily_cost": 500.0,
+        "review_cost": 2.0,
+        "review_tokens": 60000
+      },
+      "models": {
+        "jury_a": "deepseek-flash",
+        "chief_blind": "qwen3.8-max"
+      },
+      "versions": {
+        "kb": "kb-none",
+        "models": {
+          "vote": "qwen3.8-max",
+          "jury_a": "deepseek-flash",
+          "jury_b": "kimi-k3.1-pro",
+          "preprocess": "deepseek-flash",
+          "arbitration": "qwen3.8-max",
+          "chief_blind": "qwen3.8-max"
+        },
+        "rubric": "0.2.0",
+        "prompts": {
+          "vote": "p-m0-vote-01",
+          "jury_a": "p-m0-jury-a-01",
+          "jury_b": "p-m0-jury-b-01",
+          "preprocess": "p-m0-pre-01",
+          "arbitration": "p-m0-arb-01",
+          "chief_blind": "p-m0-chief-01"
+        },
+        "model_config": "7e35c71d",
+        "price_config": "price-unverified-2026-11",
+        "kb_build_version": "kb-none",
+        "retrieval_config": "161fcb22",
+        "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+        "kb_content_version": "kb-none"
+      },
+      "retrieval": {
+        "top_k": 4,
+        "char_cap": 8000
+      },
+      "review_baseline": null,
+      "prompt_version_hash": "38d8578d73b71cddcbb597e213261e23b4617626963c2cf99bca1c2a3ad688ec"
+    },
+    "review_completeness": {
+      "vote": "2/2",
+      "blind": "2/2",
+      "complete": true,
+      "arbitration": "skipped",
+      "stages_failed": [],
+      "stages_pending": [],
+      "stages_skipped": [
+        "preprocess",
+        "kb_retrieve",
+        "arbitration"
+      ],
+      "stages_completed": [
+        "input_check",
+        "blind_review",
+        "fusion",
+        "vote",
+        "verdict",
+        "render"
+      ],
+      "full_participation": false,
+      "arbitration_required": false
+    },
+    "input_quality": {
+      "hard_errors": [],
+      "soft_issues": []
+    },
+    "timings": {},
+    "test_scope": {
+      "feature_point": "创建订单后的购物车保留情况",
+      "scope_version": null,
+      "related_case_ids": [],
+      "required_scenarios": []
+    },
+    "automation_context": {
+      "framework": "API + 独立测试数据库",
+      "state_query_capabilities": [
+        "HTTP JSON",
+        "数据库只读查询"
+      ]
+    },
+    "kb_content_version": "kb-none",
+    "kb_build_version": "kb-none",
+    "rubric_version": "0.2.0",
+    "prompt_versions": {
+      "vote": "p-m0-vote-01",
+      "jury_a": "p-m0-jury-a-01",
+      "jury_b": "p-m0-jury-b-01",
+      "preprocess": "p-m0-pre-01",
+      "arbitration": "p-m0-arb-01",
+      "chief_blind": "p-m0-chief-01"
+    },
+    "prompt_version_hash": "38d8578d73b71cddcbb597e213261e23b4617626963c2cf99bca1c2a3ad688ec",
+    "retrieval_config_version": "161fcb22",
+    "embedding_profile_id": null,
+    "reranker_profile_id": null,
+    "model_config_version": "7e35c71d",
+    "normalized_case": {
+      "steps": [
+        {
+          "index": 1,
+          "action": "POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1；只读查询A购物车中SKU1的存在性与quantity",
+          "expected": "HTTP 201，A购物车中的SKU1记录已删除"
+        }
+      ],
+      "title": "创建订单后的购物车保留情况",
+      "module": "order",
+      "source": "manual",
+      "case_id": "ORDER-C07",
+      "kb_hint": null,
+      "platform": "api",
+      "priority": null,
+      "raw_text": null,
+      "test_data": {
+        "excel_source": {
+          "rows": [
+            8
+          ],
+          "sheet": "下单测试用例",
+          "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+        }
+      },
+      "test_type": "functional",
+      "project_id": "minishop",
+      "attachments": [],
+      "case_version": 1,
+      "preconditions": [
+        "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+        "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+        "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。",
+        "A的购物车中存在SKU1，quantity=2；记录该购物车项存在且数量为2。"
+      ],
+      "product_version": "1.0.0",
+      "review_baseline": "current_implementation"
+    },
+    "report_summary": {
+      "major": 0,
+      "blocker": 0,
+      "suggestion": 0,
+      "total_issues": 0
+    },
+    "report_json": {
+      "scope": {
+        "note": "v1 仅做单条用例评审，不输出功能点整体覆盖率",
+        "provided": true,
+        "feature_point": "创建订单后的购物车保留情况",
+        "scope_version": null,
+        "coverage_claims_allowed": false
+      },
+      "stage": "render",
+      "issues": [],
+      "module": "order",
+      "status": "done",
+      "case_id": "ORDER-C07",
+      "kb_gaps": [],
+      "summary": {
+        "major": 0,
+        "blocker": 0,
+        "suggestion": 0,
+        "total_issues": 0
+      },
+      "timings": {
+        "queue_ms": 680893,
+        "execution_ms": 127627,
+        "model_call_ms": 190768
+      },
+      "appendix": {
+        "budget": {
+          "scope": "chat requests; conservative reservations, configured estimated prices; not provider billing",
+          "limits": {
+            "batch_cost": 60.0,
+            "daily_cost": 500.0,
+            "review_cost": 2.0,
+            "review_tokens": 60000
+          },
+          "exhausted": false,
+          "estimated_cost": 0.42679,
+          "uncertain_calls": 0,
+          "accounted_tokens": 27562
+        },
+        "recovery": {
+          "attempt": 1,
+          "reused_outputs": []
+        },
+        "model_runs": [
+          {
+            "role": "chief_blind",
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 2603,
+              "response": 2108
+            },
+            "latency_ms": 63662,
+            "cost_estimate": 0.17854,
+            "parse_warnings": []
+          },
+          {
+            "role": "jury_a",
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 2510,
+              "response": 2984
+            },
+            "latency_ms": 18241,
+            "cost_estimate": 0.008478,
+            "parse_warnings": []
+          },
+          {
+            "role": "chief_blind",
+            "error": null,
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 1429,
+              "response": 844
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 23282
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 23257,
+            "raw_request": null,
+            "candidate_no": 1,
+            "raw_response": null,
+            "request_hash": "b0418ef1901d90bde366e3ec827099e3b46a6c366fb0dabc9143d7dc5443564c",
+            "cost_estimate": 0.07922,
+            "response_hash": "7a6e7023b28ff9629f6c4ae4a8582ac8695c7511aaa19b5eff711fe99b2f1d10",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          },
+          {
+            "role": "jury_a",
+            "error": null,
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 1416,
+              "response": 1641
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 11613
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 11586,
+            "raw_request": null,
+            "candidate_no": 1,
+            "raw_response": null,
+            "request_hash": "d3d17553b33e0fff996e3ca6e9509df0eb64ec6f01d6681f2b0d5d63753f4aff",
+            "cost_estimate": 0.004698,
+            "response_hash": "6810dc61c4f5c544d735275426d937d827930f6f7e30cbfb9f75451532e52017",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          },
+          {
+            "role": "chief_blind",
+            "error": null,
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 1451,
+              "response": 584
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 18891
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 18850,
+            "raw_request": null,
+            "candidate_no": 2,
+            "raw_response": null,
+            "request_hash": "a227f2e7be16f91cf16215e1aa237c8503915fcd63f755766525b39c32f0192e",
+            "cost_estimate": 0.06406,
+            "response_hash": "a373ad51ffc17a8dea9720e003d77b7b8c12ef31abcdd81544e7a6a8ae017e63",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          },
+          {
+            "role": "jury_a",
+            "error": null,
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 1441,
+              "response": 606
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 4852
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 4827,
+            "raw_request": null,
+            "candidate_no": 2,
+            "raw_response": null,
+            "request_hash": "6c22779ef3fefb7190c37391451a08fe5f74930b97429b15d836b8baba22d66a",
+            "cost_estimate": 0.002653,
+            "response_hash": "7083b54227defd23d39ccd99fa017ba6eb83662f228e0bbce51181b9e16cce98",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          },
+          {
+            "role": "chief_blind",
+            "error": null,
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 1422,
+              "response": 846
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 23306
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 23291,
+            "raw_request": null,
+            "candidate_no": 3,
+            "raw_response": null,
+            "request_hash": "1d7c854c108c697d66c4ecca495e929a9ee55620f981021163e63a41d8ed37a6",
+            "cost_estimate": 0.0792,
+            "response_hash": "b6e8b568368e5dc230eeb9b0a8b646cff367e3b4978b33cbf6785c2067ea1a10",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          },
+          {
+            "role": "jury_a",
+            "error": null,
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 1413,
+              "response": 4264
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 27091
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 27054,
+            "raw_request": null,
+            "candidate_no": 3,
+            "raw_response": null,
+            "request_hash": "0817731f73a93c309244d49a788760e2742d722375d5323dfd2a5009429d1c35",
+            "cost_estimate": 0.009941,
+            "response_hash": "c86d04b40b67b5728fed9d7cfc20c8040d9da47ec9d694fa3e5b2bd8ec0db0a9",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          }
+        ],
+        "raw_opinions": {
+          "jury_a": {
+            "issues": [
+              {
+                "scope": "step",
+                "claims": [],
+                "kb_refs": [],
+                "category": "预期不明确",
+                "kb_quote": null,
+                "severity": "suggestion",
+                "dimension": "business",
+                "rationale": "前置把购物车中SKU1的quantity设为2，而下单数量为1，预期却断言整条购物车记录被删除；在“整条删除”与“数量扣减为1”两种规则下，预期不同，用例未说明该数值设定与最终预期的对应关系，因此执行者无法据此判断断言是否应包含剩余数量。（推断）",
+                "confidence": null,
+                "step_index": 1,
+                "suggestion": "明确当前实现是在下单后删除整条购物车记录；若应按数量扣减，需将预期改为剩余quantity=1，并同步检验该数量。",
+                "kb_grounded": false,
+                "evidence_refs": [],
+                "evidence_type": "inference",
+                "evidence_quote": "HTTP 201，A购物车中的SKU1记录已删除",
+                "parse_warnings": [],
+                "evidence_status": "ungrounded",
+                "model_confidence": null,
+                "evidence_strength": "weak",
+                "validation_status": "passed",
+                "model_evidence_status": "insufficient",
+                "evidence_support_status": "unsupported"
+              },
+              {
+                "scope": "step",
+                "claims": [],
+                "kb_refs": [],
+                "category": "歧义",
+                "kb_quote": null,
+                "severity": "suggestion",
+                "dimension": "automation",
+                "rationale": "“只读查询”未指明查询途径，未说明使用哪个HTTP接口或哪条只读数据库查询；自动化上下文虽同时具备HTTP JSON与数据库只读查询能力，但执行者仍需自行选择，不同实现会造成断言口径不一致。（推断）",
+                "confidence": null,
+                "step_index": 1,
+                "suggestion": "在步骤中明确查询方式，例如调用购物车查询接口，或给出具体的只读查询语句，并说明查询结果字段与预期值（记录不存在）。",
+                "kb_grounded": false,
+                "evidence_refs": [],
+                "evidence_type": "testing_standard",
+                "evidence_quote": "只读查询A购物车中SKU1的存在性与quantity",
+                "parse_warnings": [],
+                "evidence_status": "partially_grounded",
+                "model_confidence": null,
+                "evidence_strength": "medium",
+                "validation_status": "passed",
+                "model_evidence_status": "ungrounded",
+                "evidence_support_status": "insufficient"
+              },
+              {
+                "scope": "case",
+                "claims": [],
+                "kb_refs": [],
+                "category": "意图不符",
+                "kb_quote": null,
+                "severity": "suggestion",
+                "dimension": "business",
+                "rationale": "标题声明的测试目的是查看下单后购物车的“保留情况”，但购物车中仅有SKU1，且预期只断言该SKU被删除；用例未验证购物车其余内容是否保留，因此标题中“保留”的部分未得到验证。",
+                "confidence": null,
+                "step_index": null,
+                "suggestion": "在购物车中增加一个未下单的SKU作为对照，并断言其中未下单的SKU仍保留、quantity不变；或者把标题调整为“下单后已购SKU从购物车移除”。",
+                "kb_grounded": false,
+                "evidence_refs": [],
+                "evidence_type": "inference",
+                "evidence_quote": "创建订单后的购物车保留情况",
+                "parse_warnings": [],
+                "evidence_status": "ungrounded",
+                "model_confidence": null,
+                "evidence_strength": "weak",
+                "validation_status": "passed",
+                "model_evidence_status": "insufficient",
+                "evidence_support_status": "unsupported"
+              }
+            ],
+            "summary": "用例意图清晰、前置完整；下单数量1与购物车数量2下“整条删除”的预期需明确规则。"
+          },
+          "chief_blind": {
+            "issues": [],
+            "summary": "用例目的明确，前置与断言可执行判定，无明显问题。"
+          }
+        },
+        "disagreements": [],
+        "normalized_case": {
+          "steps": [
+            {
+              "index": 1,
+              "action": "POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1；只读查询A购物车中SKU1的存在性与quantity",
+              "expected": "HTTP 201，A购物车中的SKU1记录已删除"
+            }
+          ],
+          "title": "创建订单后的购物车保留情况",
+          "module": "order",
+          "source": "manual",
+          "case_id": "ORDER-C07",
+          "kb_hint": null,
+          "platform": "api",
+          "priority": null,
+          "raw_text": null,
+          "test_data": {
+            "excel_source": {
+              "rows": [
+                8
+              ],
+              "sheet": "下单测试用例",
+              "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+            }
+          },
+          "test_type": "functional",
+          "project_id": "minishop",
+          "attachments": [],
+          "case_version": 1,
+          "preconditions": [
+            "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+            "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+            "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。",
+            "A的购物车中存在SKU1，quantity=2；记录该购物车项存在且数量为2。"
+          ],
+          "product_version": "1.0.0",
+          "review_baseline": "current_implementation"
+        },
+        "knowledge_review": {
+          "mode": "general",
+          "label": "通用评审（已降级）",
+          "message": "知识库中没有可用于本次用例的相关知识，已降级为通用评审；仅检查用例质量，未验证产品业务规则。",
+          "evidence_count": 0,
+          "knowledge_available": false
+        }
+      },
+      "degraded": true,
+      "topology": "dual",
+      "versions": {
+        "kb": "kb-none",
+        "models": {
+          "vote": "qwen3.8-max",
+          "jury_a": "deepseek-flash",
+          "jury_b": "kimi-k3.1-pro",
+          "preprocess": "deepseek-flash",
+          "arbitration": "qwen3.8-max",
+          "chief_blind": "qwen3.8-max"
+        },
+        "rubric": "0.2.0",
+        "prompts": {
+          "vote": "p-m0-vote-01",
+          "jury_a": "p-m0-jury-a-01",
+          "jury_b": "p-m0-jury-b-01",
+          "preprocess": "p-m0-pre-01",
+          "arbitration": "p-m0-arb-01",
+          "chief_blind": "p-m0-chief-01"
+        },
+        "model_config": "7e35c71d",
+        "price_config": "price-unverified-2026-11",
+        "kb_build_version": "kb-none",
+        "retrieval_config": "161fcb22",
+        "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+        "kb_content_version": "kb-none"
+      },
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "test_type": "functional",
+      "ai_verdict": "conditional",
+      "created_at": "2026-11-13T02:49:35.451653+00:00",
+      "generation": 1,
+      "attachments": [],
+      "finished_at": "2026-11-13T03:03:03.978807+00:00",
+      "case_version": 1,
+      "human_status": "pending",
+      "participants": [
+        "chief_blind:qwen3.8-max",
+        "jury_a:deepseek-flash"
+      ],
+      "input_quality": {
+        "hard_errors": [],
+        "soft_issues": []
+      },
+      "decision_summary": {
+        "human_status": "pending",
+        "history_count": 0,
+        "latest_decision": null
+      },
+      "degraded_reasons": [
+        "arbitration_skipped",
+        "kb_module_missing"
+      ],
+      "parent_review_id": null,
+      "test_type_source": "request",
+      "human_review_items": [],
+      "review_completeness": {
+        "vote": "2/2",
+        "blind": "2/2",
+        "complete": true,
+        "arbitration": "skipped",
+        "stages_failed": [],
+        "stages_pending": [],
+        "stages_skipped": [
+          "preprocess",
+          "kb_retrieve",
+          "arbitration"
+        ],
+        "stages_completed": [
+          "input_check",
+          "blind_review",
+          "fusion",
+          "vote",
+          "verdict",
+          "render"
+        ],
+        "full_participation": false,
+        "arbitration_required": false
+      },
+      "review_participants": [
+        {
+          "model": "qwen3.8-max",
+          "status": "active",
+          "role_id": "chief_blind",
+          "actual_model": "qwen3.8-max",
+          "participant_id": "p-01"
+        },
+        {
+          "model": "deepseek-flash",
+          "status": "active",
+          "role_id": "jury_a",
+          "actual_model": "deepseek-flash",
+          "participant_id": "p-02"
+        },
+        {
+          "model": "kimi-k3.1-pro",
+          "status": "absent",
+          "role_id": "jury_b",
+          "actual_model": null,
+          "participant_id": "p-03"
+        }
+      ],
+      "report_schema_version": "report-1.0"
+    },
+    "report_locked_at": "2026-11-13 03:03:03.978817+00:00",
+    "total_cost_estimate": 0.4268,
+    "cost_currency": "CNY",
+    "error": null,
+    "attempt_count": 1,
+    "max_attempts": 3,
+    "locked_by": "worker-a9abd69d",
+    "locked_at": "2026-11-13 03:00:56.344952+00:00",
+    "lease_expires_at": "2026-11-13 03:07:36.377133+00:00",
+    "fencing_token": 1,
+    "last_error": null,
+    "submitter_id": "paired-evaluator",
+    "created_at": "2026-11-13 02:49:35.451653+00:00",
+    "started_at": "2026-11-13 03:00:56.344952+00:00",
+    "finished_at": "2026-11-13 03:03:03.978821+00:00"
+  },
+  "model_runs": [
+    {
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "blind_review",
+      "provider": "deepseek",
+      "requested_model": "deepseek-flash",
+      "model_version": "deepseek-flash",
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 2510,
+      "response_tokens": 2984,
+      "latency_ms": 18241,
+      "request_hash": "5aaf6107db03f3a8ac55ec65841782c6ed118952f092df3e025463caee832625",
+      "response_hash": "35b1e64aade3d2cdfb4f0e4a51904eb1d3809cf522d5d46a9eef588e5aaf39e3",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0085,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "c62e5526-d225-452a-9dc9-9a44b1977096",
+      "created_at": "2026-11-13 03:01:14.652655+00:00"
+    },
+    {
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "blind_review",
+      "provider": "qwen",
+      "requested_model": "qwen3.8-max",
+      "model_version": "qwen3.8-max",
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 2603,
+      "response_tokens": 2108,
+      "latency_ms": 63662,
+      "request_hash": "bb9e048090d988f19883f6cfcd0b96b7e16faa85afe510e22be4bdea46e2a678",
+      "response_hash": "98d82302b526ff6de82a0c6b006c66ce27f070b8a2abbc8cfd023c161d61feea",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.1785,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "e30f704f-945f-406a-9d36-d6f205d66d34",
+      "created_at": "2026-11-13 03:02:00.079968+00:00"
+    },
+    {
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "deepseek-flash",
+      "model_version": null,
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1441,
+      "response_tokens": 606,
+      "latency_ms": 4827,
+      "request_hash": "6c22779ef3fefb7190c37391451a08fe5f74930b97429b15d836b8baba22d66a",
+      "response_hash": "7083b54227defd23d39ccd99fa017ba6eb83662f228e0bbce51181b9e16cce98",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0027,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "69c8eff1-b914-4724-8c6b-de59e59e3f5d",
+      "created_at": "2026-11-13 03:02:05.036009+00:00"
+    },
+    {
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "deepseek-flash",
+      "model_version": null,
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1416,
+      "response_tokens": 1641,
+      "latency_ms": 11586,
+      "request_hash": "d3d17553b33e0fff996e3ca6e9509df0eb64ec6f01d6681f2b0d5d63753f4aff",
+      "response_hash": "6810dc61c4f5c544d735275426d937d827930f6f7e30cbfb9f75451532e52017",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0047,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "9174cd5f-44b2-479c-a003-1002b14ac514",
+      "created_at": "2026-11-13 03:02:11.797906+00:00"
+    },
+    {
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "qwen3.8-max",
+      "model_version": null,
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1429,
+      "response_tokens": 844,
+      "latency_ms": 23257,
+      "request_hash": "b0418ef1901d90bde366e3ec827099e3b46a6c366fb0dabc9143d7dc5443564c",
+      "response_hash": "7a6e7023b28ff9629f6c4ae4a8582ac8695c7511aaa19b5eff711fe99b2f1d10",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0792,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "a242c84d-3b7e-483d-9f65-dc7c6134fbcc",
+      "created_at": "2026-11-13 03:02:23.455752+00:00"
+    },
+    {
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "deepseek-flash",
+      "model_version": null,
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1413,
+      "response_tokens": 4264,
+      "latency_ms": 27054,
+      "request_hash": "0817731f73a93c309244d49a788760e2742d722375d5323dfd2a5009429d1c35",
+      "response_hash": "c86d04b40b67b5728fed9d7cfc20c8040d9da47ec9d694fa3e5b2bd8ec0db0a9",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0099,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "f97942a7-2952-4922-b5d3-8d5677ec9eec",
+      "created_at": "2026-11-13 03:02:32.124960+00:00"
+    },
+    {
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "qwen3.8-max",
+      "model_version": null,
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1451,
+      "response_tokens": 584,
+      "latency_ms": 18850,
+      "request_hash": "a227f2e7be16f91cf16215e1aa237c8503915fcd63f755766525b39c32f0192e",
+      "response_hash": "a373ad51ffc17a8dea9720e003d77b7b8c12ef31abcdd81544e7a6a8ae017e63",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0641,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "f42fdd17-4d69-4134-8713-ee26ebd218d2",
+      "created_at": "2026-11-13 03:02:42.351321+00:00"
+    },
+    {
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "qwen3.8-max",
+      "model_version": null,
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1422,
+      "response_tokens": 846,
+      "latency_ms": 23291,
+      "request_hash": "1d7c854c108c697d66c4ecca495e929a9ee55620f981021163e63a41d8ed37a6",
+      "response_hash": "b6e8b568368e5dc230eeb9b0a8b646cff367e3b4978b33cbf6785c2067ea1a10",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0792,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "a79a16db-e586-40c9-9257-12c574ca156b",
+      "created_at": "2026-11-13 03:03:03.916064+00:00"
+    }
+  ],
+  "budget_ledger": [
+    {
+      "id": "c6c0b5c8-9850-4be1-9aa6-3100050cbaa1",
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 18921,
+      "cost_reserved": "0.027112999999999998",
+      "tokens_actual": 5494,
+      "cost_actual": "0.008478",
+      "status": "settled",
+      "created_at": "2026-11-13 03:00:56.395551+00:00"
+    },
+    {
+      "id": "ea06d0ce-c7d0-43c6-a9e6-9be1f9689fa2",
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 19137,
+      "cost_reserved": "0.7104199999999999",
+      "tokens_actual": 4711,
+      "cost_actual": "0.17854",
+      "status": "settled",
+      "created_at": "2026-11-13 03:00:56.401380+00:00"
+    },
+    {
+      "id": "24bd85f0-421d-4c39-a2e0-ff913832e126",
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 14399,
+      "cost_reserved": "0.022591",
+      "tokens_actual": 2047,
+      "cost_actual": "0.002653",
+      "status": "settled",
+      "created_at": "2026-11-13 03:02:00.189333+00:00"
+    },
+    {
+      "id": "bf2ea17e-f891-4ad5-a28a-b91da25e6194",
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 14324,
+      "cost_reserved": "0.022516",
+      "tokens_actual": 3057,
+      "cost_actual": "0.004698000000000001",
+      "status": "settled",
+      "created_at": "2026-11-13 03:02:00.198032+00:00"
+    },
+    {
+      "id": "d4d7b535-a564-47d0-a643-c458b6a53f5f",
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 14324,
+      "cost_reserved": "0.6141599999999999",
+      "tokens_actual": 2273,
+      "cost_actual": "0.07922",
+      "status": "settled",
+      "created_at": "2026-11-13 03:02:00.175816+00:00"
+    },
+    {
+      "id": "19fe878f-b77c-40f5-8a6a-33cebef3967f",
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 14307,
+      "cost_reserved": "0.022499",
+      "tokens_actual": 5677,
+      "cost_actual": "0.009941",
+      "status": "settled",
+      "created_at": "2026-11-13 03:02:05.036147+00:00"
+    },
+    {
+      "id": "10781152-ab3f-4de7-b552-986257154a09",
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 14399,
+      "cost_reserved": "0.61566",
+      "tokens_actual": 2035,
+      "cost_actual": "0.06406",
+      "status": "settled",
+      "created_at": "2026-11-13 03:02:23.456540+00:00"
+    },
+    {
+      "id": "cc3f091f-4785-4fa6-8357-579d3b11ce53",
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 14307,
+      "cost_reserved": "0.6138199999999999",
+      "tokens_actual": 2268,
+      "cost_actual": "0.0792",
+      "status": "settled",
+      "created_at": "2026-11-13 03:02:40.608288+00:00"
+    }
+  ],
+  "code_fingerprint": "ded196342435e52069840e07ed362ed4c08230b0a1154fc1d89a91e3a8640598"
+}

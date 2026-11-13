@@ -1,0 +1,172 @@
+{
+  "run_id": "live-35a075a1a3",
+  "mode": "live",
+  "created_at": "2026-11-13T02:49:36.628028+00:00",
+  "dataset": "outputs/order_knowledge_comparison_2026-11-13/cases-and-annotations.json",
+  "dataset_sha256": "9e62fdd9e92505b1986929d9b07727ef1c9f4295778a84e4d8b8e459029b80f4",
+  "input_workbook_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d",
+  "code_fingerprint": "ded196342435e52069840e07ed362ed4c08230b0a1154fc1d89a91e3a8640598",
+  "config": {
+    "review_tokens": 60000,
+    "review_cost": 2.0,
+    "batch_cost": 60.0,
+    "daily_cost": 500.0,
+    "job_timeout_seconds": 1200,
+    "blind_timeout_seconds": 480,
+    "vote_timeout_seconds": 360,
+    "arbitration_timeout_seconds": 180,
+    "topology": "dual",
+    "roles": [
+      "chief_blind",
+      "jury_a"
+    ],
+    "models": {
+      "chief_blind": "qwen3.8-max",
+      "jury_a": "deepseek-flash",
+      "jury_b": "kimi-k3.1-pro",
+      "vote": "qwen3.8-max",
+      "arbitration": "qwen3.8-max",
+      "preprocess": "deepseek-flash"
+    },
+    "retrieval_top_k": 4,
+    "retrieval_token_cap": 4000,
+    "reranker_enabled": false,
+    "comparison_concurrency": 2,
+    "storage_backend": "postgres",
+    "random_seed": 20261113
+  },
+  "knowledge_on_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+  "knowledge_off_version": "kb-none",
+  "temporary_database": "testjury_compare_1c39b5bbbdcb",
+  "storage_database_disabled": false,
+  "application_database_modified": false,
+  "same_models_prompt_rubric_budget": true,
+  "ground_truth_sent_to_models": false,
+  "schedule": [
+    {
+      "case_id": "ORDER-C01",
+      "condition": "knowledge_off",
+      "review_id": "409a33a7-ce7e-496d-804c-31d0c271605e",
+      "case_sha256": "4c4a9b16d16f75a0186032a2ee85f18533bcd5c16bceb9618bc93b6785c28d46"
+    },
+    {
+      "case_id": "ORDER-C01",
+      "condition": "knowledge_on",
+      "review_id": "9c501aa2-dda2-45e1-9282-25e9e1578190",
+      "case_sha256": "4c4a9b16d16f75a0186032a2ee85f18533bcd5c16bceb9618bc93b6785c28d46"
+    },
+    {
+      "case_id": "ORDER-C02",
+      "condition": "knowledge_off",
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "case_sha256": "e5d7f3b9af32a80c88535daad3c79a99fb7384d4cfb56e4a990cffad31afbcff"
+    },
+    {
+      "case_id": "ORDER-C02",
+      "condition": "knowledge_on",
+      "review_id": "4e9e84ed-18ff-4e36-8c3e-6d5acfadc6e5",
+      "case_sha256": "e5d7f3b9af32a80c88535daad3c79a99fb7384d4cfb56e4a990cffad31afbcff"
+    },
+    {
+      "case_id": "ORDER-C03",
+      "condition": "knowledge_off",
+      "review_id": "f46f97ff-890b-4bff-aa38-70109b78a7b5",
+      "case_sha256": "3b93b8549838a3d7db122d989faf02b912a3ea63017c877a56b592338f28f227"
+    },
+    {
+      "case_id": "ORDER-C03",
+      "condition": "knowledge_on",
+      "review_id": "8456baa0-a9a0-4326-b65e-0b6338ce4a9a",
+      "case_sha256": "3b93b8549838a3d7db122d989faf02b912a3ea63017c877a56b592338f28f227"
+    },
+    {
+      "case_id": "ORDER-C04",
+      "condition": "knowledge_on",
+      "review_id": "43bbc94a-1afb-4998-b233-0b1c5b7a2d05",
+      "case_sha256": "41295aeb6d948ddc00f2beeacbfd9cd7faf609720f4e9c6b26a097b5cf343350"
+    },
+    {
+      "case_id": "ORDER-C04",
+      "condition": "knowledge_off",
+      "review_id": "bf1e1ae7-98b3-4716-b057-2149a8a97c70",
+      "case_sha256": "41295aeb6d948ddc00f2beeacbfd9cd7faf609720f4e9c6b26a097b5cf343350"
+    },
+    {
+      "case_id": "ORDER-C05",
+      "condition": "knowledge_off",
+      "review_id": "e7ba5a26-74cb-48fa-a4f5-f2032e27b768",
+      "case_sha256": "71817ef224863dc92861e717856d3ec88e5bad78360da911edb638e1efd60fa3"
+    },
+    {
+      "case_id": "ORDER-C05",
+      "condition": "knowledge_on",
+      "review_id": "c3c2ffe4-7a35-4ab6-a792-38cc9f11576b",
+      "case_sha256": "71817ef224863dc92861e717856d3ec88e5bad78360da911edb638e1efd60fa3"
+    },
+    {
+      "case_id": "ORDER-C06",
+      "condition": "knowledge_on",
+      "review_id": "8f5f81e6-d59c-4a48-9d3d-20579a1ab30d",
+      "case_sha256": "b9fed1dd152727a1facf5d0aa092ea2d481820935975420462d24156d5d5b900"
+    },
+    {
+      "case_id": "ORDER-C06",
+      "condition": "knowledge_off",
+      "review_id": "2d3c3ab0-b1ee-415a-afa9-321e136a48bc",
+      "case_sha256": "b9fed1dd152727a1facf5d0aa092ea2d481820935975420462d24156d5d5b900"
+    },
+    {
+      "case_id": "ORDER-C07",
+      "condition": "knowledge_off",
+      "review_id": "80d5a09b-6149-40a3-ad19-3a9de550e056",
+      "case_sha256": "5dbe16899ef95b5a68275bb404fbff24f515d20238e8ac5911fb6e1947bad524"
+    },
+    {
+      "case_id": "ORDER-C07",
+      "condition": "knowledge_on",
+      "review_id": "a4d6b870-66b4-4250-a973-09bd5dad42ba",
+      "case_sha256": "5dbe16899ef95b5a68275bb404fbff24f515d20238e8ac5911fb6e1947bad524"
+    },
+    {
+      "case_id": "ORDER-C08",
+      "condition": "knowledge_off",
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "case_sha256": "1fbde17449e6a46d356cc4f0346a4bb67a8e648ad42fbd0dda4e99eaae266b1b"
+    },
+    {
+      "case_id": "ORDER-C08",
+      "condition": "knowledge_on",
+      "review_id": "e457aea1-7b8f-42de-ba2e-43cfadd22607",
+      "case_sha256": "1fbde17449e6a46d356cc4f0346a4bb67a8e648ad42fbd0dda4e99eaae266b1b"
+    },
+    {
+      "case_id": "ORDER-C09",
+      "condition": "knowledge_off",
+      "review_id": "9f1212e9-2cd2-418f-8ae6-dfdf516d81d6",
+      "case_sha256": "7d14b4bd69e69e588c509e6f5051f953a4517d9a01878186f4d3742f79ade4f1"
+    },
+    {
+      "case_id": "ORDER-C09",
+      "condition": "knowledge_on",
+      "review_id": "ca311e42-4ef8-444b-b979-4acbb0ea0470",
+      "case_sha256": "7d14b4bd69e69e588c509e6f5051f953a4517d9a01878186f4d3742f79ade4f1"
+    },
+    {
+      "case_id": "ORDER-C10",
+      "condition": "knowledge_off",
+      "review_id": "c5d1c59d-8259-4290-a8eb-33ad239dc546",
+      "case_sha256": "ef19af254fbf00902d12bab609ebd75b6845eb90ddd822f76bbf11b4c4f721d7"
+    },
+    {
+      "case_id": "ORDER-C10",
+      "condition": "knowledge_on",
+      "review_id": "011eac8e-164d-4697-943d-4bad3749b2eb",
+      "case_sha256": "ef19af254fbf00902d12bab609ebd75b6845eb90ddd822f76bbf11b4c4f721d7"
+    }
+  ],
+  "status": "completed",
+  "temporary_database_removed": true,
+  "finished_at": "2026-11-13T03:10:35.924520+00:00",
+  "terminal_tasks": 20,
+  "reports": 20
+}

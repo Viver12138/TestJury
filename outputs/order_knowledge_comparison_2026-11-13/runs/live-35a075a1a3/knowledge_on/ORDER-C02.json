@@ -1,0 +1,1209 @@
+{
+  "case_id": "ORDER-C02",
+  "condition": "knowledge_on",
+  "review_id": "4e9e84ed-18ff-4e36-8c3e-6d5acfadc6e5",
+  "case_sha256": "e5d7f3b9af32a80c88535daad3c79a99fb7384d4cfb56e4a990cffad31afbcff",
+  "job": {
+    "id": "4e9e84ed-18ff-4e36-8c3e-6d5acfadc6e5",
+    "case_id": "ORDER-C02",
+    "case_version": 1,
+    "module": "order",
+    "test_type": "functional",
+    "test_type_source": "request",
+    "status": "done",
+    "stage": "render",
+    "input_hash": "5a0eb34dc0c231b30112597c61ea37807ee30a853ecad30274f59e22d073b2de",
+    "idempotency_key": "d7be1ef7cba50f34640262060354a62980e95caa219b98a3dc6b2b975354f758",
+    "request_payload": {
+      "case": {
+        "steps": [
+          {
+            "index": 1,
+            "action": "以B身份POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1；前后只读查询B的订单数量",
+            "expected": "HTTP 201，使用地址1创建成功，B的订单数量增加1"
+          }
+        ],
+        "title": "使用他人收货地址创建订单",
+        "module": "order",
+        "source": "manual",
+        "case_id": "ORDER-C02",
+        "platform": "api",
+        "test_data": {
+          "excel_source": {
+            "rows": [
+              3
+            ],
+            "sheet": "下单测试用例",
+            "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+          }
+        },
+        "test_type": "functional",
+        "project_id": "minishop",
+        "case_version": 1,
+        "preconditions": [
+          "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+          "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+          "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。",
+          "本条改为用户B登录，B与A为不同用户；地址1仍属于A；记录B的订单数量。"
+        ],
+        "product_version": "1.0.0",
+        "review_baseline": "current_implementation"
+      },
+      "options": {
+        "strict_kb": false
+      },
+      "test_scope": {
+        "feature_point": "使用他人收货地址创建订单",
+        "required_scenarios": []
+      },
+      "automation_context": {
+        "framework": "API + 独立测试数据库",
+        "state_query_capabilities": [
+          "HTTP JSON",
+          "数据库只读查询"
+        ]
+      }
+    },
+    "report_schema_version": "report-1.0",
+    "generation": 1,
+    "parent_review_id": null,
+    "superseded_by": null,
+    "batch_id": "037a36dc-d6cd-4cb5-abec-a53513f9a837",
+    "case_title": "使用他人收货地址创建订单",
+    "ai_verdict": "blocked",
+    "human_status": "pending",
+    "current_decision_id": null,
+    "degraded": true,
+    "degraded_reasons": [
+      "arbitration_skipped"
+    ],
+    "participants": [
+      "chief_blind:qwen3.8-max",
+      "jury_a:deepseek-flash"
+    ],
+    "topology": "dual",
+    "topology_snapshot": {
+      "roles": [
+        "chief_blind",
+        "jury_a"
+      ],
+      "budget": {
+        "batch_cost": 60.0,
+        "daily_cost": 500.0,
+        "review_cost": 2.0,
+        "review_tokens": 60000
+      },
+      "models": {
+        "jury_a": "deepseek-flash",
+        "chief_blind": "qwen3.8-max"
+      },
+      "versions": {
+        "kb": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+        "models": {
+          "vote": "qwen3.8-max",
+          "jury_a": "deepseek-flash",
+          "jury_b": "kimi-k3.1-pro",
+          "preprocess": "deepseek-flash",
+          "arbitration": "qwen3.8-max",
+          "chief_blind": "qwen3.8-max"
+        },
+        "rubric": "0.2.0",
+        "prompts": {
+          "vote": "p-m0-vote-01",
+          "jury_a": "p-m0-jury-a-01",
+          "jury_b": "p-m0-jury-b-01",
+          "preprocess": "p-m0-pre-01",
+          "arbitration": "p-m0-arb-01",
+          "chief_blind": "p-m0-chief-01"
+        },
+        "model_config": "7e35c71d",
+        "price_config": "price-unverified-2026-11",
+        "kb_build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+        "retrieval_config": "161fcb22",
+        "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+        "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813"
+      },
+      "retrieval": {
+        "top_k": 4,
+        "char_cap": 8000
+      },
+      "review_baseline": {
+        "type": "current_implementation",
+        "source_ref": "https://github.com/Viver12138/minishop.git",
+        "source_version": "e354437069504381f10a54d9c14baed755f3ba56",
+        "product_version": "1.0.0"
+      },
+      "prompt_version_hash": "38d8578d73b71cddcbb597e213261e23b4617626963c2cf99bca1c2a3ad688ec"
+    },
+    "review_completeness": {
+      "vote": "2/2",
+      "blind": "2/2",
+      "complete": true,
+      "arbitration": "skipped",
+      "stages_failed": [],
+      "stages_pending": [],
+      "stages_skipped": [
+        "preprocess",
+        "arbitration"
+      ],
+      "stages_completed": [
+        "input_check",
+        "kb_retrieve",
+        "blind_review",
+        "fusion",
+        "vote",
+        "verdict",
+        "render"
+      ],
+      "full_participation": false,
+      "arbitration_required": false
+    },
+    "input_quality": {
+      "hard_errors": [],
+      "soft_issues": []
+    },
+    "timings": {},
+    "test_scope": {
+      "feature_point": "使用他人收货地址创建订单",
+      "scope_version": null,
+      "related_case_ids": [],
+      "required_scenarios": []
+    },
+    "automation_context": {
+      "framework": "API + 独立测试数据库",
+      "state_query_capabilities": [
+        "HTTP JSON",
+        "数据库只读查询"
+      ]
+    },
+    "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+    "kb_build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+    "rubric_version": "0.2.0",
+    "prompt_versions": {
+      "vote": "p-m0-vote-01",
+      "jury_a": "p-m0-jury-a-01",
+      "jury_b": "p-m0-jury-b-01",
+      "preprocess": "p-m0-pre-01",
+      "arbitration": "p-m0-arb-01",
+      "chief_blind": "p-m0-chief-01"
+    },
+    "prompt_version_hash": "38d8578d73b71cddcbb597e213261e23b4617626963c2cf99bca1c2a3ad688ec",
+    "retrieval_config_version": "161fcb22",
+    "embedding_profile_id": null,
+    "reranker_profile_id": null,
+    "model_config_version": "7e35c71d",
+    "normalized_case": {
+      "steps": [
+        {
+          "index": 1,
+          "action": "以B身份POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1；前后只读查询B的订单数量",
+          "expected": "HTTP 201，使用地址1创建成功，B的订单数量增加1"
+        }
+      ],
+      "title": "使用他人收货地址创建订单",
+      "module": "order",
+      "source": "manual",
+      "case_id": "ORDER-C02",
+      "kb_hint": null,
+      "platform": "api",
+      "priority": null,
+      "raw_text": null,
+      "test_data": {
+        "excel_source": {
+          "rows": [
+            3
+          ],
+          "sheet": "下单测试用例",
+          "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+        }
+      },
+      "test_type": "functional",
+      "project_id": "minishop",
+      "attachments": [],
+      "case_version": 1,
+      "preconditions": [
+        "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+        "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+        "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。",
+        "本条改为用户B登录，B与A为不同用户；地址1仍属于A；记录B的订单数量。"
+      ],
+      "product_version": "1.0.0",
+      "review_baseline": "current_implementation"
+    },
+    "report_summary": {
+      "major": 0,
+      "blocker": 1,
+      "suggestion": 0,
+      "total_issues": 1
+    },
+    "report_json": {
+      "scope": {
+        "note": "v1 仅做单条用例评审，不输出功能点整体覆盖率",
+        "provided": true,
+        "feature_point": "使用他人收货地址创建订单",
+        "scope_version": null,
+        "coverage_claims_allowed": false
+      },
+      "stage": "render",
+      "issues": [
+        {
+          "votes": {
+            "jury_a": {
+              "severity": "blocker",
+              "validity": "accept"
+            },
+            "chief_blind": {
+              "severity": "blocker",
+              "validity": "accept"
+            }
+          },
+          "status": "adopted",
+          "kb_refs": [
+            "baca5f374763bd7b1891b112caec7b72c2c60d890184867e89328110af2eabce"
+          ],
+          "category": "规则冲突",
+          "issue_no": 1,
+          "severity": "blocker",
+          "dimension": "business",
+          "rationale": "第 1 步存在「规则冲突」问题：用例让用户B使用属于用户A的地址下单，并预期创建成功；知识库明确创建订单时地址必须归属当前登录用户，使用他人地址应返回400",
+          "confidence": null,
+          "step_index": 1,
+          "suggestion": "将预期改为HTTP 400且提示“收货地址不存在”，并断言B的订单数量不变。",
+          "kb_grounded": true,
+          "proposed_by": [
+            "chief_blind",
+            "jury_a"
+          ],
+          "candidate_id": "c7dc7e3d-f090-4b7f-a5b8-cedaf071d790",
+          "chief_reason": null,
+          "vote_summary": {
+            "reject": 0,
+            "support": 2,
+            "uncertain": 0,
+            "not_assessed": 0,
+            "support_ratio": 1.0,
+            "severity_disputed": false,
+            "vote_completeness": "2/2",
+            "severity_distribution": {
+              "major": 0,
+              "blocker": 2,
+              "suggestion": 0
+            }
+          },
+          "evidence_refs": [
+            {
+              "ref_id": "baca5f374763bd7b1891b112caec7b72c2c60d890184867e89328110af2eabce",
+              "verified": true
+            }
+          ],
+          "evidence_type": "business_rule",
+          "human_verdict": null,
+          "chief_decision": "adopt",
+          "evidence_quote": "HTTP 201，使用地址1创建成功，B的订单数量增加1",
+          "decision_status": null,
+          "evidence_status": "grounded",
+          "model_confidence": null,
+          "confidence_source": "uncalibrated",
+          "evidence_strength": "strong",
+          "validation_status": "passed",
+          "evidence_support_status": "supported"
+        }
+      ],
+      "module": "order",
+      "status": "done",
+      "case_id": "ORDER-C02",
+      "kb_gaps": [],
+      "summary": {
+        "major": 0,
+        "blocker": 1,
+        "suggestion": 0,
+        "total_issues": 1
+      },
+      "timings": {
+        "queue_ms": 110329,
+        "execution_ms": 117422,
+        "model_call_ms": 105136
+      },
+      "appendix": {
+        "budget": {
+          "scope": "chat requests; conservative reservations, configured estimated prices; not provider billing",
+          "limits": {
+            "batch_cost": 60.0,
+            "daily_cost": 500.0,
+            "review_cost": 2.0,
+            "review_tokens": 60000
+          },
+          "exhausted": false,
+          "estimated_cost": 0.43643699999999996,
+          "uncertain_calls": 0,
+          "accounted_tokens": 24930
+        },
+        "recovery": {
+          "attempt": 1,
+          "reused_outputs": []
+        },
+        "model_runs": [
+          {
+            "role": "chief_blind",
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 6373,
+              "response": 3349
+            },
+            "latency_ms": 84712,
+            "cost_estimate": 0.3284,
+            "parse_warnings": []
+          },
+          {
+            "role": "jury_a",
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 6286,
+              "response": 1238
+            },
+            "latency_ms": 6817,
+            "cost_estimate": 0.008762,
+            "parse_warnings": []
+          },
+          {
+            "role": "chief_blind",
+            "error": null,
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 3537,
+              "response": 406
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 10788
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 10754,
+            "raw_request": null,
+            "candidate_no": 1,
+            "raw_response": null,
+            "request_hash": "b0bdcf7c541248e1f24e2e81331b47f029a617dc14e86922acb63143f31edc24",
+            "cost_estimate": 0.0951,
+            "response_hash": "4dba08a6a69fcb86bf684ba18dc697e069e2e76334fb02f0dd17248a8fb618d4",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          },
+          {
+            "role": "jury_a",
+            "error": null,
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 3307,
+              "response": 434
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 2866
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 2853,
+            "raw_request": null,
+            "candidate_no": 1,
+            "raw_response": null,
+            "request_hash": "239e8622e507025d5dfd89bb5179befa2b786da20a4fbf6d42f738e0f17474c6",
+            "cost_estimate": 0.004175,
+            "response_hash": "db50f1f927cb82bc44716b5737e90ee905cdfc30d817e3632d7e2183e112cfa2",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          }
+        ],
+        "raw_opinions": {
+          "jury_a": {
+            "issues": [
+              {
+                "scope": "step",
+                "claims": [],
+                "kb_refs": [
+                  "baca5f374763bd7b1891b112caec7b72c2c60d890184867e89328110af2eabce"
+                ],
+                "category": "规则冲突",
+                "kb_quote": "`address_id` 指向不存在或不属于当前用户的地址：400 `收货地址不存在`。",
+                "severity": "blocker",
+                "dimension": "business",
+                "rationale": "本次前置条件已写明地址1属于用户A，本条以用户B登录下单。业务规则要求 address_id 必须属于当前登录用户，不属于当前用户的地址应返回400「收货地址不存在」；用例却预期201创建成功，还与“B订单数量增加1”的断言绑定，直接违反业务规则，按此预期执行必然失败，也无法判定用例意图。",
+                "confidence": null,
+                "step_index": 1,
+                "suggestion": "把预期改为：HTTP 400，提示「收货地址不存在」；断言B的订单数量不变，且没有生成订单。如果还要验证正向场景，就另建用例，用B自己的地址下单并断言201。",
+                "kb_grounded": true,
+                "evidence_refs": [
+                  "baca5f374763bd7b1891b112caec7b72c2c60d890184867e89328110af2eabce"
+                ],
+                "evidence_type": "business_rule",
+                "evidence_quote": "HTTP 201，使用地址1创建成功，B的订单数量增加1",
+                "parse_warnings": [],
+                "evidence_status": "grounded",
+                "model_confidence": null,
+                "evidence_strength": "strong",
+                "validation_status": "passed",
+                "model_evidence_status": "grounded",
+                "evidence_support_status": "supported"
+              }
+            ],
+            "summary": "预期结果与收货地址归属规则直接相反，用例无法通过，需改为400并断言未下单。"
+          },
+          "chief_blind": {
+            "issues": [
+              {
+                "scope": "step",
+                "claims": [],
+                "kb_refs": [
+                  "baca5f374763bd7b1891b112caec7b72c2c60d890184867e89328110af2eabce"
+                ],
+                "category": "规则冲突",
+                "kb_quote": "`address_id` 指向不存在或不属于当前用户的地址：400 `收货地址不存在`。",
+                "severity": "blocker",
+                "dimension": "business",
+                "rationale": "用例让用户B使用属于用户A的地址下单，并预期创建成功；知识库明确创建订单时地址必须归属当前登录用户，使用他人地址应返回400。",
+                "confidence": null,
+                "step_index": 1,
+                "suggestion": "将预期改为HTTP 400且提示“收货地址不存在”，并断言B的订单数量不变。",
+                "kb_grounded": true,
+                "evidence_refs": [
+                  "baca5f374763bd7b1891b112caec7b72c2c60d890184867e89328110af2eabce"
+                ],
+                "evidence_type": "business_rule",
+                "evidence_quote": "HTTP 201，使用地址1创建成功，B的订单数量增加1",
+                "parse_warnings": [],
+                "evidence_status": "grounded",
+                "model_confidence": null,
+                "evidence_strength": "strong",
+                "validation_status": "passed",
+                "model_evidence_status": "grounded",
+                "evidence_support_status": "supported"
+              }
+            ],
+            "summary": "预期与地址归属规则冲突，应返回400。"
+          }
+        },
+        "disagreements": [],
+        "knowledge_pack": {
+          "as_of": "2026-11-13",
+          "query": "使用他人收货地址创建订单\n每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。\n用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。\n测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。\n本条改为用户B登录，B与A为不同用户；地址1仍属于A；记录B的订单数量。\n以B身份POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1；前后只读查询B的订单数量 HTTP 201，使用地址1创建成功，B的订单数量增加1",
+          "module": "order",
+          "profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+          "baseline": {
+            "type": "current_implementation",
+            "source_ref": "https://github.com/Viver12138/minishop.git",
+            "source_version": "e354437069504381f10a54d9c14baed755f3ba56",
+            "product_version": "1.0.0"
+          },
+          "evidence": [
+            {
+              "text": "\n# 1. 规则陈述\n\n创建订单时 `address_id` 必填且必须属于当前登录用户；订单必须把收货人、电话和完整地址写入地址快照，后续地址修改或删除不影响已创建订单。\n\n# 2. 适用范围\n\n- `POST /api/orders`（创建订单，地址必填）\n- `POST /api/orders/preview`（预览，地址可选；若传则必须归属当前用户）\n- 产品版本 `1.0.0`\n\n# 3. 前置条件\n\n- 用户已登录；\n- 用户已创建至少一个收货地址（创建订单时）。\n\n# 4. 触发条件\n\n调用创建订单接口并传入 `address_id`，或调用预览接口并传入 `address_id`。\n\n# 5. 规则结果\n\n- 创建订单 `address_id=0`：400 `请选择收货地址`；\n- 创建订单 `address_id` 缺失、为 null 或类型非法：400 `VALIDATION_ERROR`（FastAPI 请求校验，main.py#L47-L52）。\n- `address_id` 指向不存在或不属于当前用户的地址：400 `收货地址不存在`。\n- 地址校验通过后，订单写入：\n  - `receiver_name`、`phone`；\n  - `address_snapshot`，JSON 包含 `receiver_name`、`phone`、`province`、`city`、`district`、`detail_address`。\n- 预览接口在地址缺失时允许返回 `address: null`，不阻断金额预览。\n\n# 6. 边界与例外\n\n- 地址归属只按 `user_id` 判断，管理员下单同样只能使用自己的地址。\n- 地址快照是创建订单时的值；之后修改或删除地址不会回写订单。\n- 地址的默认标记不影响下单选择，前端默认选中默认地址，但 API 不做该限制。\n- 地址字段没有手机号格式、长度、省市区完整性校验。\n\n# 7. 反例或禁止行为\n\n- 禁止使用他人地址下单。\n- 禁止只保存 `address_id` 而不保存快照。\n- 禁止在创建订单时允许空地址。\n\n# 8. 验证方式\n\n1. 不传/null `address_id` 创建订单：400 `VALIDATION_ERROR` 参数校验失败。\n2. 传 `address_id=0`：400 `请选择收货地址`。\n3. 用户 B 使用用户 A 的地址 ID 创建订单，预期 400。\n4. 创建订单后修改地址，查询订单详情，确认地址快照不变。\n5. 预览不传地址，确认仍返回金额且 `address=null`。\n\n# 9. 来源依据\n\n- `Minishop/backend/app/api/orders.py#L34-L43`：地址查询与归属校验。\n- `Minishop/backend/app/api/orders.py#L116-L143`：创建订单时地址必填与快照写入。\n- `Minishop/backend/app/api/addresses.py#L19-L75`：地址维护接口。\n\n# 10. 未决问题\n\n- 是否需要校验手机号与省市区完整性？\n- 地址删除后是否应禁止删除被历史订单引用的地址？（当前允许，订单靠快照保留）\n- 是否需要限制每用户地址数量？\n\n\n# 本次授权技术复核适用性\n\n核对 address_id 必填模型与业务门禁：缺失/null 是参数错误，0 是请选择地址；所有者过滤与地址快照成立。\n\n本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。\n",
+              "doc_id": "RULE-ORDER-002",
+              "module": "order",
+              "chunk_id": "baca5f374763bd7b1891b112caec7b72c2c60d890184867e89328110af2eabce",
+              "doc_type": "rule",
+              "platforms": [
+                "all"
+              ],
+              "rrf_score": 0.03252247488101534,
+              "project_id": "minishop",
+              "source_ref": "Minishop/backend/app/api/orders.py#L34-L43; Minishop/backend/app/api/orders.py#L116-L143",
+              "chunk_index": 0,
+              "rule_status": "reviewed",
+              "content_hash": "3e96e25b4577b8a3c77179f2d9d7b7cade4d73c9947ed125b85730b2236ebe00",
+              "heading_path": "收货地址必须归属当前用户并写入订单快照",
+              "rerank_score": null,
+              "effective_from": null,
+              "evidence_level": "E2",
+              "knowledge_type": "BUSINESS_RULE",
+              "source_version": "snapshot-2026-11-11",
+              "effective_until": null,
+              "product_version": [
+                "1.0.0"
+              ],
+              "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+              "source_evidence": [
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/api/orders.py#L34-L43",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/api/orders.py",
+                  "snapshot_member": "Minishop/backend/app/api/orders.py",
+                  "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/api/orders.py#L116-L143",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/api/orders.py",
+                  "snapshot_member": "Minishop/backend/app/api/orders.py",
+                  "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                }
+              ],
+              "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+              "source_repository": "https://github.com/Viver12138/minishop.git",
+              "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+              "retrieval_channels": [
+                "keyword",
+                "vector"
+              ],
+              "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56"
+            },
+            {
+              "text": "# 8. 测试数据准备\n\n## 8.1 隔离数据库（推荐）\n\n```powershell\ncd Minishop\\backend\n$env:DATABASE_URL='sqlite:///./verify.db'\n..\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000\n```\n\n- `verify.db` 会在 `backend/` 下创建，启动时自动建表 + 播种。\n- 验证结束后停止服务并删除 `verify.db`。\n- 不要直接在共享的 `data/minishop.db` 上跑会写数据的自动化。\n\n## 8.2 步骤\n\n### 步骤 1：登录\n\n```http\nPOST /api/auth/login\n{\"username\": \"user\", \"password\": \"123456\"}\n```\n\n取 `data.token` 作为后续 `Authorization: Bearer <token>`。\n\n### 步骤 2：创建地址\n\n```http\nPOST /api/addresses\n{\"receiver_name\":\"张三\",\"phone\":\"13800138000\",\"province\":\"广东省\",\"city\":\"深圳市\",\"district\":\"南山区\",\"detail_address\":\"科技园路1号\",\"is_default\":true}\n```\n\n取 `data.id` 作为 `address_id`。\n\n### 步骤 3：解析商品与 SKU\n\n```http\nGET /api/products?keyword=机械键盘\n```\n\n取 `data.items[0].skus[0].id` 作为 `sku_id`，并记录 `price` 与 `stock`。\n\n> 不要硬编码 SKU ID。当前种子库中机械键盘 SKU 为 5，但重建数据库后会变化。\n\n### 步骤 4（可选）：加购\n\n```http\nPOST /api/cart/items\n{\"sku_id\": <sku_id>, \"quantity\": 3}\n```\n\n订单接口不要求先加购；加购只用于验证购物车与下单的衔接。\n\n### 步骤 5：领券并获取用户券 ID\n\n```http\nGET /api/coupons/available\nPOST /api/coupons/{coupon_id}/claim\nGET /api/coupons/my\n```\n\n取 `data[].id` 作为 `user_coupon_id`（注意是用户券 ID，不是券模板 ID）。\n当前库中券 1 已过期，优先使用券 2（满1000减100）或券 3（满5000减500）。\n\n### 步骤 6：预览与创建\n\n```http\nPOST /api/orders/preview\n{\"items\":[{\"sku_id\": <sku_id>, \"quantity\": 3}], \"address_id\": <address_id>, \"user_coupon_id\": <user_coupon_id>}\n\nPOST /api/orders\n{\"items\":[{\"sku_id\": <sku_id>, \"quantity\": 3}], \"address_id\": <address_id>, \"user_coupon_id\": <user_coupon_id>}\n```\n\n### 步骤 7：支付、发货、确认\n\n```http\nPOST /api/payments                     {\"order_id\": <order_id>, \"method\": \"WECHAT\"}\nPOST /api/payments/{payment_id}/success\nPOST /api/admin/orders/{order_id}/ship {\"company\":\"顺丰\",\"tracking_number\":\"SF123456789\"}   # 需 admin token\nPOST /api/orders/{order_id}/confirm\n```\n\n",
+              "doc_id": "DATA-ORDER-001",
+              "module": "order",
+              "chunk_id": "87f1610a1e6396d55b58f358666b6033ca62a357932deb04bfcd72c65c837721",
+              "doc_type": "design",
+              "platforms": [
+                "all"
+              ],
+              "rrf_score": 0.03149801587301587,
+              "project_id": "minishop",
+              "source_ref": "Minishop/backend/app/models/models.py#L171-L243; Minishop/backend/app/models/models.py#L140-L165; Minishop/backend/app/seed/seed.py#L38-L151; Minishop/data/minishop.db",
+              "chunk_index": 7,
+              "rule_status": "reviewed",
+              "content_hash": "c2216a3bb9ea7401e1b42a95706b04e26b1a090334d414515ec3411f44e94d90",
+              "heading_path": "8. 测试数据准备",
+              "rerank_score": null,
+              "effective_from": null,
+              "evidence_level": "E2",
+              "knowledge_type": "INTERFACE",
+              "source_version": "snapshot-2026-11-11",
+              "effective_until": null,
+              "product_version": [
+                "1.0.0"
+              ],
+              "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+              "source_evidence": [
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/models/models.py#L171-L243",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/models/models.py",
+                  "snapshot_member": "Minishop/backend/app/models/models.py",
+                  "snapshot_sha256": "84bd973f0a6d923d3dd6e245c10a2a299f8d9ddd4e416a83fe7d695bdd39ce63",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/models/models.py#L140-L165",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/models/models.py",
+                  "snapshot_member": "Minishop/backend/app/models/models.py",
+                  "snapshot_sha256": "84bd973f0a6d923d3dd6e245c10a2a299f8d9ddd4e416a83fe7d695bdd39ce63",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/seed/seed.py#L38-L151",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/seed/seed.py",
+                  "snapshot_member": "Minishop/backend/app/seed/seed.py",
+                  "snapshot_sha256": "beb34f1d8f012a4b8fbbf5f5da9da3339f1140f8a19ad0385c24751d5d511ade",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/data/minishop.db",
+                  "content_commit": null,
+                  "git_comparison": "missing",
+                  "repository_path": "data/minishop.db",
+                  "snapshot_member": "Minishop/data/minishop.db",
+                  "snapshot_sha256": "964c30d3305f73899505f64c41d866640509c9e7c61b2203079a645247ece98f",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                }
+              ],
+              "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+              "source_repository": "https://github.com/Viver12138/minishop.git",
+              "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+              "retrieval_channels": [
+                "keyword",
+                "vector"
+              ],
+              "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56"
+            },
+            {
+              "text": "# 4. 数据准备配方\n\n## 4.1 正常可支付订单\n\n1. 登录 `user`；\n2. 创建地址；\n3. 查询机械键盘 SKU；\n4. 预览 → 创建订单；\n5. 记录 `order_id`、`pay_amount`；\n6. 不支付，作为 `PENDING_PAYMENT` 基线。\n\n## 4.2 已支付订单\n\n在 4.1 基础上：\n\n1. `POST /api/payments`；\n2. `POST /api/payments/{id}/success`；\n3. 断言订单 `PAID`，记录支付前后库存。\n\n## 4.3 已发货订单\n\n在 4.2 基础上：\n\n1. 使用 `admin` token；\n2. `POST /api/admin/orders/{id}/ship`，填写物流信息；\n3. 断言 `SHIPPED`。\n\n## 4.4 已完成订单\n\n在 4.3 基础上：\n\n1. `POST /api/orders/{id}/confirm`；\n2. 断言 `COMPLETED`。\n\n## 4.5 退款相关订单（跨模块）\n\n在 4.2 基础上调用 `POST /api/refunds`，订单进入 `REFUNDING`；本批不覆盖退款审核细节。\n\n## 4.6 库存边界数据\n\n- 售罄：无线鼠标，库存 0；\n- 边界：蓝牙耳机，库存 1；\n- 多规格：运动鞋，白 39/40 库存 1，其余 2。\n\n## 4.7 优惠券数据\n\n- 无券：不传 `user_coupon_id`；\n- 未达门槛：用“满5000减500”买 399 元商品；\n- 恰好达门槛：用“满1000减100”买总价恰好 1000 元；\n- 已使用：先下一单用掉，再复用到另一单；\n- 已过期：当前库“新人满100减10”已过期；\n- 停用：当前库“满50减5”为 DISABLED，无法领取；\n- 他人券：用户 A 领取，用户 B 使用 A 的用户券 ID。\n\n",
+              "doc_id": "TEST-DATA",
+              "module": null,
+              "chunk_id": "fd445cb4375ebe0f23eddbc06fcc974a5ddac48b758eb2ebbc2a66ca2433d525",
+              "doc_type": "design",
+              "platforms": [
+                "all"
+              ],
+              "rrf_score": 0.03149801587301587,
+              "project_id": "minishop",
+              "source_ref": "Minishop/backend/app/seed/seed.py#L38-L151; Minishop/data/minishop.db; Minishop/e2e_test.py",
+              "chunk_index": 3,
+              "rule_status": "reviewed",
+              "content_hash": "b701341ab354a7ddb3feac5c93c210660795ae7c765642ef2a82b6308201d431",
+              "heading_path": "4. 数据准备配方",
+              "rerank_score": null,
+              "effective_from": null,
+              "evidence_level": "E3",
+              "knowledge_type": "TEST_SPEC",
+              "source_version": "snapshot-2026-11-11",
+              "effective_until": null,
+              "product_version": [
+                "1.0.0"
+              ],
+              "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+              "source_evidence": [
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/seed/seed.py#L38-L151",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/seed/seed.py",
+                  "snapshot_member": "Minishop/backend/app/seed/seed.py",
+                  "snapshot_sha256": "beb34f1d8f012a4b8fbbf5f5da9da3339f1140f8a19ad0385c24751d5d511ade",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/data/minishop.db",
+                  "content_commit": null,
+                  "git_comparison": "missing",
+                  "repository_path": "data/minishop.db",
+                  "snapshot_member": "Minishop/data/minishop.db",
+                  "snapshot_sha256": "964c30d3305f73899505f64c41d866640509c9e7c61b2203079a645247ece98f",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/e2e_test.py",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "e2e_test.py",
+                  "snapshot_member": "Minishop/e2e_test.py",
+                  "snapshot_sha256": "95b6122d5891d2a291aadb7f89deac25e24ced60a023bb5b88852283468cb8d0",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                }
+              ],
+              "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+              "source_repository": "https://github.com/Viver12138/minishop.git",
+              "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+              "retrieval_channels": [
+                "keyword",
+                "vector"
+              ],
+              "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56"
+            },
+            {
+              "text": "\n# 1. 规则陈述\n\n创建订单时，系统写入状态为 `PENDING_PAYMENT` 的订单与订单明细、保存地址和商品快照、占用优惠券；但**不扣减库存、不清空购物车、不创建支付单**。\n\n# 2. 适用范围\n\n- `POST /api/orders`\n- 产品版本 `1.0.0`\n\n# 3. 前置条件\n\n- 已通过 `RULE-ORDER-001` ~ `RULE-ORDER-005` 的全部校验；\n- `address_id` 有效且归属当前用户。\n\n# 4. 触发条件\n\n创建订单校验全部通过并提交事务。\n\n# 5. 规则结果\n\n## 订单主表\n\n- `order_no`：`YYYYMMDDHHMMSS` + 6 位随机数，唯一索引；\n- `status = PENDING_PAYMENT`；\n- `total_amount`、`discount_amount`、`pay_amount` 为服务端计算值；\n- `receiver_name`、`phone`、`address_snapshot` 为地址快照；\n- `user_coupon_id` 为所用用户券 ID，未用券为 0；\n- 时间字段：`created_at` 自动生成，其余完成时间字段为空。\n\n## 订单明细\n\n每一项保存 `product_id`、`sku_id`、商品名称快照、规格快照、成交单价、数量、小计。\n\n## 优惠券\n\n- 用户券 `status = USED`；\n- `used_order_id = 新订单 ID`；\n- `used_at` 为当前时间；\n- 券模板 `used_quantity += 1`。\n\n## 不发生的副作用\n\n- 不修改 `product_skus.stock`；\n- 不修改 `products.stock`、`products.sales`；\n- 不删除或修改购物车项；\n- 不创建支付记录；\n- 不发送站内消息。\n\n# 6. 边界与例外\n\n- 无幂等键：相同请求重复提交会创建多张订单，各自占用各自的券（若同一张券第二次提交，会因券已 `USED` 返回 409）。\n- 订单号随机后缀理论上可能碰撞，数据库唯一索引会拒绝，但接口未捕获该异常，可能返回 500。\n- 未使用优惠券时，`user_coupon_id=0`，不产生券占用。\n- 事务包含订单、明细、券更新；若中途异常，依赖数据库事务回滚。\n\n# 7. 反例或禁止行为\n\n- 禁止在创建订单阶段扣库存或占库存（当前没有实现，也不应被用例假设为已实现）。\n- 禁止在创建订单阶段清空购物车。\n- 禁止把订单金额在落库后再次按商品现价重算。\n\n# 8. 验证方式\n\n1. 创建订单后查询 `orders`、`order_items`、`user_coupons`、`coupons.used_quantity`。\n2. 对比创建前后 SKU 库存、商品销量、购物车记录，确认均未变化。\n3. 重复提交同一请求（无券），确认生成两张订单。\n4. 使用同一张券连续提交两次，第二次预期 409。\n5. 查询订单详情，核对地址快照与商品名称/规格快照。\n\n# 9. 来源依据\n\n- `Minishop/backend/app/api/orders.py#L116-L170`：创建订单、明细、券占用。\n- `Minishop/backend/app/api/common.py#L19-L20`：订单号生成规则。\n- `Minishop/backend/app/api/payments.py#L15-L36`：库存扣减发生在支付成功，而非下单。\n\n# 10. 未决问题\n\n- 下单后是否应清空购物车？\n- 是否需要幂等键防止重复下单？\n- 券占用与订单创建是否需要在同一事务中强制成功？\n\n> 已确认（2026-11-11，Q-03）：下单不清空购物车；立即购买=加购，同 SKU 累加，重复操作可能导致数量翻倍/超库存 400。\n",
+              "doc_id": "RULE-ORDER-006",
+              "module": "order",
+              "chunk_id": "5065e4f23f4640edf96f092aa9f57a44e8f68526f84344c5ffe5d9bdaf8b0356",
+              "doc_type": "rule",
+              "platforms": [
+                "all"
+              ],
+              "rrf_score": 0.031054405392392875,
+              "project_id": "minishop",
+              "source_ref": "Minishop/backend/app/api/orders.py#L116-L170; Minishop/backend/app/api/common.py#L19-L20",
+              "chunk_index": 0,
+              "rule_status": "reviewed",
+              "content_hash": "283d2426b2f7b5a3372f7b69c62835d9080d6bf83ec022d98dce08a6a2dd514c",
+              "heading_path": "创建订单的落库内容与副作用边界",
+              "rerank_score": null,
+              "effective_from": null,
+              "evidence_level": "E2",
+              "knowledge_type": "BUSINESS_RULE",
+              "source_version": "snapshot-2026-11-11",
+              "effective_until": null,
+              "product_version": [
+                "1.0.0"
+              ],
+              "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+              "source_evidence": [
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/api/orders.py#L116-L170",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/api/orders.py",
+                  "snapshot_member": "Minishop/backend/app/api/orders.py",
+                  "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/api/common.py#L19-L20",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/api/common.py",
+                  "snapshot_member": "Minishop/backend/app/api/common.py",
+                  "snapshot_sha256": "4adcca84be8ce74c3e07c5c13444b3956a5f9abf8a0c25a8891e0c983d4a80ee",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                }
+              ],
+              "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+              "source_repository": "https://github.com/Viver12138/minishop.git",
+              "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+              "retrieval_channels": [
+                "keyword",
+                "vector"
+              ],
+              "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56"
+            }
+          ],
+          "warnings": [],
+          "pack_hash": "7dff6ccaa4d528d367ed3f2c1d26fd94fcebdac76453aa1847aa1af292ce3f69",
+          "project_id": "minishop",
+          "limitations": [
+            "documentation:CONFLICT-001",
+            "documentation:CONFLICT-002",
+            "documentation:CONFLICT-003",
+            "documentation:CONFLICT-004",
+            "documentation:CONFLICT-005",
+            "documentation:CONFLICT-006",
+            "documentation:CONFLICT-007",
+            "documentation:CONFLICT-008",
+            "documentation:CONFLICT-009",
+            "documentation:CONFLICT-010",
+            "documentation:Q-01",
+            "documentation:Q-03",
+            "documentation:Q-04",
+            "documentation:Q-05",
+            "documentation:Q-06",
+            "documentation:Q-08",
+            "documentation:Q-09",
+            "documentation:Q-10",
+            "documentation:Q-12",
+            "documentation:Q-13",
+            "documentation:Q-15",
+            "embedding:not_completed",
+            "implementation:CONFLICT-001",
+            "implementation:CONFLICT-003",
+            "implementation:CONFLICT-005",
+            "implementation:CONFLICT-006",
+            "implementation:CONFLICT-007",
+            "implementation:CONFLICT-008",
+            "implementation:CONFLICT-009",
+            "implementation:CONFLICT-010",
+            "implementation:Q-01",
+            "implementation:Q-04",
+            "implementation:Q-05",
+            "implementation:Q-06",
+            "implementation:Q-09",
+            "implementation:Q-10",
+            "implementation:Q-11",
+            "implementation:Q-13",
+            "implementation:Q-14",
+            "implementation:Q-15",
+            "knowledge_gap:GAP-001",
+            "knowledge_gap:GAP-002",
+            "knowledge_gap:GAP-003",
+            "knowledge_gap:GAP-004",
+            "knowledge_gap:GAP-008",
+            "knowledge_gap:GAP-009",
+            "knowledge_gap:GAP-010",
+            "knowledge_gap:GAP-011",
+            "knowledge_gap:GAP-012",
+            "knowledge_gap:GAP-013",
+            "knowledge_gap:GAP-014",
+            "publication:not_completed",
+            "retrieval_acceptance:not_completed",
+            "review_acceptance:not_completed",
+            "review_baseline:not_selected_for_release",
+            "runtime_index:not_completed",
+            "source_repository_verification:not_run; use --source-root"
+          ],
+          "build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+          "content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+          "retriever_version": "hybrid-bm25-rrf-4"
+        },
+        "normalized_case": {
+          "steps": [
+            {
+              "index": 1,
+              "action": "以B身份POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1；前后只读查询B的订单数量",
+              "expected": "HTTP 201，使用地址1创建成功，B的订单数量增加1"
+            }
+          ],
+          "title": "使用他人收货地址创建订单",
+          "module": "order",
+          "source": "manual",
+          "case_id": "ORDER-C02",
+          "kb_hint": null,
+          "platform": "api",
+          "priority": null,
+          "raw_text": null,
+          "test_data": {
+            "excel_source": {
+              "rows": [
+                3
+              ],
+              "sheet": "下单测试用例",
+              "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+            }
+          },
+          "test_type": "functional",
+          "project_id": "minishop",
+          "attachments": [],
+          "case_version": 1,
+          "preconditions": [
+            "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+            "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+            "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。",
+            "本条改为用户B登录，B与A为不同用户；地址1仍属于A；记录B的订单数量。"
+          ],
+          "product_version": "1.0.0",
+          "review_baseline": "current_implementation"
+        },
+        "knowledge_review": {
+          "mode": "knowledge",
+          "label": "知识库辅助评审",
+          "message": "本次评审引用了 4 条知识依据。",
+          "evidence_count": 4,
+          "knowledge_available": true
+        }
+      },
+      "degraded": true,
+      "topology": "dual",
+      "versions": {
+        "kb": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+        "models": {
+          "vote": "qwen3.8-max",
+          "jury_a": "deepseek-flash",
+          "jury_b": "kimi-k3.1-pro",
+          "preprocess": "deepseek-flash",
+          "arbitration": "qwen3.8-max",
+          "chief_blind": "qwen3.8-max"
+        },
+        "rubric": "0.2.0",
+        "prompts": {
+          "vote": "p-m0-vote-01",
+          "jury_a": "p-m0-jury-a-01",
+          "jury_b": "p-m0-jury-b-01",
+          "preprocess": "p-m0-pre-01",
+          "arbitration": "p-m0-arb-01",
+          "chief_blind": "p-m0-chief-01"
+        },
+        "model_config": "7e35c71d",
+        "price_config": "price-unverified-2026-11",
+        "kb_build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+        "retrieval_config": "161fcb22",
+        "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+        "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813"
+      },
+      "review_id": "4e9e84ed-18ff-4e36-8c3e-6d5acfadc6e5",
+      "test_type": "functional",
+      "ai_verdict": "blocked",
+      "created_at": "2026-11-13T02:49:34.258389+00:00",
+      "generation": 1,
+      "attachments": [],
+      "finished_at": "2026-11-13T02:53:22.017928+00:00",
+      "case_version": 1,
+      "human_status": "pending",
+      "participants": [
+        "chief_blind:qwen3.8-max",
+        "jury_a:deepseek-flash"
+      ],
+      "input_quality": {
+        "hard_errors": [],
+        "soft_issues": []
+      },
+      "decision_summary": {
+        "human_status": "pending",
+        "history_count": 0,
+        "latest_decision": null
+      },
+      "degraded_reasons": [
+        "arbitration_skipped"
+      ],
+      "parent_review_id": null,
+      "test_type_source": "request",
+      "human_review_items": [
+        {
+          "reason": "need_human",
+          "issue_no": 1,
+          "priority": "normal"
+        }
+      ],
+      "review_completeness": {
+        "vote": "2/2",
+        "blind": "2/2",
+        "complete": true,
+        "arbitration": "skipped",
+        "stages_failed": [],
+        "stages_pending": [],
+        "stages_skipped": [
+          "preprocess",
+          "arbitration"
+        ],
+        "stages_completed": [
+          "input_check",
+          "kb_retrieve",
+          "blind_review",
+          "fusion",
+          "vote",
+          "verdict",
+          "render"
+        ],
+        "full_participation": false,
+        "arbitration_required": false
+      },
+      "review_participants": [
+        {
+          "model": "qwen3.8-max",
+          "status": "active",
+          "role_id": "chief_blind",
+          "actual_model": "qwen3.8-max",
+          "participant_id": "p-01"
+        },
+        {
+          "model": "deepseek-flash",
+          "status": "active",
+          "role_id": "jury_a",
+          "actual_model": "deepseek-flash",
+          "participant_id": "p-02"
+        },
+        {
+          "model": "kimi-k3.1-pro",
+          "status": "absent",
+          "role_id": "jury_b",
+          "actual_model": null,
+          "participant_id": "p-03"
+        }
+      ],
+      "report_schema_version": "report-1.0"
+    },
+    "report_locked_at": "2026-11-13 02:53:22.017978+00:00",
+    "total_cost_estimate": 0.4364,
+    "cost_currency": "CNY",
+    "error": null,
+    "attempt_count": 1,
+    "max_attempts": 3,
+    "locked_by": "worker-a9abd69d",
+    "locked_at": "2026-11-13 02:51:24.588251+00:00",
+    "lease_expires_at": "2026-11-13 02:58:04.616889+00:00",
+    "fencing_token": 1,
+    "last_error": null,
+    "submitter_id": "paired-evaluator",
+    "created_at": "2026-11-13 02:49:34.258389+00:00",
+    "started_at": "2026-11-13 02:51:24.588251+00:00",
+    "finished_at": "2026-11-13 02:53:22.017983+00:00"
+  },
+  "model_runs": [
+    {
+      "review_id": "4e9e84ed-18ff-4e36-8c3e-6d5acfadc6e5",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "blind_review",
+      "provider": "qwen",
+      "requested_model": "qwen3.8-max",
+      "model_version": "qwen3.8-max",
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 6373,
+      "response_tokens": 3349,
+      "latency_ms": 84712,
+      "request_hash": "9eb5aa55ed8c10c8e5e41a1a089ba4e635f20fdac43d02c1905d3e8a7b4a0799",
+      "response_hash": "9c282bcecd6c7b2a35a6930d83c9f48dbf479e263a037c66f35914e6bdc5ad76",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.3284,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "bd71031f-91dd-4506-9fbf-07c55a77cbf3",
+      "created_at": "2026-11-13 02:52:50.044207+00:00"
+    },
+    {
+      "review_id": "4e9e84ed-18ff-4e36-8c3e-6d5acfadc6e5",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "blind_review",
+      "provider": "deepseek",
+      "requested_model": "deepseek-flash",
+      "model_version": "deepseek-flash",
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 6286,
+      "response_tokens": 1238,
+      "latency_ms": 6817,
+      "request_hash": "b50ac8cf3e540e5c9651f74fbc9584305a7ce0ea5b75bae71ad041e9c0d04817",
+      "response_hash": "776227721eea7463c5ab59602e836b2e75f08b511c27acef1bc7952c6c2ce6e3",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0088,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "cc76be10-7ba6-4535-b29c-28def4dc154e",
+      "created_at": "2026-11-13 02:52:56.877426+00:00"
+    },
+    {
+      "review_id": "4e9e84ed-18ff-4e36-8c3e-6d5acfadc6e5",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "deepseek-flash",
+      "model_version": null,
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 3307,
+      "response_tokens": 434,
+      "latency_ms": 2853,
+      "request_hash": "239e8622e507025d5dfd89bb5179befa2b786da20a4fbf6d42f738e0f17474c6",
+      "response_hash": "db50f1f927cb82bc44716b5737e90ee905cdfc30d817e3632d7e2183e112cfa2",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0042,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "97b20b92-252b-457e-90ed-e1e20da1be5d",
+      "created_at": "2026-11-13 02:52:59.819778+00:00"
+    },
+    {
+      "review_id": "4e9e84ed-18ff-4e36-8c3e-6d5acfadc6e5",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "qwen3.8-max",
+      "model_version": null,
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 3537,
+      "response_tokens": 406,
+      "latency_ms": 10754,
+      "request_hash": "b0bdcf7c541248e1f24e2e81331b47f029a617dc14e86922acb63143f31edc24",
+      "response_hash": "4dba08a6a69fcb86bf684ba18dc697e069e2e76334fb02f0dd17248a8fb618d4",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0951,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "9ec627e3-ff5e-4b07-a8b2-e478e50efa04",
+      "created_at": "2026-11-13 02:53:21.956178+00:00"
+    }
+  ],
+  "budget_ledger": [
+    {
+      "id": "eac131a9-8927-4945-9054-18003bd6ed28",
+      "review_id": "4e9e84ed-18ff-4e36-8c3e-6d5acfadc6e5",
+      "batch_id": "037a36dc-d6cd-4cb5-abec-a53513f9a837",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 30738,
+      "cost_reserved": "0.94244",
+      "tokens_actual": 9722,
+      "cost_actual": "0.32839999999999997",
+      "status": "settled",
+      "created_at": "2026-11-13 02:51:25.321367+00:00"
+    },
+    {
+      "id": "da13cfaa-f4ad-4902-a5d8-ad70386001a7",
+      "review_id": "4e9e84ed-18ff-4e36-8c3e-6d5acfadc6e5",
+      "batch_id": "037a36dc-d6cd-4cb5-abec-a53513f9a837",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 30522,
+      "cost_reserved": "0.038714",
+      "tokens_actual": 7524,
+      "cost_actual": "0.008762",
+      "status": "settled",
+      "created_at": "2026-11-13 02:52:50.044480+00:00"
+    },
+    {
+      "id": "787a92ff-016b-44c2-9504-ddac5e35c0e0",
+      "review_id": "4e9e84ed-18ff-4e36-8c3e-6d5acfadc6e5",
+      "batch_id": "037a36dc-d6cd-4cb5-abec-a53513f9a837",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 19977,
+      "cost_reserved": "0.028169",
+      "tokens_actual": 3741,
+      "cost_actual": "0.004175",
+      "status": "settled",
+      "created_at": "2026-11-13 02:52:56.953062+00:00"
+    },
+    {
+      "id": "edb561eb-6d84-4a45-a8c6-ad0e640871de",
+      "review_id": "4e9e84ed-18ff-4e36-8c3e-6d5acfadc6e5",
+      "batch_id": "037a36dc-d6cd-4cb5-abec-a53513f9a837",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 19977,
+      "cost_reserved": "0.72722",
+      "tokens_actual": 3943,
+      "cost_actual": "0.09509999999999999",
+      "status": "settled",
+      "created_at": "2026-11-13 02:53:11.168300+00:00"
+    }
+  ],
+  "code_fingerprint": "ded196342435e52069840e07ed362ed4c08230b0a1154fc1d89a91e3a8640598"
+}

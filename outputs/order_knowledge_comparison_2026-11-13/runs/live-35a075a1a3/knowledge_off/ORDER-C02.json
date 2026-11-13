@@ -1,0 +1,997 @@
+{
+  "case_id": "ORDER-C02",
+  "condition": "knowledge_off",
+  "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+  "case_sha256": "e5d7f3b9af32a80c88535daad3c79a99fb7384d4cfb56e4a990cffad31afbcff",
+  "job": {
+    "id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+    "case_id": "ORDER-C02",
+    "case_version": 1,
+    "module": "order",
+    "test_type": "functional",
+    "test_type_source": "request",
+    "status": "done",
+    "stage": "render",
+    "input_hash": "5a0eb34dc0c231b30112597c61ea37807ee30a853ecad30274f59e22d073b2de",
+    "idempotency_key": "8e0e8d466be2b72dbea27f0adfb4a561cdf01f5045a9fd14f7c9bc9ba255fcd7",
+    "request_payload": {
+      "case": {
+        "steps": [
+          {
+            "index": 1,
+            "action": "以B身份POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1；前后只读查询B的订单数量",
+            "expected": "HTTP 201，使用地址1创建成功，B的订单数量增加1"
+          }
+        ],
+        "title": "使用他人收货地址创建订单",
+        "module": "order",
+        "source": "manual",
+        "case_id": "ORDER-C02",
+        "platform": "api",
+        "test_data": {
+          "excel_source": {
+            "rows": [
+              3
+            ],
+            "sheet": "下单测试用例",
+            "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+          }
+        },
+        "test_type": "functional",
+        "project_id": "minishop",
+        "case_version": 1,
+        "preconditions": [
+          "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+          "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+          "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。",
+          "本条改为用户B登录，B与A为不同用户；地址1仍属于A；记录B的订单数量。"
+        ],
+        "product_version": "1.0.0",
+        "review_baseline": "current_implementation"
+      },
+      "options": {
+        "strict_kb": false
+      },
+      "test_scope": {
+        "feature_point": "使用他人收货地址创建订单",
+        "required_scenarios": []
+      },
+      "automation_context": {
+        "framework": "API + 独立测试数据库",
+        "state_query_capabilities": [
+          "HTTP JSON",
+          "数据库只读查询"
+        ]
+      }
+    },
+    "report_schema_version": "report-1.0",
+    "generation": 1,
+    "parent_review_id": null,
+    "superseded_by": null,
+    "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+    "case_title": "使用他人收货地址创建订单",
+    "ai_verdict": "conditional",
+    "human_status": "pending",
+    "current_decision_id": null,
+    "degraded": true,
+    "degraded_reasons": [
+      "arbitration_skipped",
+      "kb_module_missing"
+    ],
+    "participants": [
+      "chief_blind:qwen3.8-max",
+      "jury_a:deepseek-flash"
+    ],
+    "topology": "dual",
+    "topology_snapshot": {
+      "roles": [
+        "chief_blind",
+        "jury_a"
+      ],
+      "budget": {
+        "batch_cost": 60.0,
+        "daily_cost": 500.0,
+        "review_cost": 2.0,
+        "review_tokens": 60000
+      },
+      "models": {
+        "jury_a": "deepseek-flash",
+        "chief_blind": "qwen3.8-max"
+      },
+      "versions": {
+        "kb": "kb-none",
+        "models": {
+          "vote": "qwen3.8-max",
+          "jury_a": "deepseek-flash",
+          "jury_b": "kimi-k3.1-pro",
+          "preprocess": "deepseek-flash",
+          "arbitration": "qwen3.8-max",
+          "chief_blind": "qwen3.8-max"
+        },
+        "rubric": "0.2.0",
+        "prompts": {
+          "vote": "p-m0-vote-01",
+          "jury_a": "p-m0-jury-a-01",
+          "jury_b": "p-m0-jury-b-01",
+          "preprocess": "p-m0-pre-01",
+          "arbitration": "p-m0-arb-01",
+          "chief_blind": "p-m0-chief-01"
+        },
+        "model_config": "7e35c71d",
+        "price_config": "price-unverified-2026-11",
+        "kb_build_version": "kb-none",
+        "retrieval_config": "161fcb22",
+        "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+        "kb_content_version": "kb-none"
+      },
+      "retrieval": {
+        "top_k": 4,
+        "char_cap": 8000
+      },
+      "review_baseline": null,
+      "prompt_version_hash": "38d8578d73b71cddcbb597e213261e23b4617626963c2cf99bca1c2a3ad688ec"
+    },
+    "review_completeness": {
+      "vote": "2/2",
+      "blind": "2/2",
+      "complete": true,
+      "arbitration": "skipped",
+      "stages_failed": [],
+      "stages_pending": [],
+      "stages_skipped": [
+        "preprocess",
+        "kb_retrieve",
+        "arbitration"
+      ],
+      "stages_completed": [
+        "input_check",
+        "blind_review",
+        "fusion",
+        "vote",
+        "verdict",
+        "render"
+      ],
+      "full_participation": false,
+      "arbitration_required": false
+    },
+    "input_quality": {
+      "hard_errors": [],
+      "soft_issues": []
+    },
+    "timings": {},
+    "test_scope": {
+      "feature_point": "使用他人收货地址创建订单",
+      "scope_version": null,
+      "related_case_ids": [],
+      "required_scenarios": []
+    },
+    "automation_context": {
+      "framework": "API + 独立测试数据库",
+      "state_query_capabilities": [
+        "HTTP JSON",
+        "数据库只读查询"
+      ]
+    },
+    "kb_content_version": "kb-none",
+    "kb_build_version": "kb-none",
+    "rubric_version": "0.2.0",
+    "prompt_versions": {
+      "vote": "p-m0-vote-01",
+      "jury_a": "p-m0-jury-a-01",
+      "jury_b": "p-m0-jury-b-01",
+      "preprocess": "p-m0-pre-01",
+      "arbitration": "p-m0-arb-01",
+      "chief_blind": "p-m0-chief-01"
+    },
+    "prompt_version_hash": "38d8578d73b71cddcbb597e213261e23b4617626963c2cf99bca1c2a3ad688ec",
+    "retrieval_config_version": "161fcb22",
+    "embedding_profile_id": null,
+    "reranker_profile_id": null,
+    "model_config_version": "7e35c71d",
+    "normalized_case": {
+      "steps": [
+        {
+          "index": 1,
+          "action": "以B身份POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1；前后只读查询B的订单数量",
+          "expected": "HTTP 201，使用地址1创建成功，B的订单数量增加1"
+        }
+      ],
+      "title": "使用他人收货地址创建订单",
+      "module": "order",
+      "source": "manual",
+      "case_id": "ORDER-C02",
+      "kb_hint": null,
+      "platform": "api",
+      "priority": null,
+      "raw_text": null,
+      "test_data": {
+        "excel_source": {
+          "rows": [
+            3
+          ],
+          "sheet": "下单测试用例",
+          "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+        }
+      },
+      "test_type": "functional",
+      "project_id": "minishop",
+      "attachments": [],
+      "case_version": 1,
+      "preconditions": [
+        "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+        "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+        "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。",
+        "本条改为用户B登录，B与A为不同用户；地址1仍属于A；记录B的订单数量。"
+      ],
+      "product_version": "1.0.0",
+      "review_baseline": "current_implementation"
+    },
+    "report_summary": {
+      "major": 1,
+      "blocker": 0,
+      "suggestion": 0,
+      "total_issues": 1
+    },
+    "report_json": {
+      "scope": {
+        "note": "v1 仅做单条用例评审，不输出功能点整体覆盖率",
+        "provided": true,
+        "feature_point": "使用他人收货地址创建订单",
+        "scope_version": null,
+        "coverage_claims_allowed": false
+      },
+      "stage": "render",
+      "issues": [
+        {
+          "votes": {
+            "jury_a": {
+              "severity": "major",
+              "validity": "accept"
+            },
+            "chief_blind": {
+              "severity": "major",
+              "validity": "accept"
+            }
+          },
+          "status": "adopted",
+          "kb_refs": [],
+          "category": "预期不明确",
+          "issue_no": 1,
+          "severity": "major",
+          "dimension": "test_design",
+          "rationale": "第 1 步存在「预期不明确」问题：（推断）预期要求确认使用地址1创建成功，但当前步骤仅断言状态码和订单数量增加，未说明如何读取并断言订单收货地址为地址1",
+          "confidence": null,
+          "step_index": 1,
+          "suggestion": "在响应体或只读查询中增加断言：新建订单的 address_id=1 或收货地址为地址1。",
+          "kb_grounded": false,
+          "proposed_by": [
+            "chief_blind"
+          ],
+          "candidate_id": "083a1a55-caff-4549-ac22-52c0ea5d0a35",
+          "chief_reason": null,
+          "vote_summary": {
+            "reject": 0,
+            "support": 2,
+            "uncertain": 0,
+            "not_assessed": 0,
+            "support_ratio": 1.0,
+            "severity_disputed": false,
+            "vote_completeness": "2/2",
+            "severity_distribution": {
+              "major": 2,
+              "blocker": 0,
+              "suggestion": 0
+            }
+          },
+          "evidence_refs": [],
+          "evidence_type": "inference",
+          "human_verdict": null,
+          "chief_decision": "adopt",
+          "evidence_quote": "HTTP 201，使用地址1创建成功，B的订单数量增加1",
+          "decision_status": null,
+          "evidence_status": "ungrounded",
+          "model_confidence": null,
+          "confidence_source": "uncalibrated",
+          "evidence_strength": "medium",
+          "validation_status": "passed",
+          "evidence_support_status": "unsupported"
+        }
+      ],
+      "module": "order",
+      "status": "done",
+      "case_id": "ORDER-C02",
+      "kb_gaps": [],
+      "summary": {
+        "major": 1,
+        "blocker": 0,
+        "suggestion": 0,
+        "total_issues": 1
+      },
+      "timings": {
+        "queue_ms": 81256,
+        "execution_ms": 136114,
+        "model_call_ms": 181350
+      },
+      "appendix": {
+        "budget": {
+          "scope": "chat requests; conservative reservations, configured estimated prices; not provider billing",
+          "limits": {
+            "batch_cost": 60.0,
+            "daily_cost": 500.0,
+            "review_cost": 2.0,
+            "review_tokens": 60000
+          },
+          "exhausted": false,
+          "estimated_cost": 0.492216,
+          "uncertain_calls": 0,
+          "accounted_tokens": 20773
+        },
+        "recovery": {
+          "attempt": 1,
+          "reused_outputs": []
+        },
+        "model_runs": [
+          {
+            "role": "chief_blind",
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 2613,
+              "response": 4135
+            },
+            "latency_ms": 102080,
+            "cost_estimate": 0.30036,
+            "parse_warnings": [
+              "evidence:1:evidence_quote_missing"
+            ]
+          },
+          {
+            "role": "jury_a",
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 2508,
+              "response": 2342
+            },
+            "latency_ms": 14819,
+            "cost_estimate": 0.007192,
+            "parse_warnings": []
+          },
+          {
+            "role": "chief_blind",
+            "error": null,
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 1424,
+              "response": 1243
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 33832
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 33812,
+            "raw_request": null,
+            "candidate_no": 1,
+            "raw_response": null,
+            "request_hash": "230a2715e53bbbc28e248463d80f1f2058738c83a48bb15f40cb5d92371a2668",
+            "cost_estimate": 0.10306,
+            "response_hash": "45263e171cdf1ca17e4b20c12625fde479c44b55a7cff6bc10db5c184653ce95",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          },
+          {
+            "role": "jury_a",
+            "error": null,
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 1401,
+              "response": 1005
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 6556
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 6526,
+            "raw_request": null,
+            "candidate_no": 1,
+            "raw_response": null,
+            "request_hash": "dc901c70cc21c8af54104ff8b0507629c962708a82f97ada57b96490bd8fa5d6",
+            "cost_estimate": 0.003411,
+            "response_hash": "913821a7484faa9adfe06bd5cfd1c37c42b4f0aac5f7b7dd2c5ab9834b627901",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          },
+          {
+            "role": "chief_blind",
+            "error": null,
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 1417,
+              "response": 791
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 21116
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 21087,
+            "raw_request": null,
+            "candidate_no": 2,
+            "raw_response": null,
+            "request_hash": "b97db3aebd5182149a92751c6c447bea76a66ce154ccc88034f0314613ae97c6",
+            "cost_estimate": 0.0758,
+            "response_hash": "4d728b9ddd27ec5db9db905818966d57b98d82c23695191afba88e1ce0816b26",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          },
+          {
+            "role": "jury_a",
+            "error": null,
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 1395,
+              "response": 499
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 3055
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 3026,
+            "raw_request": null,
+            "candidate_no": 2,
+            "raw_response": null,
+            "request_hash": "f5a4fa21f37b230f463d387c0a6b272e19982549d9feb10910756cfa80228e5b",
+            "cost_estimate": 0.002393,
+            "response_hash": "af73a68c09473b4ba3777287cbc5add01b9ffcecf3447879af3927bf9e4f83a4",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          }
+        ],
+        "raw_opinions": {
+          "jury_a": {
+            "issues": [],
+            "summary": "用例自洽、可执行；使用他人地址下单成功的预期无知识库依据，属待确认前提，不作为缺陷。"
+          },
+          "chief_blind": {
+            "issues": [
+              {
+                "scope": "step",
+                "claims": [],
+                "kb_refs": [],
+                "category": "预期不明确",
+                "kb_quote": null,
+                "severity": "major",
+                "dimension": "test_design",
+                "rationale": "（推断）预期要求确认使用地址1创建成功，但当前步骤仅断言状态码和订单数量增加，未说明如何读取并断言订单收货地址为地址1。",
+                "confidence": null,
+                "step_index": 1,
+                "suggestion": "在响应体或只读查询中增加断言：新建订单的 address_id=1 或收货地址为地址1。",
+                "kb_grounded": false,
+                "evidence_refs": [],
+                "evidence_type": "inference",
+                "evidence_quote": "HTTP 201，使用地址1创建成功，B的订单数量增加1",
+                "parse_warnings": [],
+                "evidence_status": "ungrounded",
+                "model_confidence": null,
+                "evidence_strength": "medium",
+                "validation_status": "passed",
+                "model_evidence_status": "ungrounded",
+                "evidence_support_status": "unsupported"
+              },
+              {
+                "scope": "case",
+                "claims": [],
+                "kb_refs": [],
+                "category": "歧义",
+                "kb_quote": null,
+                "severity": "suggestion",
+                "dimension": "business",
+                "rationale": "（推断）前置条件中同时出现用户A已登录与本条改为用户B登录，未说明A登录是否仅用于数据准备，可能造成执行身份理解歧义。",
+                "confidence": null,
+                "step_index": null,
+                "suggestion": "明确本条请求以用户B身份执行，用户A仅作为地址1归属用户或夹具准备数据。",
+                "kb_grounded": false,
+                "evidence_refs": [],
+                "evidence_type": "inference",
+                "evidence_quote": null,
+                "parse_warnings": [
+                  "evidence_quote_missing"
+                ],
+                "evidence_status": "ungrounded",
+                "model_confidence": null,
+                "evidence_strength": "weak",
+                "validation_status": "needs_review",
+                "model_evidence_status": "ungrounded",
+                "evidence_support_status": "unsupported"
+              }
+            ],
+            "summary": "缺少地址1断言；前置登录表述略歧义。"
+          }
+        },
+        "disagreements": [],
+        "normalized_case": {
+          "steps": [
+            {
+              "index": 1,
+              "action": "以B身份POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1；前后只读查询B的订单数量",
+              "expected": "HTTP 201，使用地址1创建成功，B的订单数量增加1"
+            }
+          ],
+          "title": "使用他人收货地址创建订单",
+          "module": "order",
+          "source": "manual",
+          "case_id": "ORDER-C02",
+          "kb_hint": null,
+          "platform": "api",
+          "priority": null,
+          "raw_text": null,
+          "test_data": {
+            "excel_source": {
+              "rows": [
+                3
+              ],
+              "sheet": "下单测试用例",
+              "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+            }
+          },
+          "test_type": "functional",
+          "project_id": "minishop",
+          "attachments": [],
+          "case_version": 1,
+          "preconditions": [
+            "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+            "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+            "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。",
+            "本条改为用户B登录，B与A为不同用户；地址1仍属于A；记录B的订单数量。"
+          ],
+          "product_version": "1.0.0",
+          "review_baseline": "current_implementation"
+        },
+        "knowledge_review": {
+          "mode": "general",
+          "label": "通用评审（已降级）",
+          "message": "知识库中没有可用于本次用例的相关知识，已降级为通用评审；仅检查用例质量，未验证产品业务规则。",
+          "evidence_count": 0,
+          "knowledge_available": false
+        }
+      },
+      "degraded": true,
+      "topology": "dual",
+      "versions": {
+        "kb": "kb-none",
+        "models": {
+          "vote": "qwen3.8-max",
+          "jury_a": "deepseek-flash",
+          "jury_b": "kimi-k3.1-pro",
+          "preprocess": "deepseek-flash",
+          "arbitration": "qwen3.8-max",
+          "chief_blind": "qwen3.8-max"
+        },
+        "rubric": "0.2.0",
+        "prompts": {
+          "vote": "p-m0-vote-01",
+          "jury_a": "p-m0-jury-a-01",
+          "jury_b": "p-m0-jury-b-01",
+          "preprocess": "p-m0-pre-01",
+          "arbitration": "p-m0-arb-01",
+          "chief_blind": "p-m0-chief-01"
+        },
+        "model_config": "7e35c71d",
+        "price_config": "price-unverified-2026-11",
+        "kb_build_version": "kb-none",
+        "retrieval_config": "161fcb22",
+        "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+        "kb_content_version": "kb-none"
+      },
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "test_type": "functional",
+      "ai_verdict": "conditional",
+      "created_at": "2026-11-13T02:49:33.974972+00:00",
+      "generation": 1,
+      "attachments": [],
+      "finished_at": "2026-11-13T02:53:11.352132+00:00",
+      "case_version": 1,
+      "human_status": "pending",
+      "participants": [
+        "chief_blind:qwen3.8-max",
+        "jury_a:deepseek-flash"
+      ],
+      "input_quality": {
+        "hard_errors": [],
+        "soft_issues": []
+      },
+      "decision_summary": {
+        "human_status": "pending",
+        "history_count": 0,
+        "latest_decision": null
+      },
+      "degraded_reasons": [
+        "arbitration_skipped",
+        "kb_module_missing"
+      ],
+      "parent_review_id": null,
+      "test_type_source": "request",
+      "human_review_items": [],
+      "review_completeness": {
+        "vote": "2/2",
+        "blind": "2/2",
+        "complete": true,
+        "arbitration": "skipped",
+        "stages_failed": [],
+        "stages_pending": [],
+        "stages_skipped": [
+          "preprocess",
+          "kb_retrieve",
+          "arbitration"
+        ],
+        "stages_completed": [
+          "input_check",
+          "blind_review",
+          "fusion",
+          "vote",
+          "verdict",
+          "render"
+        ],
+        "full_participation": false,
+        "arbitration_required": false
+      },
+      "review_participants": [
+        {
+          "model": "qwen3.8-max",
+          "status": "active",
+          "role_id": "chief_blind",
+          "actual_model": "qwen3.8-max",
+          "participant_id": "p-01"
+        },
+        {
+          "model": "deepseek-flash",
+          "status": "active",
+          "role_id": "jury_a",
+          "actual_model": "deepseek-flash",
+          "participant_id": "p-02"
+        },
+        {
+          "model": "kimi-k3.1-pro",
+          "status": "absent",
+          "role_id": "jury_b",
+          "actual_model": null,
+          "participant_id": "p-03"
+        }
+      ],
+      "report_schema_version": "report-1.0"
+    },
+    "report_locked_at": "2026-11-13 02:53:11.352188+00:00",
+    "total_cost_estimate": 0.4922,
+    "cost_currency": "CNY",
+    "error": null,
+    "attempt_count": 1,
+    "max_attempts": 3,
+    "locked_by": "worker-a9abd69d",
+    "locked_at": "2026-11-13 02:50:55.231430+00:00",
+    "lease_expires_at": "2026-11-13 02:57:35.262716+00:00",
+    "fencing_token": 1,
+    "last_error": null,
+    "submitter_id": "paired-evaluator",
+    "created_at": "2026-11-13 02:49:33.974972+00:00",
+    "started_at": "2026-11-13 02:50:55.231430+00:00",
+    "finished_at": "2026-11-13 02:53:11.352193+00:00"
+  },
+  "model_runs": [
+    {
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "blind_review",
+      "provider": "deepseek",
+      "requested_model": "deepseek-flash",
+      "model_version": "deepseek-flash",
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 2508,
+      "response_tokens": 2342,
+      "latency_ms": 14819,
+      "request_hash": "256b2dc48cc705933781d13a5d0a58548f5b3b247fcc2d87bdfc508294aad0a2",
+      "response_hash": "c0aee327c387c8e71b023b94c7cfba4105698545d6af59dc64d455badb000dbc",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0072,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "e15fb8a0-896b-4639-9833-c6c454268614",
+      "created_at": "2026-11-13 02:51:10.132825+00:00"
+    },
+    {
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "blind_review",
+      "provider": "qwen",
+      "requested_model": "qwen3.8-max",
+      "model_version": "qwen3.8-max",
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 2613,
+      "response_tokens": 4135,
+      "latency_ms": 102080,
+      "request_hash": "8eba06afcf5c2be37dbe477a79143e6925f05c60a19a4bb3eb10be266165f2fc",
+      "response_hash": "113c625d0078b08fd145118a0b9b1539ac4d26541cfdc4ab8fb7f52489bcbe8a",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [
+        "evidence:1:evidence_quote_missing"
+      ],
+      "cost_estimate": 0.3004,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "a0d32547-9fa1-4b1c-bb17-c138f2f2f720",
+      "created_at": "2026-11-13 02:52:37.383398+00:00"
+    },
+    {
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "deepseek-flash",
+      "model_version": null,
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1401,
+      "response_tokens": 1005,
+      "latency_ms": 6526,
+      "request_hash": "dc901c70cc21c8af54104ff8b0507629c962708a82f97ada57b96490bd8fa5d6",
+      "response_hash": "913821a7484faa9adfe06bd5cfd1c37c42b4f0aac5f7b7dd2c5ab9834b627901",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0034,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "85b802fb-9b1b-4a7c-81ac-677593617960",
+      "created_at": "2026-11-13 02:52:44.002911+00:00"
+    },
+    {
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "deepseek-flash",
+      "model_version": null,
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1395,
+      "response_tokens": 499,
+      "latency_ms": 3026,
+      "request_hash": "f5a4fa21f37b230f463d387c0a6b272e19982549d9feb10910756cfa80228e5b",
+      "response_hash": "af73a68c09473b4ba3777287cbc5add01b9ffcecf3447879af3927bf9e4f83a4",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0024,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "31d67d16-290e-4819-8df4-c05177faf99c",
+      "created_at": "2026-11-13 02:52:47.050570+00:00"
+    },
+    {
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "qwen3.8-max",
+      "model_version": null,
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1417,
+      "response_tokens": 791,
+      "latency_ms": 21087,
+      "request_hash": "b97db3aebd5182149a92751c6c447bea76a66ce154ccc88034f0314613ae97c6",
+      "response_hash": "4d728b9ddd27ec5db9db905818966d57b98d82c23695191afba88e1ce0816b26",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0758,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "564a10a3-99bf-44b0-9a76-8c2c3250f027",
+      "created_at": "2026-11-13 02:53:11.167351+00:00"
+    },
+    {
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "qwen3.8-max",
+      "model_version": null,
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1424,
+      "response_tokens": 1243,
+      "latency_ms": 33812,
+      "request_hash": "230a2715e53bbbc28e248463d80f1f2058738c83a48bb15f40cb5d92371a2668",
+      "response_hash": "45263e171cdf1ca17e4b20c12625fde479c44b55a7cff6bc10db5c184653ce95",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.1031,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "cacf55c9-c903-47f9-b07a-8b5c4c642647",
+      "created_at": "2026-11-13 02:53:11.271792+00:00"
+    }
+  ],
+  "budget_ledger": [
+    {
+      "id": "4d33a09f-c29f-419d-91e3-a91421cd52c8",
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 19147,
+      "cost_reserved": "0.71062",
+      "tokens_actual": 6748,
+      "cost_actual": "0.30036",
+      "status": "settled",
+      "created_at": "2026-11-13 02:50:55.286491+00:00"
+    },
+    {
+      "id": "d78b2a58-8aba-4322-9ec6-4e5a96d96820",
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 18931,
+      "cost_reserved": "0.027123",
+      "tokens_actual": 4850,
+      "cost_actual": "0.0071920000000000005",
+      "status": "settled",
+      "created_at": "2026-11-13 02:50:55.294041+00:00"
+    },
+    {
+      "id": "2f9a2459-9c96-4e1d-a240-fba838035d7a",
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 14252,
+      "cost_reserved": "0.61272",
+      "tokens_actual": 2667,
+      "cost_actual": "0.10306",
+      "status": "settled",
+      "created_at": "2026-11-13 02:52:37.442831+00:00"
+    },
+    {
+      "id": "8ced5532-d120-4748-8645-4b0bc6e939ee",
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 14252,
+      "cost_reserved": "0.022444000000000002",
+      "tokens_actual": 2406,
+      "cost_actual": "0.0034110000000000004",
+      "status": "settled",
+      "created_at": "2026-11-13 02:52:37.457441+00:00"
+    },
+    {
+      "id": "0ab8fb06-f071-44ec-b3d4-1dd99a6c06a0",
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 14241,
+      "cost_reserved": "0.022433",
+      "tokens_actual": 1894,
+      "cost_actual": "0.0023929999999999997",
+      "status": "settled",
+      "created_at": "2026-11-13 02:52:44.003383+00:00"
+    },
+    {
+      "id": "6e1792b1-0247-4795-9f4b-d9af680a3622",
+      "review_id": "c6a55c78-45ba-468a-9d93-15a35c26e833",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 14241,
+      "cost_reserved": "0.6125",
+      "tokens_actual": 2208,
+      "cost_actual": "0.07579999999999999",
+      "status": "settled",
+      "created_at": "2026-11-13 02:52:50.044863+00:00"
+    }
+  ],
+  "code_fingerprint": "ded196342435e52069840e07ed362ed4c08230b0a1154fc1d89a91e3a8640598"
+}

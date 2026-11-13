@@ -1,0 +1,1064 @@
+{
+  "case_id": "ORDER-C08",
+  "condition": "knowledge_off",
+  "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+  "case_sha256": "1fbde17449e6a46d356cc4f0346a4bb67a8e648ad42fbd0dda4e99eaae266b1b",
+  "job": {
+    "id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+    "case_id": "ORDER-C08",
+    "case_version": 1,
+    "module": "order",
+    "test_type": "functional",
+    "test_type_source": "request",
+    "status": "done",
+    "stage": "render",
+    "input_hash": "d666783d83efa959adde8d761041c128e3f649d326e6ca3ddbd8d37b8d6ce2c8",
+    "idempotency_key": "4e1e670a85efe9da6426d28b95ba88a6708533baa9ef940dcdfb196541940b77",
+    "request_payload": {
+      "case": {
+        "steps": [
+          {
+            "index": 1,
+            "action": "POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1",
+            "expected": null
+          }
+        ],
+        "title": "合法数据创建订单的响应校验",
+        "module": "order",
+        "source": "manual",
+        "case_id": "ORDER-C08",
+        "platform": "api",
+        "test_data": {
+          "excel_source": {
+            "rows": [
+              9
+            ],
+            "sheet": "下单测试用例",
+            "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+          }
+        },
+        "test_type": "functional",
+        "project_id": "minishop",
+        "case_version": 1,
+        "preconditions": [
+          "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+          "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+          "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。"
+        ],
+        "product_version": "1.0.0",
+        "review_baseline": "current_implementation"
+      },
+      "options": {
+        "strict_kb": false
+      },
+      "test_scope": {
+        "feature_point": "合法数据创建订单的响应校验",
+        "required_scenarios": []
+      },
+      "automation_context": {
+        "framework": "API + 独立测试数据库",
+        "state_query_capabilities": [
+          "HTTP JSON",
+          "数据库只读查询"
+        ]
+      }
+    },
+    "report_schema_version": "report-1.0",
+    "generation": 1,
+    "parent_review_id": null,
+    "superseded_by": null,
+    "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+    "case_title": "合法数据创建订单的响应校验",
+    "ai_verdict": "need_human",
+    "human_status": "pending",
+    "current_decision_id": null,
+    "degraded": true,
+    "degraded_reasons": [
+      "arbitration_skipped",
+      "kb_module_missing"
+    ],
+    "participants": [
+      "chief_blind:qwen3.8-max",
+      "jury_a:deepseek-flash"
+    ],
+    "topology": "dual",
+    "topology_snapshot": {
+      "roles": [
+        "chief_blind",
+        "jury_a"
+      ],
+      "budget": {
+        "batch_cost": 60.0,
+        "daily_cost": 500.0,
+        "review_cost": 2.0,
+        "review_tokens": 60000
+      },
+      "models": {
+        "jury_a": "deepseek-flash",
+        "chief_blind": "qwen3.8-max"
+      },
+      "versions": {
+        "kb": "kb-none",
+        "models": {
+          "vote": "qwen3.8-max",
+          "jury_a": "deepseek-flash",
+          "jury_b": "kimi-k3.1-pro",
+          "preprocess": "deepseek-flash",
+          "arbitration": "qwen3.8-max",
+          "chief_blind": "qwen3.8-max"
+        },
+        "rubric": "0.2.0",
+        "prompts": {
+          "vote": "p-m0-vote-01",
+          "jury_a": "p-m0-jury-a-01",
+          "jury_b": "p-m0-jury-b-01",
+          "preprocess": "p-m0-pre-01",
+          "arbitration": "p-m0-arb-01",
+          "chief_blind": "p-m0-chief-01"
+        },
+        "model_config": "7e35c71d",
+        "price_config": "price-unverified-2026-11",
+        "kb_build_version": "kb-none",
+        "retrieval_config": "161fcb22",
+        "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+        "kb_content_version": "kb-none"
+      },
+      "retrieval": {
+        "top_k": 4,
+        "char_cap": 8000
+      },
+      "review_baseline": null,
+      "prompt_version_hash": "38d8578d73b71cddcbb597e213261e23b4617626963c2cf99bca1c2a3ad688ec"
+    },
+    "review_completeness": {
+      "vote": "2/2",
+      "blind": "2/2",
+      "complete": true,
+      "arbitration": "skipped",
+      "stages_failed": [],
+      "stages_pending": [],
+      "stages_skipped": [
+        "preprocess",
+        "kb_retrieve",
+        "arbitration"
+      ],
+      "stages_completed": [
+        "input_check",
+        "blind_review",
+        "fusion",
+        "vote",
+        "verdict",
+        "render"
+      ],
+      "full_participation": false,
+      "arbitration_required": false
+    },
+    "input_quality": {
+      "hard_errors": [],
+      "soft_issues": [
+        "steps[1].expected 缺失"
+      ]
+    },
+    "timings": {},
+    "test_scope": {
+      "feature_point": "合法数据创建订单的响应校验",
+      "scope_version": null,
+      "related_case_ids": [],
+      "required_scenarios": []
+    },
+    "automation_context": {
+      "framework": "API + 独立测试数据库",
+      "state_query_capabilities": [
+        "HTTP JSON",
+        "数据库只读查询"
+      ]
+    },
+    "kb_content_version": "kb-none",
+    "kb_build_version": "kb-none",
+    "rubric_version": "0.2.0",
+    "prompt_versions": {
+      "vote": "p-m0-vote-01",
+      "jury_a": "p-m0-jury-a-01",
+      "jury_b": "p-m0-jury-b-01",
+      "preprocess": "p-m0-pre-01",
+      "arbitration": "p-m0-arb-01",
+      "chief_blind": "p-m0-chief-01"
+    },
+    "prompt_version_hash": "38d8578d73b71cddcbb597e213261e23b4617626963c2cf99bca1c2a3ad688ec",
+    "retrieval_config_version": "161fcb22",
+    "embedding_profile_id": null,
+    "reranker_profile_id": null,
+    "model_config_version": "7e35c71d",
+    "normalized_case": {
+      "steps": [
+        {
+          "index": 1,
+          "action": "POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1",
+          "expected": null
+        }
+      ],
+      "title": "合法数据创建订单的响应校验",
+      "module": "order",
+      "source": "manual",
+      "case_id": "ORDER-C08",
+      "kb_hint": null,
+      "platform": "api",
+      "priority": null,
+      "raw_text": null,
+      "test_data": {
+        "excel_source": {
+          "rows": [
+            9
+          ],
+          "sheet": "下单测试用例",
+          "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+        }
+      },
+      "test_type": "functional",
+      "project_id": "minishop",
+      "attachments": [],
+      "case_version": 1,
+      "preconditions": [
+        "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+        "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+        "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。"
+      ],
+      "product_version": "1.0.0",
+      "review_baseline": "current_implementation"
+    },
+    "report_summary": {
+      "major": 0,
+      "blocker": 2,
+      "suggestion": 0,
+      "total_issues": 2
+    },
+    "report_json": {
+      "scope": {
+        "note": "v1 仅做单条用例评审，不输出功能点整体覆盖率",
+        "provided": true,
+        "feature_point": "合法数据创建订单的响应校验",
+        "scope_version": null,
+        "coverage_claims_allowed": false
+      },
+      "stage": "render",
+      "issues": [
+        {
+          "votes": {
+            "jury_a": {
+              "severity": "blocker",
+              "validity": "accept"
+            },
+            "chief_blind": {
+              "severity": "blocker",
+              "validity": "accept"
+            }
+          },
+          "status": "need_human",
+          "kb_refs": [],
+          "category": "预期不明确",
+          "issue_no": 1,
+          "severity": "blocker",
+          "dimension": "test_design",
+          "rationale": "第 1 步存在「预期不明确」问题：（推断）标题要求校验创建订单响应，但步骤未给出任何预期结果，执行后无法判断是否通过",
+          "confidence": null,
+          "step_index": 1,
+          "suggestion": "补充可判定的响应预期，如成功标识、订单关键信息或响应结构，与合法下单目的对应。",
+          "kb_grounded": false,
+          "proposed_by": [
+            "chief_blind"
+          ],
+          "candidate_id": "34cb9294-3409-4893-88ac-84bc7c88bbc1",
+          "chief_reason": null,
+          "vote_summary": {
+            "reject": 0,
+            "support": 2,
+            "uncertain": 0,
+            "not_assessed": 0,
+            "support_ratio": 1.0,
+            "severity_disputed": false,
+            "vote_completeness": "2/2",
+            "severity_distribution": {
+              "major": 0,
+              "blocker": 2,
+              "suggestion": 0
+            }
+          },
+          "evidence_refs": [],
+          "evidence_type": "inference",
+          "human_verdict": null,
+          "chief_decision": "need_human",
+          "evidence_quote": "\"expected\": null",
+          "decision_status": null,
+          "evidence_status": "ungrounded",
+          "model_confidence": null,
+          "confidence_source": "uncalibrated",
+          "evidence_strength": "strong",
+          "validation_status": "needs_review",
+          "evidence_support_status": "unsupported"
+        },
+        {
+          "votes": {
+            "jury_a": {
+              "severity": "blocker",
+              "validity": "accept"
+            },
+            "chief_blind": {
+              "severity": "blocker",
+              "validity": "accept"
+            }
+          },
+          "status": "need_human",
+          "kb_refs": [],
+          "category": "预期不明确",
+          "issue_no": 2,
+          "severity": "blocker",
+          "dimension": "test_design",
+          "rationale": "第 1 步存在「预期不明确」问题：该步骤的 expected 为 null，只发送了创建订单请求而未声明任何可判定结果；而用例标题声明的测试目的是“合法数据创建订单的响应校验”，缺少状态码、订单标识、金额等任一断言，执行者无法判断该用例通过或失败",
+          "confidence": null,
+          "step_index": 1,
+          "suggestion": "补充明确预期，例如 HTTP 状态码、订单创建成功的标识字段及基于夹具（SKU 单价 100 元、数量 1）可得的总金额断言，确保响应校验可判定。",
+          "kb_grounded": false,
+          "proposed_by": [
+            "jury_a"
+          ],
+          "candidate_id": "8d62950d-f295-4495-96b4-212afa3bf9b4",
+          "chief_reason": null,
+          "vote_summary": {
+            "reject": 0,
+            "support": 2,
+            "uncertain": 0,
+            "not_assessed": 0,
+            "support_ratio": 1.0,
+            "severity_disputed": false,
+            "vote_completeness": "2/2",
+            "severity_distribution": {
+              "major": 0,
+              "blocker": 2,
+              "suggestion": 0
+            }
+          },
+          "evidence_refs": [],
+          "evidence_type": "inference",
+          "human_verdict": null,
+          "chief_decision": "need_human",
+          "evidence_quote": "POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1",
+          "decision_status": null,
+          "evidence_status": "ungrounded",
+          "model_confidence": null,
+          "confidence_source": "uncalibrated",
+          "evidence_strength": "strong",
+          "validation_status": "passed",
+          "evidence_support_status": "unsupported"
+        }
+      ],
+      "module": "order",
+      "status": "done",
+      "case_id": "ORDER-C08",
+      "kb_gaps": [],
+      "summary": {
+        "major": 0,
+        "blocker": 2,
+        "suggestion": 0,
+        "total_issues": 2
+      },
+      "timings": {
+        "queue_ms": 808298,
+        "execution_ms": 94190,
+        "model_call_ms": 105942
+      },
+      "appendix": {
+        "budget": {
+          "scope": "chat requests; conservative reservations, configured estimated prices; not provider billing",
+          "limits": {
+            "batch_cost": 60.0,
+            "daily_cost": 500.0,
+            "review_cost": 2.0,
+            "review_tokens": 60000
+          },
+          "exhausted": false,
+          "estimated_cost": 0.33560799999999996,
+          "uncertain_calls": 0,
+          "accounted_tokens": 15844
+        },
+        "recovery": {
+          "attempt": 1,
+          "reused_outputs": []
+        },
+        "model_runs": [
+          {
+            "role": "chief_blind",
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 2555,
+              "response": 2580
+            },
+            "latency_ms": 61140,
+            "cost_estimate": 0.2059,
+            "parse_warnings": [
+              "evidence:0:evidence_quote_not_found"
+            ]
+          },
+          {
+            "role": "jury_a",
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 2455,
+              "response": 986
+            },
+            "latency_ms": 6511,
+            "cost_estimate": 0.004427,
+            "parse_warnings": []
+          },
+          {
+            "role": "chief_blind",
+            "error": null,
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 1352,
+              "response": 591
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 16978
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 16960,
+            "raw_request": null,
+            "candidate_no": 1,
+            "raw_response": null,
+            "request_hash": "068cfd7a381083a38cda43b6a7dacbd4af6efa7fa947452e98fc51133e9f8457",
+            "cost_estimate": 0.0625,
+            "response_hash": "3829f28b1059bf547f64221a32da7d0064989ec19cad5733f917e26c68326353",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          },
+          {
+            "role": "jury_a",
+            "error": null,
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 1335,
+              "response": 217
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 1905
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 1870,
+            "raw_request": null,
+            "candidate_no": 1,
+            "raw_response": null,
+            "request_hash": "b67988890f119a75c359e0a822c372bca57c9edfa426a2c8550fff29571b9037",
+            "cost_estimate": 0.001769,
+            "response_hash": "81805df69c3dc17b81e9545d6914a3a905cf5f2afa6a128f0239f802c5a4c84d",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          },
+          {
+            "role": "chief_blind",
+            "error": null,
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 1387,
+              "response": 515
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 15784
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 15754,
+            "raw_request": null,
+            "candidate_no": 2,
+            "raw_response": null,
+            "request_hash": "7103846bef2672b0584ab9f8b5f3b042baf487de76e5dd84d1631eee99bcd39e",
+            "cost_estimate": 0.05864,
+            "response_hash": "5de62b6bb573ae7d7eaaf1b8ec4163c37208c864da07dcd81ec7af7b717d1dd9",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          },
+          {
+            "role": "jury_a",
+            "error": null,
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 1370,
+              "response": 501
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 3732
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 3707,
+            "raw_request": null,
+            "candidate_no": 2,
+            "raw_response": null,
+            "request_hash": "5e53003f20a9297251c983f3e9f3387776aaab6c9ff03630070321d282ca3302",
+            "cost_estimate": 0.002372,
+            "response_hash": "e26689fd1c30658373999b874a3482f470142e46fe50835b0f598892a99d852f",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          }
+        ],
+        "raw_opinions": {
+          "jury_a": {
+            "issues": [
+              {
+                "scope": "step",
+                "claims": [],
+                "kb_refs": [],
+                "category": "预期不明确",
+                "kb_quote": null,
+                "severity": "blocker",
+                "dimension": "test_design",
+                "rationale": "该步骤的 expected 为 null，只发送了创建订单请求而未声明任何可判定结果；而用例标题声明的测试目的是“合法数据创建订单的响应校验”，缺少状态码、订单标识、金额等任一断言，执行者无法判断该用例通过或失败。",
+                "confidence": null,
+                "step_index": 1,
+                "suggestion": "补充明确预期，例如 HTTP 状态码、订单创建成功的标识字段及基于夹具（SKU 单价 100 元、数量 1）可得的总金额断言，确保响应校验可判定。",
+                "kb_grounded": false,
+                "evidence_refs": [],
+                "evidence_type": "inference",
+                "evidence_quote": "POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1",
+                "parse_warnings": [],
+                "evidence_status": "ungrounded",
+                "model_confidence": null,
+                "evidence_strength": "strong",
+                "validation_status": "passed",
+                "model_evidence_status": "ungrounded",
+                "evidence_support_status": "unsupported"
+              }
+            ],
+            "summary": "步骤没有任何预期结果，标题声称的响应校验无法判定，需补充断言。"
+          },
+          "chief_blind": {
+            "issues": [
+              {
+                "scope": "step",
+                "claims": [],
+                "kb_refs": [],
+                "category": "预期不明确",
+                "kb_quote": null,
+                "severity": "blocker",
+                "dimension": "test_design",
+                "rationale": "（推断）标题要求校验创建订单响应，但步骤未给出任何预期结果，执行后无法判断是否通过。",
+                "confidence": null,
+                "step_index": 1,
+                "suggestion": "补充可判定的响应预期，如成功标识、订单关键信息或响应结构，与合法下单目的对应。",
+                "kb_grounded": false,
+                "evidence_refs": [],
+                "evidence_type": "inference",
+                "evidence_quote": "\"expected\": null",
+                "parse_warnings": [
+                  "evidence_quote_not_found"
+                ],
+                "evidence_status": "ungrounded",
+                "model_confidence": null,
+                "evidence_strength": "strong",
+                "validation_status": "needs_review",
+                "model_evidence_status": "ungrounded",
+                "evidence_support_status": "unsupported"
+              }
+            ],
+            "summary": "用例可执行，但唯一步骤缺少预期结果，无法判定。"
+          }
+        },
+        "disagreements": [],
+        "normalized_case": {
+          "steps": [
+            {
+              "index": 1,
+              "action": "POST /api/orders，items=[{sku_id:1,quantity:1}],address_id=1",
+              "expected": null
+            }
+          ],
+          "title": "合法数据创建订单的响应校验",
+          "module": "order",
+          "source": "manual",
+          "case_id": "ORDER-C08",
+          "kb_hint": null,
+          "platform": "api",
+          "priority": null,
+          "raw_text": null,
+          "test_data": {
+            "excel_source": {
+              "rows": [
+                9
+              ],
+              "sheet": "下单测试用例",
+              "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+            }
+          },
+          "test_type": "functional",
+          "project_id": "minishop",
+          "attachments": [],
+          "case_version": 1,
+          "preconditions": [
+            "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+            "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+            "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。"
+          ],
+          "product_version": "1.0.0",
+          "review_baseline": "current_implementation"
+        },
+        "knowledge_review": {
+          "mode": "general",
+          "label": "通用评审（已降级）",
+          "message": "知识库中没有可用于本次用例的相关知识，已降级为通用评审；仅检查用例质量，未验证产品业务规则。",
+          "evidence_count": 0,
+          "knowledge_available": false
+        }
+      },
+      "degraded": true,
+      "topology": "dual",
+      "versions": {
+        "kb": "kb-none",
+        "models": {
+          "vote": "qwen3.8-max",
+          "jury_a": "deepseek-flash",
+          "jury_b": "kimi-k3.1-pro",
+          "preprocess": "deepseek-flash",
+          "arbitration": "qwen3.8-max",
+          "chief_blind": "qwen3.8-max"
+        },
+        "rubric": "0.2.0",
+        "prompts": {
+          "vote": "p-m0-vote-01",
+          "jury_a": "p-m0-jury-a-01",
+          "jury_b": "p-m0-jury-b-01",
+          "preprocess": "p-m0-pre-01",
+          "arbitration": "p-m0-arb-01",
+          "chief_blind": "p-m0-chief-01"
+        },
+        "model_config": "7e35c71d",
+        "price_config": "price-unverified-2026-11",
+        "kb_build_version": "kb-none",
+        "retrieval_config": "161fcb22",
+        "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+        "kb_content_version": "kb-none"
+      },
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "test_type": "functional",
+      "ai_verdict": "need_human",
+      "created_at": "2026-11-13T02:49:35.744647+00:00",
+      "generation": 1,
+      "attachments": [],
+      "finished_at": "2026-11-13T03:04:38.237487+00:00",
+      "case_version": 1,
+      "human_status": "pending",
+      "participants": [
+        "chief_blind:qwen3.8-max",
+        "jury_a:deepseek-flash"
+      ],
+      "input_quality": {
+        "hard_errors": [],
+        "soft_issues": [
+          "steps[1].expected 缺失"
+        ]
+      },
+      "decision_summary": {
+        "human_status": "pending",
+        "history_count": 0,
+        "latest_decision": null
+      },
+      "degraded_reasons": [
+        "arbitration_skipped",
+        "kb_module_missing"
+      ],
+      "parent_review_id": null,
+      "test_type_source": "request",
+      "human_review_items": [
+        {
+          "reason": "need_human",
+          "issue_no": 1,
+          "priority": "normal"
+        },
+        {
+          "reason": "need_human",
+          "issue_no": 2,
+          "priority": "normal"
+        }
+      ],
+      "review_completeness": {
+        "vote": "2/2",
+        "blind": "2/2",
+        "complete": true,
+        "arbitration": "skipped",
+        "stages_failed": [],
+        "stages_pending": [],
+        "stages_skipped": [
+          "preprocess",
+          "kb_retrieve",
+          "arbitration"
+        ],
+        "stages_completed": [
+          "input_check",
+          "blind_review",
+          "fusion",
+          "vote",
+          "verdict",
+          "render"
+        ],
+        "full_participation": false,
+        "arbitration_required": false
+      },
+      "review_participants": [
+        {
+          "model": "qwen3.8-max",
+          "status": "active",
+          "role_id": "chief_blind",
+          "actual_model": "qwen3.8-max",
+          "participant_id": "p-01"
+        },
+        {
+          "model": "deepseek-flash",
+          "status": "active",
+          "role_id": "jury_a",
+          "actual_model": "deepseek-flash",
+          "participant_id": "p-02"
+        },
+        {
+          "model": "kimi-k3.1-pro",
+          "status": "absent",
+          "role_id": "jury_b",
+          "actual_model": null,
+          "participant_id": "p-03"
+        }
+      ],
+      "report_schema_version": "report-1.0"
+    },
+    "report_locked_at": "2026-11-13 03:04:38.237591+00:00",
+    "total_cost_estimate": 0.3356,
+    "cost_currency": "CNY",
+    "error": null,
+    "attempt_count": 1,
+    "max_attempts": 3,
+    "locked_by": "worker-a9abd69d",
+    "locked_at": "2026-11-13 03:03:04.042940+00:00",
+    "lease_expires_at": "2026-11-13 03:08:04.042940+00:00",
+    "fencing_token": 1,
+    "last_error": null,
+    "submitter_id": "paired-evaluator",
+    "created_at": "2026-11-13 02:49:35.744647+00:00",
+    "started_at": "2026-11-13 03:03:04.042940+00:00",
+    "finished_at": "2026-11-13 03:04:38.237598+00:00"
+  },
+  "model_runs": [
+    {
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "blind_review",
+      "provider": "deepseek",
+      "requested_model": "deepseek-flash",
+      "model_version": "deepseek-flash",
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 2455,
+      "response_tokens": 986,
+      "latency_ms": 6511,
+      "request_hash": "b6267a6ec6b08366ea6e4e798dffd13b3120cc1d2767457f9eb2208f4510100a",
+      "response_hash": "8b2b67168369bea4f5fbc47b3f20a7af821419e521f71549197d015331eb8dda",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0044,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "00605f68-e85d-4604-b371-3b64236f844f",
+      "created_at": "2026-11-13 03:03:10.628733+00:00"
+    },
+    {
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "blind_review",
+      "provider": "qwen",
+      "requested_model": "qwen3.8-max",
+      "model_version": "qwen3.8-max",
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 2555,
+      "response_tokens": 2580,
+      "latency_ms": 61140,
+      "request_hash": "343dc7356dcf0f68c63f811aa440126e8613e6556aa79f93ce9195ebe4dcd5a1",
+      "response_hash": "d49b11ae3244b7c51ca123e8fea6cc1c46ef5b38d8e8e7ff0c4c7de88ccca541",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [
+        "evidence:0:evidence_quote_not_found"
+      ],
+      "cost_estimate": 0.2059,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "e214e463-5398-45f0-aa14-e8f980e7b775",
+      "created_at": "2026-11-13 03:04:05.244192+00:00"
+    },
+    {
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "deepseek-flash",
+      "model_version": null,
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1335,
+      "response_tokens": 217,
+      "latency_ms": 1870,
+      "request_hash": "b67988890f119a75c359e0a822c372bca57c9edfa426a2c8550fff29571b9037",
+      "response_hash": "81805df69c3dc17b81e9545d6914a3a905cf5f2afa6a128f0239f802c5a4c84d",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0018,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "518c9552-bd20-4b79-a9d9-52dcaf7ca9bc",
+      "created_at": "2026-11-13 03:04:07.225954+00:00"
+    },
+    {
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "deepseek-flash",
+      "model_version": null,
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1370,
+      "response_tokens": 501,
+      "latency_ms": 3707,
+      "request_hash": "5e53003f20a9297251c983f3e9f3387776aaab6c9ff03630070321d282ca3302",
+      "response_hash": "e26689fd1c30658373999b874a3482f470142e46fe50835b0f598892a99d852f",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0024,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "6b3170a5-2c29-4fa8-92c4-eae1b9c36fa9",
+      "created_at": "2026-11-13 03:04:09.053673+00:00"
+    },
+    {
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "qwen3.8-max",
+      "model_version": null,
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1352,
+      "response_tokens": 591,
+      "latency_ms": 16960,
+      "request_hash": "068cfd7a381083a38cda43b6a7dacbd4af6efa7fa947452e98fc51133e9f8457",
+      "response_hash": "3829f28b1059bf547f64221a32da7d0064989ec19cad5733f917e26c68326353",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0625,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "350b49bd-a330-451e-a782-125dc3e2a78d",
+      "created_at": "2026-11-13 03:04:22.299859+00:00"
+    },
+    {
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "qwen3.8-max",
+      "model_version": null,
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 1387,
+      "response_tokens": 515,
+      "latency_ms": 15754,
+      "request_hash": "7103846bef2672b0584ab9f8b5f3b042baf487de76e5dd84d1631eee99bcd39e",
+      "response_hash": "5de62b6bb573ae7d7eaaf1b8ec4163c37208c864da07dcd81ec7af7b717d1dd9",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0586,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "87e4f52e-9bd8-462a-962d-8af3ba6534aa",
+      "created_at": "2026-11-13 03:04:38.090044+00:00"
+    }
+  ],
+  "budget_ledger": [
+    {
+      "id": "05ae56ed-8a95-465b-b5eb-7d74d5f129b1",
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 18729,
+      "cost_reserved": "0.026921",
+      "tokens_actual": 3441,
+      "cost_actual": "0.0044269999999999995",
+      "status": "settled",
+      "created_at": "2026-11-13 03:03:04.104650+00:00"
+    },
+    {
+      "id": "9a77732a-f954-4c01-8644-6666a3a3aa24",
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 18945,
+      "cost_reserved": "0.7065799999999999",
+      "tokens_actual": 5135,
+      "cost_actual": "0.20589999999999997",
+      "status": "settled",
+      "created_at": "2026-11-13 03:03:04.092306+00:00"
+    },
+    {
+      "id": "96172d9e-cb20-4557-8f11-fa3a0b35a778",
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 13998,
+      "cost_reserved": "0.02219",
+      "tokens_actual": 1552,
+      "cost_actual": "0.001769",
+      "status": "settled",
+      "created_at": "2026-11-13 03:04:05.340788+00:00"
+    },
+    {
+      "id": "c1c6547e-077f-4298-aede-a518c0179912",
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 14163,
+      "cost_reserved": "0.022355",
+      "tokens_actual": 1871,
+      "cost_actual": "0.002372",
+      "status": "settled",
+      "created_at": "2026-11-13 03:04:05.329397+00:00"
+    },
+    {
+      "id": "5ff23dd0-694a-4009-aec0-6879348bfab7",
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 13998,
+      "cost_reserved": "0.60764",
+      "tokens_actual": 1943,
+      "cost_actual": "0.0625",
+      "status": "settled",
+      "created_at": "2026-11-13 03:04:05.319210+00:00"
+    },
+    {
+      "id": "3b1042d0-08f4-4d3e-b872-f26640fcd9dc",
+      "review_id": "62d41f36-dc6e-4968-8cb0-0c9641ad4f36",
+      "batch_id": "651d7ba1-04af-486a-971f-67758d94cbe8",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 14163,
+      "cost_reserved": "0.6109399999999999",
+      "tokens_actual": 1902,
+      "cost_actual": "0.05864",
+      "status": "settled",
+      "created_at": "2026-11-13 03:04:22.300013+00:00"
+    }
+  ],
+  "code_fingerprint": "ded196342435e52069840e07ed362ed4c08230b0a1154fc1d89a91e3a8640598"
+}

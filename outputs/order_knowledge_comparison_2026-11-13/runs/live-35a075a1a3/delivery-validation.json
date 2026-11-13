@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "run_id": "live-35a075a1a3",
+  "real_model_run_count": 1,
+  "real_reports": 20,
+  "complete_pairs": 9,
+  "workbook_sheets": 12,
+  "original_cases": 10,
+  "original_step_rows": 11,
+  "issue_rows_on": 18,
+  "issue_rows_off": 9,
+  "adjudication_rows": 27,
+  "incomplete_vote_explicitly_marked": true,
+  "raw_reports_preserved": true,
+  "all_cells_nonformula": true,
+  "external_links": false,
+  "private_config_scan_passed": true,
+  "input_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d",
+  "comparison_sha256": "61ee303ca11634be2388fe6401245c24c012c2e7ffea05eb78b866c3279f3d1f"
+}

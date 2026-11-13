@@ -1,0 +1,1212 @@
+{
+  "case_id": "ORDER-C01",
+  "condition": "knowledge_on",
+  "review_id": "9c501aa2-dda2-45e1-9282-25e9e1578190",
+  "case_sha256": "4c4a9b16d16f75a0186032a2ee85f18533bcd5c16bceb9618bc93b6785c28d46",
+  "job": {
+    "id": "9c501aa2-dda2-45e1-9282-25e9e1578190",
+    "case_id": "ORDER-C01",
+    "case_version": 1,
+    "module": "order",
+    "test_type": "functional",
+    "test_type_source": "request",
+    "status": "done",
+    "stage": "render",
+    "input_hash": "3b498b4b5b7b71627cdd54bf6e3c84409546c2b9af7fca85d8c96096f8166a27",
+    "idempotency_key": "3915a6d63654b9983aa8724997f0c3cd3955b64b6e6464be73713ea721723485",
+    "request_payload": {
+      "case": {
+        "steps": [
+          {
+            "index": 1,
+            "action": "POST /api/orders，items=[{sku_id:1,quantity:2}],address_id=1,pay_amount=0.01；读取响应data.pay_amount",
+            "expected": "HTTP 201，data.total_amount=200，data.discount_amount=0，data.pay_amount=0.01"
+          }
+        ],
+        "title": "客户端附带金额参数时的订单计价",
+        "module": "order",
+        "source": "manual",
+        "case_id": "ORDER-C01",
+        "platform": "api",
+        "test_data": {
+          "excel_source": {
+            "rows": [
+              2
+            ],
+            "sheet": "下单测试用例",
+            "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+          }
+        },
+        "test_type": "functional",
+        "project_id": "minishop",
+        "case_version": 1,
+        "preconditions": [
+          "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+          "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+          "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。"
+        ],
+        "product_version": "1.0.0",
+        "review_baseline": "current_implementation"
+      },
+      "options": {
+        "strict_kb": false
+      },
+      "test_scope": {
+        "feature_point": "客户端附带金额参数时的订单计价",
+        "required_scenarios": []
+      },
+      "automation_context": {
+        "framework": "API + 独立测试数据库",
+        "state_query_capabilities": [
+          "HTTP JSON",
+          "数据库只读查询"
+        ]
+      }
+    },
+    "report_schema_version": "report-1.0",
+    "generation": 1,
+    "parent_review_id": null,
+    "superseded_by": null,
+    "batch_id": "037a36dc-d6cd-4cb5-abec-a53513f9a837",
+    "case_title": "客户端附带金额参数时的订单计价",
+    "ai_verdict": "blocked",
+    "human_status": "pending",
+    "current_decision_id": null,
+    "degraded": true,
+    "degraded_reasons": [
+      "arbitration_skipped"
+    ],
+    "participants": [
+      "chief_blind:qwen3.8-max",
+      "jury_a:deepseek-flash"
+    ],
+    "topology": "dual",
+    "topology_snapshot": {
+      "roles": [
+        "chief_blind",
+        "jury_a"
+      ],
+      "budget": {
+        "batch_cost": 60.0,
+        "daily_cost": 500.0,
+        "review_cost": 2.0,
+        "review_tokens": 60000
+      },
+      "models": {
+        "jury_a": "deepseek-flash",
+        "chief_blind": "qwen3.8-max"
+      },
+      "versions": {
+        "kb": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+        "models": {
+          "vote": "qwen3.8-max",
+          "jury_a": "deepseek-flash",
+          "jury_b": "kimi-k3.1-pro",
+          "preprocess": "deepseek-flash",
+          "arbitration": "qwen3.8-max",
+          "chief_blind": "qwen3.8-max"
+        },
+        "rubric": "0.2.0",
+        "prompts": {
+          "vote": "p-m0-vote-01",
+          "jury_a": "p-m0-jury-a-01",
+          "jury_b": "p-m0-jury-b-01",
+          "preprocess": "p-m0-pre-01",
+          "arbitration": "p-m0-arb-01",
+          "chief_blind": "p-m0-chief-01"
+        },
+        "model_config": "7e35c71d",
+        "price_config": "price-unverified-2026-11",
+        "kb_build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+        "retrieval_config": "161fcb22",
+        "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+        "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813"
+      },
+      "retrieval": {
+        "top_k": 4,
+        "char_cap": 8000
+      },
+      "review_baseline": {
+        "type": "current_implementation",
+        "source_ref": "https://github.com/Viver12138/minishop.git",
+        "source_version": "e354437069504381f10a54d9c14baed755f3ba56",
+        "product_version": "1.0.0"
+      },
+      "prompt_version_hash": "38d8578d73b71cddcbb597e213261e23b4617626963c2cf99bca1c2a3ad688ec"
+    },
+    "review_completeness": {
+      "vote": "2/2",
+      "blind": "2/2",
+      "complete": true,
+      "arbitration": "skipped",
+      "stages_failed": [],
+      "stages_pending": [],
+      "stages_skipped": [
+        "preprocess",
+        "arbitration"
+      ],
+      "stages_completed": [
+        "input_check",
+        "kb_retrieve",
+        "blind_review",
+        "fusion",
+        "vote",
+        "verdict",
+        "render"
+      ],
+      "full_participation": false,
+      "arbitration_required": false
+    },
+    "input_quality": {
+      "hard_errors": [],
+      "soft_issues": []
+    },
+    "timings": {},
+    "test_scope": {
+      "feature_point": "客户端附带金额参数时的订单计价",
+      "scope_version": null,
+      "related_case_ids": [],
+      "required_scenarios": []
+    },
+    "automation_context": {
+      "framework": "API + 独立测试数据库",
+      "state_query_capabilities": [
+        "HTTP JSON",
+        "数据库只读查询"
+      ]
+    },
+    "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+    "kb_build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+    "rubric_version": "0.2.0",
+    "prompt_versions": {
+      "vote": "p-m0-vote-01",
+      "jury_a": "p-m0-jury-a-01",
+      "jury_b": "p-m0-jury-b-01",
+      "preprocess": "p-m0-pre-01",
+      "arbitration": "p-m0-arb-01",
+      "chief_blind": "p-m0-chief-01"
+    },
+    "prompt_version_hash": "38d8578d73b71cddcbb597e213261e23b4617626963c2cf99bca1c2a3ad688ec",
+    "retrieval_config_version": "161fcb22",
+    "embedding_profile_id": null,
+    "reranker_profile_id": null,
+    "model_config_version": "7e35c71d",
+    "normalized_case": {
+      "steps": [
+        {
+          "index": 1,
+          "action": "POST /api/orders，items=[{sku_id:1,quantity:2}],address_id=1,pay_amount=0.01；读取响应data.pay_amount",
+          "expected": "HTTP 201，data.total_amount=200，data.discount_amount=0，data.pay_amount=0.01"
+        }
+      ],
+      "title": "客户端附带金额参数时的订单计价",
+      "module": "order",
+      "source": "manual",
+      "case_id": "ORDER-C01",
+      "kb_hint": null,
+      "platform": "api",
+      "priority": null,
+      "raw_text": null,
+      "test_data": {
+        "excel_source": {
+          "rows": [
+            2
+          ],
+          "sheet": "下单测试用例",
+          "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+        }
+      },
+      "test_type": "functional",
+      "project_id": "minishop",
+      "attachments": [],
+      "case_version": 1,
+      "preconditions": [
+        "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+        "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+        "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。"
+      ],
+      "product_version": "1.0.0",
+      "review_baseline": "current_implementation"
+    },
+    "report_summary": {
+      "major": 0,
+      "blocker": 1,
+      "suggestion": 0,
+      "total_issues": 1
+    },
+    "report_json": {
+      "scope": {
+        "note": "v1 仅做单条用例评审，不输出功能点整体覆盖率",
+        "provided": true,
+        "feature_point": "客户端附带金额参数时的订单计价",
+        "scope_version": null,
+        "coverage_claims_allowed": false
+      },
+      "stage": "render",
+      "issues": [
+        {
+          "votes": {
+            "jury_a": {
+              "severity": "blocker",
+              "validity": "accept"
+            },
+            "chief_blind": {
+              "severity": "blocker",
+              "validity": "accept"
+            }
+          },
+          "status": "adopted",
+          "kb_refs": [
+            "07e54ddb5534307061d74fae7dcebeda174f7b0a2e5a746d4b08862bd70178b6"
+          ],
+          "category": "规则冲突",
+          "issue_no": 1,
+          "severity": "blocker",
+          "dimension": "business",
+          "rationale": "第 1 步存在「规则冲突」问题：用例目的是验证客户端附带金额参数不影响订单计价，但预期 data.pay_amount=0.01 采用了客户端传入金额；知识库明确应付金额由服务端重算，客户端金额字段不参与计算，因此该预期与规则直接冲突，导致用例无法正确判定",
+          "confidence": null,
+          "step_index": 1,
+          "suggestion": "将预期改为 data.pay_amount=200，使断言与服务端重算结果一致。",
+          "kb_grounded": true,
+          "proposed_by": [
+            "chief_blind",
+            "jury_a"
+          ],
+          "candidate_id": "b3737626-8fc5-4d72-a4e2-bcacb567799d",
+          "chief_reason": null,
+          "vote_summary": {
+            "reject": 0,
+            "support": 2,
+            "uncertain": 0,
+            "not_assessed": 0,
+            "support_ratio": 1.0,
+            "severity_disputed": false,
+            "vote_completeness": "2/2",
+            "severity_distribution": {
+              "major": 0,
+              "blocker": 2,
+              "suggestion": 0
+            }
+          },
+          "evidence_refs": [
+            {
+              "ref_id": "07e54ddb5534307061d74fae7dcebeda174f7b0a2e5a746d4b08862bd70178b6",
+              "verified": true
+            }
+          ],
+          "evidence_type": "business_rule",
+          "human_verdict": null,
+          "chief_decision": "adopt",
+          "evidence_quote": "HTTP 201，data.total_amount=200，data.discount_amount=0，data.pay_amount=0.01",
+          "decision_status": null,
+          "evidence_status": "grounded",
+          "model_confidence": null,
+          "confidence_source": "uncalibrated",
+          "evidence_strength": "strong",
+          "validation_status": "needs_review",
+          "evidence_support_status": "supported"
+        }
+      ],
+      "module": "order",
+      "status": "done",
+      "case_id": "ORDER-C01",
+      "kb_gaps": [],
+      "summary": {
+        "major": 0,
+        "blocker": 1,
+        "suggestion": 0,
+        "total_issues": 1
+      },
+      "timings": {
+        "queue_ms": 2697,
+        "execution_ms": 107857,
+        "model_call_ms": 115604
+      },
+      "appendix": {
+        "budget": {
+          "scope": "chat requests; conservative reservations, configured estimated prices; not provider billing",
+          "limits": {
+            "batch_cost": 60.0,
+            "daily_cost": 500.0,
+            "review_cost": 2.0,
+            "review_tokens": 60000
+          },
+          "exhausted": false,
+          "estimated_cost": 0.431504,
+          "uncertain_calls": 0,
+          "accounted_tokens": 22584
+        },
+        "recovery": {
+          "attempt": 1,
+          "reused_outputs": []
+        },
+        "model_runs": [
+          {
+            "role": "chief_blind",
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 4765,
+              "response": 3630
+            },
+            "latency_ms": 88423,
+            "cost_estimate": 0.3131,
+            "parse_warnings": [
+              "evidence:0:model_conflict_unverified"
+            ]
+          },
+          {
+            "role": "jury_a",
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 4617,
+              "response": 1436
+            },
+            "latency_ms": 7451,
+            "cost_estimate": 0.007489,
+            "parse_warnings": []
+          },
+          {
+            "role": "chief_blind",
+            "error": null,
+            "model": "qwen3.8-max",
+            "status": "ok",
+            "tokens": {
+              "request": 3814,
+              "response": 509
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 17500
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 17487,
+            "raw_request": null,
+            "candidate_no": 1,
+            "raw_response": null,
+            "request_hash": "5cd9b0fb3dffa990113d427d6d357c21b37e3a51c83f5f2ecfed20bcb88ffc09",
+            "cost_estimate": 0.10682,
+            "response_hash": "c657af7d7d50c6eb7c46176f37f5c24172abadef1befd0aae52041312dbb8147",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          },
+          {
+            "role": "jury_a",
+            "error": null,
+            "model": "deepseek-flash",
+            "status": "ok",
+            "tokens": {
+              "request": 3531,
+              "response": 282
+            },
+            "attempts": [
+              {
+                "status": "ok",
+                "attempt": 1,
+                "delay_s": 0.0,
+                "retryable": null,
+                "error_code": null,
+                "latency_ms": 2269
+              }
+            ],
+            "provider": null,
+            "warnings": [],
+            "operation": "vote",
+            "error_code": null,
+            "latency_ms": 2243,
+            "raw_request": null,
+            "candidate_no": 1,
+            "raw_response": null,
+            "request_hash": "1363ab52b4475295ae351e96a1f164dd980ad8aac14f67735f7bb9315766627d",
+            "cost_estimate": 0.004095,
+            "response_hash": "8610f89b5602c0824e6f336003be3f212a136e8f3a34709f2cb69ac422188bf5",
+            "masking_report": null,
+            "masking_policy_id": null,
+            "masking_policy_version": null
+          }
+        ],
+        "raw_opinions": {
+          "jury_a": {
+            "issues": [
+              {
+                "scope": "step",
+                "claims": [],
+                "kb_refs": [
+                  "07e54ddb5534307061d74fae7dcebeda174f7b0a2e5a746d4b08862bd70178b6"
+                ],
+                "category": "规则冲突",
+                "kb_quote": "订单预览与创建时，商品总金额、优惠金额、应付金额均由服务端重新计算，客户端提交的任何价格或金额字段都不参与计算。",
+                "severity": "blocker",
+                "dimension": "business",
+                "rationale": "用例目的为验证客户端附带金额参数时的计价，但预期把客户端传入的 pay_amount=0.01 当作结果。业务规则明确应付金额由服务端按 round(max(total_amount - discount_amount,0),2) 重算，客户端金额字段被忽略；按夹具（SKU 单价 100×2，不用券）应为 200。当前预期与 E2 规则直接冲突，无法判定“客户端金额不参与计算”。",
+                "confidence": null,
+                "step_index": 1,
+                "suggestion": "将预期改为 data.total_amount=200、data.discount_amount=0、data.pay_amount=200，并说明客户端 pay_amount=0.01 被忽略不生效。",
+                "kb_grounded": true,
+                "evidence_refs": [
+                  "07e54ddb5534307061d74fae7dcebeda174f7b0a2e5a746d4b08862bd70178b6"
+                ],
+                "evidence_type": "business_rule",
+                "evidence_quote": "HTTP 201，data.total_amount=200，data.discount_amount=0，data.pay_amount=0.01",
+                "parse_warnings": [],
+                "evidence_status": "grounded",
+                "model_confidence": null,
+                "evidence_strength": "strong",
+                "validation_status": "passed",
+                "model_evidence_status": "grounded",
+                "evidence_support_status": "supported"
+              }
+            ],
+            "summary": "预期 pay_amount=0.01 与服务端重算规则冲突，应改为 200。"
+          },
+          "chief_blind": {
+            "issues": [
+              {
+                "scope": "step",
+                "claims": [],
+                "kb_refs": [
+                  "07e54ddb5534307061d74fae7dcebeda174f7b0a2e5a746d4b08862bd70178b6"
+                ],
+                "category": "规则冲突",
+                "kb_quote": "订单预览与创建时，商品总金额、优惠金额、应付金额均由服务端重新计算，客户端提交的任何价格或金额字段都不参与计算。",
+                "severity": "blocker",
+                "dimension": "business",
+                "rationale": "用例目的是验证客户端附带金额参数不影响订单计价，但预期 data.pay_amount=0.01 采用了客户端传入金额；知识库明确应付金额由服务端重算，客户端金额字段不参与计算，因此该预期与规则直接冲突，导致用例无法正确判定。",
+                "confidence": null,
+                "step_index": 1,
+                "suggestion": "将预期改为 data.pay_amount=200，使断言与服务端重算结果一致。",
+                "kb_grounded": true,
+                "evidence_refs": [
+                  "07e54ddb5534307061d74fae7dcebeda174f7b0a2e5a746d4b08862bd70178b6"
+                ],
+                "evidence_type": "business_rule",
+                "evidence_quote": "HTTP 201，data.total_amount=200，data.discount_amount=0，data.pay_amount=0.01",
+                "parse_warnings": [
+                  "model_conflict_unverified"
+                ],
+                "evidence_status": "grounded",
+                "model_confidence": null,
+                "evidence_strength": "strong",
+                "validation_status": "needs_review",
+                "model_evidence_status": "conflicted",
+                "evidence_support_status": "supported"
+              }
+            ],
+            "summary": "预期应付金额误用客户端传入值，与服务端重算规则冲突。"
+          }
+        },
+        "disagreements": [],
+        "knowledge_pack": {
+          "as_of": "2026-11-13",
+          "query": "客户端附带金额参数时的订单计价\n每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。\n用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。\n测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。\nPOST /api/orders，items=[{sku_id:1,quantity:2}],address_id=1,pay_amount=0.01；读取响应data.pay_amount HTTP 201，data.total_amount=200，data.discount_amount=0，data.pay_amount=0.01",
+          "module": "order",
+          "profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+          "baseline": {
+            "type": "current_implementation",
+            "source_ref": "https://github.com/Viver12138/minishop.git",
+            "source_version": "e354437069504381f10a54d9c14baed755f3ba56",
+            "product_version": "1.0.0"
+          },
+          "evidence": [
+            {
+              "text": "# 2. 请求方式与路径\n\n```http\nPOST /api/orders\nAuthorization: Bearer <JWT>\nContent-Type: application/json\n```\n\n成功返回 **201**。\n\n",
+              "doc_id": "API-ORDER-002",
+              "module": "order",
+              "chunk_id": "c55c82eb069762ca31d9e4515c782bca1ae8c8aeb71ac24b4b4b6c0c428a5353",
+              "doc_type": "design",
+              "platforms": [
+                "all"
+              ],
+              "rrf_score": 0.0,
+              "project_id": "minishop",
+              "source_ref": "Minishop/backend/app/api/orders.py#L116-L170; Minishop/backend/app/schemas/schemas.py#L145-L149; Minishop/backend/app/api/common.py#L142-L184",
+              "chunk_index": 1,
+              "rule_status": "reviewed",
+              "content_hash": "2cfd73816d29dd834644b4d7160a4ebc922caa4f34e39fe56b29a2797131aa92",
+              "heading_path": "2. 请求方式与路径",
+              "rerank_score": null,
+              "effective_from": null,
+              "evidence_level": "E2",
+              "knowledge_type": "INTERFACE",
+              "source_version": "snapshot-2026-11-11",
+              "effective_until": null,
+              "product_version": [
+                "1.0.0"
+              ],
+              "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+              "source_evidence": [
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/api/orders.py#L116-L170",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/api/orders.py",
+                  "snapshot_member": "Minishop/backend/app/api/orders.py",
+                  "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/schemas/schemas.py#L145-L149",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/schemas/schemas.py",
+                  "snapshot_member": "Minishop/backend/app/schemas/schemas.py",
+                  "snapshot_sha256": "ec03f7efa334fcfb4e7439240757a131a91ee0005cdcd25071631fd05f1fcc16",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/api/common.py#L142-L184",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/api/common.py",
+                  "snapshot_member": "Minishop/backend/app/api/common.py",
+                  "snapshot_sha256": "4adcca84be8ce74c3e07c5c13444b3956a5f9abf8a0c25a8891e0c983d4a80ee",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                }
+              ],
+              "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+              "source_repository": "https://github.com/Viver12138/minishop.git",
+              "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+              "retrieval_channels": [
+                "interface_contract"
+              ],
+              "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56"
+            },
+            {
+              "text": "# 3. 功能描述\n\n## 3.1 订单预览 `POST /api/orders/preview`\n\n接收商品项、可选地址、可选用户券，返回服务端计算的明细与金额，**不产生任何副作用**（不建单、不占券、不扣库存、不清购物车）。\n\n## 3.2 创建订单 `POST /api/orders`\n\n在预览校验的基础上要求 `address_id` 必填，创建状态为 `PENDING_PAYMENT` 的订单，保存地址与商品快照；如使用优惠券，立即把用户券置为 `USED` 并累加券的 `used_quantity`。\n\n",
+              "doc_id": "REQ-ORDER-001",
+              "module": "order",
+              "chunk_id": "d6a3f5d7d32232cfc272d951e34e16d96ccdd473feaac5c5e125817ceeeed1eb",
+              "doc_type": "requirement",
+              "platforms": [
+                "all"
+              ],
+              "rrf_score": 0.021764705882352943,
+              "project_id": "minishop",
+              "source_ref": "Minishop/README.md#L55-L57; Minishop/backend/app/api/orders.py#L29-L170",
+              "chunk_index": 2,
+              "rule_status": "reviewed",
+              "content_hash": "757fd6412e475e6e25233106d6594b1298236024ed8e9dd2e373fbb3f78ba0af",
+              "heading_path": "3. 功能描述",
+              "rerank_score": null,
+              "effective_from": null,
+              "evidence_level": "E2",
+              "knowledge_type": "REQUIREMENT",
+              "source_version": "snapshot-2026-11-11",
+              "effective_until": null,
+              "product_version": [
+                "1.0.0"
+              ],
+              "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+              "source_evidence": [
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/README.md#L55-L57",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "README.md",
+                  "snapshot_member": "Minishop/README.md",
+                  "snapshot_sha256": "7d78ca14a2c5114628fca82b05aafb2c615114f2b554b52a49a00fe5c27f1ede",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/api/orders.py#L29-L170",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/api/orders.py",
+                  "snapshot_member": "Minishop/backend/app/api/orders.py",
+                  "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                }
+              ],
+              "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+              "source_repository": "https://github.com/Viver12138/minishop.git",
+              "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+              "retrieval_channels": [
+                "keyword",
+                "vector",
+                "endpoint_behavior"
+              ],
+              "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56"
+            },
+            {
+              "text": "\n# 1. 规则陈述\n\n订单预览与创建时，商品总金额、优惠金额、应付金额均由服务端重新计算，客户端提交的任何价格或金额字段都不参与计算。\n\n# 2. 适用范围\n\n- `POST /api/orders/preview`\n- `POST /api/orders`\n- 产品版本 `1.0.0`\n\n# 3. 前置条件\n\n- 请求已通过登录鉴权；\n- 请求包含至少一个商品项。\n\n# 4. 触发条件\n\n调用订单预览或创建订单接口。\n\n# 5. 规则结果\n\n- 单项小计 = `product_skus.price × quantity`；\n- 商品总金额 `total_amount` = 所有单项小计之和；\n- 优惠金额 `discount_amount` = 所用优惠券的 `discount_amount`，未用券时为 0；\n- 应付金额 `pay_amount` = `round(max(total_amount - discount_amount, 0), 2)`；\n- 订单落库的 `total_amount`、`discount_amount`、`pay_amount` 使用上述服务端结果。\n\n# 6. 边界与例外\n\n- 多个商品项时逐项累加，不按商品去重。\n- 使用 `product_skus.price`，不是 `products.price`；两者在多规格商品上可能不同。\n- 折扣大于商品总金额时，应付金额截断为 0，不会为负数。\n- 金额使用浮点数计算：预览返回的 `total_amount`/`discount_amount` 未舍入；创建订单落库时三金额与 `OrderItem.subtotal` 均 round 到 2 位（orders.py#L128-L130、#L158）。\n- 请求体中的未知字段（如 `price`、`pay_amount`）被 Pydantic 默认忽略，不产生作用。\n\n# 7. 反例或禁止行为\n\n- 禁止信任客户端传入的商品单价、总价、优惠金额或应付金额。\n- 禁止用 `products.price` 覆盖 SKU 成交价。\n- 禁止在预览与创建两个接口使用不同的计价逻辑。\n\n# 8. 验证方式\n\n1. 正常下单，核对响应与订单详情的三个金额。\n2. 在请求体中额外传 `price: 0.01`、`pay_amount: 0.01`，确认订单金额不变。\n3. 对多规格商品选择一个 `price` 与商品主价格不同的 SKU，确认按 SKU 价格计算。\n4. 使用大额券使折扣大于总金额，确认 `pay_amount=0`。\n\n# 9. 来源依据\n\n- `Minishop/backend/app/api/orders.py#L46-L59`：逐项读取 SKU 价格并累加。\n- `Minishop/backend/app/api/orders.py#L83-L84`：折扣与应付金额计算。\n- `Minishop/backend/app/api/orders.py#L124-L130`：订单落库金额。\n\n# 10. 未决问题\n\n- 是否需要引入 Decimal 或分为单位，避免浮点误差？\n- 单项小计是否需要单独四舍五入后再汇总？\n- 是否应拒绝包含未知价格字段的请求，而不是静默忽略？\n\n\n# 本次授权技术复核适用性\n\n核对订单计价与落库：预览 total_amount 未 round，pay_amount 已 round，订单与明细落库分别 round；SKU 价格为来源。\n\n本次结论基于冻结快照与既有决策，当前实现中的限制不代表目标规格；已决策但未实施的项目仍按治理台账单独跟踪。复核者为用户授权的 AI 代理，非新增人工签署。\n",
+              "doc_id": "RULE-ORDER-001",
+              "module": "order",
+              "chunk_id": "07e54ddb5534307061d74fae7dcebeda174f7b0a2e5a746d4b08862bd70178b6",
+              "doc_type": "rule",
+              "platforms": [
+                "all"
+              ],
+              "rrf_score": 0.03278688524590164,
+              "project_id": "minishop",
+              "source_ref": "Minishop/backend/app/api/orders.py#L46-L59; Minishop/backend/app/api/orders.py#L83-L84; Minishop/backend/app/api/orders.py#L124-L130",
+              "chunk_index": 0,
+              "rule_status": "reviewed",
+              "content_hash": "57f2b4a9b991976f738db46557ac62940a7ffedce4139bc3122654344642559b",
+              "heading_path": "订单金额必须由服务端重算",
+              "rerank_score": null,
+              "effective_from": null,
+              "evidence_level": "E2",
+              "knowledge_type": "BUSINESS_RULE",
+              "source_version": "snapshot-2026-11-11",
+              "effective_until": null,
+              "product_version": [
+                "1.0.0"
+              ],
+              "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+              "source_evidence": [
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/api/orders.py#L46-L59",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/api/orders.py",
+                  "snapshot_member": "Minishop/backend/app/api/orders.py",
+                  "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/api/orders.py#L83-L84",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/api/orders.py",
+                  "snapshot_member": "Minishop/backend/app/api/orders.py",
+                  "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/api/orders.py#L124-L130",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/api/orders.py",
+                  "snapshot_member": "Minishop/backend/app/api/orders.py",
+                  "snapshot_sha256": "d98254e819e3f7888c866b92d7a2482c1f2636559c6c69571b1f598e58323fac",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                }
+              ],
+              "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+              "source_repository": "https://github.com/Viver12138/minishop.git",
+              "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+              "retrieval_channels": [
+                "keyword",
+                "vector"
+              ],
+              "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56"
+            },
+            {
+              "text": "# 4. 数据准备配方\n\n## 4.1 正常可支付订单\n\n1. 登录 `user`；\n2. 创建地址；\n3. 查询机械键盘 SKU；\n4. 预览 → 创建订单；\n5. 记录 `order_id`、`pay_amount`；\n6. 不支付，作为 `PENDING_PAYMENT` 基线。\n\n## 4.2 已支付订单\n\n在 4.1 基础上：\n\n1. `POST /api/payments`；\n2. `POST /api/payments/{id}/success`；\n3. 断言订单 `PAID`，记录支付前后库存。\n\n## 4.3 已发货订单\n\n在 4.2 基础上：\n\n1. 使用 `admin` token；\n2. `POST /api/admin/orders/{id}/ship`，填写物流信息；\n3. 断言 `SHIPPED`。\n\n## 4.4 已完成订单\n\n在 4.3 基础上：\n\n1. `POST /api/orders/{id}/confirm`；\n2. 断言 `COMPLETED`。\n\n## 4.5 退款相关订单（跨模块）\n\n在 4.2 基础上调用 `POST /api/refunds`，订单进入 `REFUNDING`；本批不覆盖退款审核细节。\n\n## 4.6 库存边界数据\n\n- 售罄：无线鼠标，库存 0；\n- 边界：蓝牙耳机，库存 1；\n- 多规格：运动鞋，白 39/40 库存 1，其余 2。\n\n## 4.7 优惠券数据\n\n- 无券：不传 `user_coupon_id`；\n- 未达门槛：用“满5000减500”买 399 元商品；\n- 恰好达门槛：用“满1000减100”买总价恰好 1000 元；\n- 已使用：先下一单用掉，再复用到另一单；\n- 已过期：当前库“新人满100减10”已过期；\n- 停用：当前库“满50减5”为 DISABLED，无法领取；\n- 他人券：用户 A 领取，用户 B 使用 A 的用户券 ID。\n\n",
+              "doc_id": "TEST-DATA",
+              "module": null,
+              "chunk_id": "fd445cb4375ebe0f23eddbc06fcc974a5ddac48b758eb2ebbc2a66ca2433d525",
+              "doc_type": "design",
+              "platforms": [
+                "all"
+              ],
+              "rrf_score": 0.029437229437229435,
+              "project_id": "minishop",
+              "source_ref": "Minishop/backend/app/seed/seed.py#L38-L151; Minishop/data/minishop.db; Minishop/e2e_test.py",
+              "chunk_index": 3,
+              "rule_status": "reviewed",
+              "content_hash": "b701341ab354a7ddb3feac5c93c210660795ae7c765642ef2a82b6308201d431",
+              "heading_path": "4. 数据准备配方",
+              "rerank_score": null,
+              "effective_from": null,
+              "evidence_level": "E3",
+              "knowledge_type": "TEST_SPEC",
+              "source_version": "snapshot-2026-11-11",
+              "effective_until": null,
+              "product_version": [
+                "1.0.0"
+              ],
+              "runtime_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+              "source_evidence": [
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/backend/app/seed/seed.py#L38-L151",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "backend/app/seed/seed.py",
+                  "snapshot_member": "Minishop/backend/app/seed/seed.py",
+                  "snapshot_sha256": "beb34f1d8f012a4b8fbbf5f5da9da3339f1140f8a19ad0385c24751d5d511ade",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/data/minishop.db",
+                  "content_commit": null,
+                  "git_comparison": "missing",
+                  "repository_path": "data/minishop.db",
+                  "snapshot_member": "Minishop/data/minishop.db",
+                  "snapshot_sha256": "964c30d3305f73899505f64c41d866640509c9e7c61b2203079a645247ece98f",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                },
+                {
+                  "repository": "https://github.com/Viver12138/minishop.git",
+                  "source_ref": "Minishop/e2e_test.py",
+                  "content_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+                  "git_comparison": "matched",
+                  "repository_path": "e2e_test.py",
+                  "snapshot_member": "Minishop/e2e_test.py",
+                  "snapshot_sha256": "95b6122d5891d2a291aadb7f89deac25e24ced60a023bb5b88852283468cb8d0",
+                  "snapshot_archive": "evidence/M2/source_snapshots/minishop-snapshot-2026-11-11.zip",
+                  "snapshot_archive_sha256": "ff09d24d92aee6f27790d214e41b0b0fb0f81c2ac9def9371a6319e665a85553"
+                }
+              ],
+              "kb_build_version": "kb-build-87b027aa2a8c31cb92ec6d8f728820768e6c4f9a9167c04ee4946cd37910c0c2",
+              "source_repository": "https://github.com/Viver12138/minishop.git",
+              "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+              "retrieval_channels": [
+                "keyword",
+                "vector"
+              ],
+              "implementation_commit": "e354437069504381f10a54d9c14baed755f3ba56"
+            }
+          ],
+          "warnings": [],
+          "pack_hash": "6ec15c4546a150b8b4c4fa7c8d89cb8d141e9c1c0013200ef5e19e36df7f038c",
+          "project_id": "minishop",
+          "limitations": [
+            "documentation:CONFLICT-001",
+            "documentation:CONFLICT-002",
+            "documentation:CONFLICT-003",
+            "documentation:CONFLICT-004",
+            "documentation:CONFLICT-005",
+            "documentation:CONFLICT-006",
+            "documentation:CONFLICT-007",
+            "documentation:CONFLICT-008",
+            "documentation:CONFLICT-009",
+            "documentation:CONFLICT-010",
+            "documentation:Q-01",
+            "documentation:Q-03",
+            "documentation:Q-04",
+            "documentation:Q-05",
+            "documentation:Q-06",
+            "documentation:Q-08",
+            "documentation:Q-09",
+            "documentation:Q-10",
+            "documentation:Q-12",
+            "documentation:Q-13",
+            "documentation:Q-15",
+            "embedding:not_completed",
+            "implementation:CONFLICT-001",
+            "implementation:CONFLICT-003",
+            "implementation:CONFLICT-005",
+            "implementation:CONFLICT-006",
+            "implementation:CONFLICT-007",
+            "implementation:CONFLICT-008",
+            "implementation:CONFLICT-009",
+            "implementation:CONFLICT-010",
+            "implementation:Q-01",
+            "implementation:Q-04",
+            "implementation:Q-05",
+            "implementation:Q-06",
+            "implementation:Q-09",
+            "implementation:Q-10",
+            "implementation:Q-11",
+            "implementation:Q-13",
+            "implementation:Q-14",
+            "implementation:Q-15",
+            "knowledge_gap:GAP-001",
+            "knowledge_gap:GAP-002",
+            "knowledge_gap:GAP-003",
+            "knowledge_gap:GAP-004",
+            "knowledge_gap:GAP-008",
+            "knowledge_gap:GAP-009",
+            "knowledge_gap:GAP-010",
+            "knowledge_gap:GAP-011",
+            "knowledge_gap:GAP-012",
+            "knowledge_gap:GAP-013",
+            "knowledge_gap:GAP-014",
+            "publication:not_completed",
+            "retrieval_acceptance:not_completed",
+            "review_acceptance:not_completed",
+            "review_baseline:not_selected_for_release",
+            "runtime_index:not_completed",
+            "source_repository_verification:not_run; use --source-root"
+          ],
+          "build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+          "content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813",
+          "retriever_version": "hybrid-bm25-rrf-4"
+        },
+        "normalized_case": {
+          "steps": [
+            {
+              "index": 1,
+              "action": "POST /api/orders，items=[{sku_id:1,quantity:2}],address_id=1,pay_amount=0.01；读取响应data.pay_amount",
+              "expected": "HTTP 201，data.total_amount=200，data.discount_amount=0，data.pay_amount=0.01"
+            }
+          ],
+          "title": "客户端附带金额参数时的订单计价",
+          "module": "order",
+          "source": "manual",
+          "case_id": "ORDER-C01",
+          "kb_hint": null,
+          "platform": "api",
+          "priority": null,
+          "raw_text": null,
+          "test_data": {
+            "excel_source": {
+              "rows": [
+                2
+              ],
+              "sheet": "下单测试用例",
+              "file_sha256": "aebb5b0adfe670ba929d1da6a8d88245efc8e921dc72402e9c36dfd83d11b21d"
+            }
+          },
+          "test_type": "functional",
+          "project_id": "minishop",
+          "attachments": [],
+          "case_version": 1,
+          "preconditions": [
+            "每条用例使用独立新建的测试数据库与显式夹具，不依赖项目默认演示种子；无其他请求、无后台状态变更。",
+            "用户A已登录；地址1属于A；SKU1关联商品1，SKU为ACTIVE、商品为ON_SALE，SKU单价100元、库存10；未传券的请求不使用优惠券。",
+            "测试框架可发起HTTP JSON请求并执行所列只读查询；“只读”仅限制断言阶段，夹具由框架事先准备。"
+          ],
+          "product_version": "1.0.0",
+          "review_baseline": "current_implementation"
+        },
+        "knowledge_review": {
+          "mode": "knowledge",
+          "label": "知识库辅助评审",
+          "message": "本次评审引用了 4 条知识依据。",
+          "evidence_count": 4,
+          "knowledge_available": true
+        }
+      },
+      "degraded": true,
+      "topology": "dual",
+      "versions": {
+        "kb": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+        "models": {
+          "vote": "qwen3.8-max",
+          "jury_a": "deepseek-flash",
+          "jury_b": "kimi-k3.1-pro",
+          "preprocess": "deepseek-flash",
+          "arbitration": "qwen3.8-max",
+          "chief_blind": "qwen3.8-max"
+        },
+        "rubric": "0.2.0",
+        "prompts": {
+          "vote": "p-m0-vote-01",
+          "jury_a": "p-m0-jury-a-01",
+          "jury_b": "p-m0-jury-b-01",
+          "preprocess": "p-m0-pre-01",
+          "arbitration": "p-m0-arb-01",
+          "chief_blind": "p-m0-chief-01"
+        },
+        "model_config": "7e35c71d",
+        "price_config": "price-unverified-2026-11",
+        "kb_build_version": "kb-runtime-9c576110525913e4af7838be30bc3e9f2b58b0fb8463657cbbae1457a65a72bf",
+        "retrieval_config": "161fcb22",
+        "embedding_profile": "qwen:qwen3.7-text-embedding-flash@v1/1024/cosine",
+        "kb_content_version": "kb-e38fd1b4f50d9e82efdd841f248f20dff86578fc8b9c3c3587eb022ec8b08813"
+      },
+      "review_id": "9c501aa2-dda2-45e1-9282-25e9e1578190",
+      "test_type": "functional",
+      "ai_verdict": "blocked",
+      "created_at": "2026-11-13T02:49:33.959998+00:00",
+      "generation": 1,
+      "attachments": [],
+      "finished_at": "2026-11-13T02:51:24.522001+00:00",
+      "case_version": 1,
+      "human_status": "pending",
+      "participants": [
+        "chief_blind:qwen3.8-max",
+        "jury_a:deepseek-flash"
+      ],
+      "input_quality": {
+        "hard_errors": [],
+        "soft_issues": []
+      },
+      "decision_summary": {
+        "human_status": "pending",
+        "history_count": 0,
+        "latest_decision": null
+      },
+      "degraded_reasons": [
+        "arbitration_skipped"
+      ],
+      "parent_review_id": null,
+      "test_type_source": "request",
+      "human_review_items": [
+        {
+          "reason": "need_human",
+          "issue_no": 1,
+          "priority": "normal"
+        }
+      ],
+      "review_completeness": {
+        "vote": "2/2",
+        "blind": "2/2",
+        "complete": true,
+        "arbitration": "skipped",
+        "stages_failed": [],
+        "stages_pending": [],
+        "stages_skipped": [
+          "preprocess",
+          "arbitration"
+        ],
+        "stages_completed": [
+          "input_check",
+          "kb_retrieve",
+          "blind_review",
+          "fusion",
+          "vote",
+          "verdict",
+          "render"
+        ],
+        "full_participation": false,
+        "arbitration_required": false
+      },
+      "review_participants": [
+        {
+          "model": "qwen3.8-max",
+          "status": "active",
+          "role_id": "chief_blind",
+          "actual_model": "qwen3.8-max",
+          "participant_id": "p-01"
+        },
+        {
+          "model": "deepseek-flash",
+          "status": "active",
+          "role_id": "jury_a",
+          "actual_model": "deepseek-flash",
+          "participant_id": "p-02"
+        },
+        {
+          "model": "kimi-k3.1-pro",
+          "status": "absent",
+          "role_id": "jury_b",
+          "actual_model": null,
+          "participant_id": "p-03"
+        }
+      ],
+      "report_schema_version": "report-1.0"
+    },
+    "report_locked_at": "2026-11-13 02:51:24.522068+00:00",
+    "total_cost_estimate": 0.4315,
+    "cost_currency": "CNY",
+    "error": null,
+    "attempt_count": 1,
+    "max_attempts": 3,
+    "locked_by": "worker-a9abd69d",
+    "locked_at": "2026-11-13 02:49:36.657728+00:00",
+    "lease_expires_at": "2026-11-13 02:56:16.685382+00:00",
+    "fencing_token": 1,
+    "last_error": null,
+    "submitter_id": "paired-evaluator",
+    "created_at": "2026-11-13 02:49:33.959998+00:00",
+    "started_at": "2026-11-13 02:49:36.657728+00:00",
+    "finished_at": "2026-11-13 02:51:24.522073+00:00"
+  },
+  "model_runs": [
+    {
+      "review_id": "9c501aa2-dda2-45e1-9282-25e9e1578190",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "blind_review",
+      "provider": "deepseek",
+      "requested_model": "deepseek-flash",
+      "model_version": "deepseek-flash",
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 4617,
+      "response_tokens": 1436,
+      "latency_ms": 7451,
+      "request_hash": "a48e07a0275409c6f4bc325fe83444cc528da592433e5dc8524fcc2cc2e3c84d",
+      "response_hash": "30d47bbd18470e6c646a0a5319962e98707c575751f4416e2502c3c08d2b1367",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0075,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "271d5da7-49cf-4ec7-9495-f0cf19d5b3bf",
+      "created_at": "2026-11-13 02:49:45.903790+00:00"
+    },
+    {
+      "review_id": "9c501aa2-dda2-45e1-9282-25e9e1578190",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "blind_review",
+      "provider": "qwen",
+      "requested_model": "qwen3.8-max",
+      "model_version": "qwen3.8-max",
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 4765,
+      "response_tokens": 3630,
+      "latency_ms": 88423,
+      "request_hash": "7011d2bbb91d4938d38f00fe63e36651209a91d4ca0e38352985115899c94d3e",
+      "response_hash": "913613dbe3007583cf291fedd00f717230215fdfbb6a3ec3a025c8cfc5f16fba",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [
+        "evidence:0:model_conflict_unverified"
+      ],
+      "cost_estimate": 0.3131,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "8662f069-061b-4b83-8b15-1a879c08f93b",
+      "created_at": "2026-11-13 02:51:06.855737+00:00"
+    },
+    {
+      "review_id": "9c501aa2-dda2-45e1-9282-25e9e1578190",
+      "role": "jury_a",
+      "model": "deepseek-flash",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "deepseek-flash",
+      "model_version": null,
+      "prompt_version": "p-m0-jury-a-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 3531,
+      "response_tokens": 282,
+      "latency_ms": 2243,
+      "request_hash": "1363ab52b4475295ae351e96a1f164dd980ad8aac14f67735f7bb9315766627d",
+      "response_hash": "8610f89b5602c0824e6f336003be3f212a136e8f3a34709f2cb69ac422188bf5",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.0041,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "b8e6c4df-6e80-4050-883a-b2f60f59450a",
+      "created_at": "2026-11-13 02:51:09.228844+00:00"
+    },
+    {
+      "review_id": "9c501aa2-dda2-45e1-9282-25e9e1578190",
+      "role": "chief_blind",
+      "model": "qwen3.8-max",
+      "operation": "vote",
+      "provider": null,
+      "requested_model": "qwen3.8-max",
+      "model_version": null,
+      "prompt_version": "p-m0-chief-01",
+      "attempt": 1,
+      "status": "ok",
+      "request_tokens": 3814,
+      "response_tokens": 509,
+      "latency_ms": 17487,
+      "request_hash": "5cd9b0fb3dffa990113d427d6d357c21b37e3a51c83f5f2ecfed20bcb88ffc09",
+      "response_hash": "c657af7d7d50c6eb7c46176f37f5c24172abadef1befd0aae52041312dbb8147",
+      "raw_request": null,
+      "raw_response": null,
+      "parsed_output": null,
+      "parse_warnings": [],
+      "cost_estimate": 0.1068,
+      "cost_currency": "CNY",
+      "price_config_version": "price-unverified-2026-11",
+      "error_code": null,
+      "error": null,
+      "masking_policy_id": null,
+      "masking_policy_version": null,
+      "masking_report": null,
+      "id": "9992f567-130e-48f0-9f6f-b2628bdf2db4",
+      "created_at": "2026-11-13 02:51:24.456467+00:00"
+    }
+  ],
+  "budget_ledger": [
+    {
+      "id": "b751c1eb-2c6d-4afc-8f7a-553b9b9d9650",
+      "review_id": "9c501aa2-dda2-45e1-9282-25e9e1578190",
+      "batch_id": "037a36dc-d6cd-4cb5-abec-a53513f9a837",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 25422,
+      "cost_reserved": "0.83612",
+      "tokens_actual": 8395,
+      "cost_actual": "0.3131",
+      "status": "settled",
+      "created_at": "2026-11-13 02:49:38.418981+00:00"
+    },
+    {
+      "id": "ce1a5bdc-bd59-4fcc-905c-33112bf6fe1c",
+      "review_id": "9c501aa2-dda2-45e1-9282-25e9e1578190",
+      "batch_id": "037a36dc-d6cd-4cb5-abec-a53513f9a837",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 25206,
+      "cost_reserved": "0.033398",
+      "tokens_actual": 6053,
+      "cost_actual": "0.007489",
+      "status": "settled",
+      "created_at": "2026-11-13 02:49:38.426043+00:00"
+    },
+    {
+      "id": "1502dc32-65cb-4789-9984-0fd99a642199",
+      "review_id": "9c501aa2-dda2-45e1-9282-25e9e1578190",
+      "batch_id": "037a36dc-d6cd-4cb5-abec-a53513f9a837",
+      "budget_day": "2026-11-13",
+      "model": "qwen3.8-max",
+      "tokens_reserved": 20469,
+      "cost_reserved": "0.7370599999999999",
+      "tokens_actual": 4323,
+      "cost_actual": "0.10682",
+      "status": "settled",
+      "created_at": "2026-11-13 02:51:06.957965+00:00"
+    },
+    {
+      "id": "c17fcaef-cb37-47ca-bf1a-4804ca2855d7",
+      "review_id": "9c501aa2-dda2-45e1-9282-25e9e1578190",
+      "batch_id": "037a36dc-d6cd-4cb5-abec-a53513f9a837",
+      "budget_day": "2026-11-13",
+      "model": "deepseek-flash",
+      "tokens_reserved": 20469,
+      "cost_reserved": "0.028661000000000002",
+      "tokens_actual": 3813,
+      "cost_actual": "0.0040950000000000005",
+      "status": "settled",
+      "created_at": "2026-11-13 02:51:06.968535+00:00"
+    }
+  ],
+  "code_fingerprint": "ded196342435e52069840e07ed362ed4c08230b0a1154fc1d89a91e3a8640598"
+}

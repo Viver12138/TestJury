@@ -1,0 +1,322 @@
+{
+  "run_id": "live-35a075a1a3",
+  "actor_type": "ai",
+  "independent_human_validation": false,
+  "reviewed_at": "2026-11-13T03:13:16.349637+00:00",
+  "source_commit": "e354437069504381f10a54d9c14baed755f3ba56",
+  "dataset_sha256": "9e62fdd9e92505b1986929d9b07727ef1c9f4295778a84e4d8b8e459029b80f4",
+  "fact_verification": {
+    "path": "outputs/order_knowledge_comparison_2026-11-13/source-facts-verification.json",
+    "sha256": "d5ff4b9742d0e350c50fbd725634c5e3800cacbdc7a5ca9e5abb06bdc14b1008"
+  },
+  "method": "逐条阅读原报告，与冻结标注及源码事实对照；保留原采纳/待确认/争议状态，不改写模型结果。",
+  "records": {
+    "ORDER-C01": {
+      "knowledge_on": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "命中主缺陷",
+            "seed_match": true,
+            "reason": "明确指出客户端0.01不能作为应付金额，并将pay_amount修正为200；与RULE-ORDER-001一致。"
+          }
+        ],
+        "report_sha256": "c63c62491a0e476749e4fa5355cef18109b2ec4e54a29a6e25ed7c50d6144a15"
+      },
+      "knowledge_off": {
+        "seed_detected": false,
+        "issues": [],
+        "report_sha256": "4b33a6bbfca60125a003ba65c076954f18382adbdf2916af7d9cf39a433dfb49"
+      },
+      "comparison_note": "启用组引用服务端重算规则，指出并修正主缺陷；禁用组本轮未提出问题。两组均完整，不将零发现解释为用例正确。"
+    },
+    "ORDER-C02": {
+      "knowledge_on": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "命中主缺陷",
+            "seed_match": true,
+            "reason": "明确指出B不能使用A的地址，正确修正为400、收货地址不存在且订单数量不变。"
+          }
+        ],
+        "report_sha256": "f6f7adde2e47e273a58543fd91a5a81bbc22f641a0731513f39abf1e4bbfb8e1"
+      },
+      "knowledge_off": {
+        "seed_detected": false,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "额外建议，未命中主缺陷",
+            "seed_match": false,
+            "reason": "建议补充地址回读断言，没有指出使用他人地址应拒绝，也没有修正错误的201预期；建议中的address_id可读取性未有产品知识验证。"
+          }
+        ],
+        "report_sha256": "e6bd702c0185902797abcb45c6271026ec6efb3bcf26c82ae7d00dd9cd1cbea1"
+      },
+      "comparison_note": "两组各输出1条问题，但含义不同：启用组识别地址归属规则冲突，禁用组仅建议补充地址断言。问题条数相同不等于主缺陷检出能力相同。"
+    },
+    "ORDER-C03": {
+      "knowledge_on": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "命中主缺陷",
+            "seed_match": true,
+            "reason": "指出库存1购买3应被拒绝，正确修正为409且不创建订单。"
+          },
+          {
+            "issue_no": 2,
+            "decision": "重复主缺陷",
+            "seed_match": true,
+            "reason": "与问题1为同一超库存成功预期错误，补充库存不足文案，不是独立缺陷。"
+          }
+        ],
+        "report_sha256": "b0645882e12eba51516b43b6c810023896d4ab58447590ece79a2f032645cdfe"
+      },
+      "knowledge_off": {
+        "seed_detected": false,
+        "issues": [],
+        "report_sha256": "3b0ce504bdd3698459480d27a2d4d1307500f6de5c397238c100a0a4362f196e"
+      },
+      "comparison_note": "启用组识别库存校验冲突，但输出2条同根因问题，只计为1个主缺陷；禁用组完整评审后本轮未提出问题。"
+    },
+    "ORDER-C04": {
+      "knowledge_on": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "命中主缺陷",
+            "seed_match": true,
+            "reason": "指出A不能使用B的用户券，正确修正为400且不建单、不占券。"
+          },
+          {
+            "issue_no": 2,
+            "decision": "重复主缺陷",
+            "seed_match": true,
+            "reason": "同样纠正他人券成功预期，与问题1为同一根因；另建本人券用例是可选建议，不增加独立缺陷计数。"
+          }
+        ],
+        "report_sha256": "edbf9e974f511497db7daab503b66a4edf6213a35b10ff56615183ea040c31d4"
+      },
+      "knowledge_off": {
+        "seed_detected": false,
+        "issues": [],
+        "report_sha256": "c6a95503257ab9fa65a30b6c13d0642cc0ad8dbc1b88e25e792d307415e10d61"
+      },
+      "comparison_note": "启用组引用用户券归属规则识别主缺陷，输出存在重复；禁用组完整评审后本轮未提出问题。"
+    },
+    "ORDER-C05": {
+      "knowledge_on": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "命中主缺陷",
+            "seed_match": true,
+            "reason": "明确指出200等于门槛200时允许用券，应下单成功而非409；原报告已采纳且知识依据校验通过。"
+          },
+          {
+            "issue_no": 2,
+            "decision": "重复主缺陷（引用校验未通过）",
+            "seed_match": true,
+            "reason": "与问题1为同一门槛边界错误，给出201、优惠20、应付180的正确修正；原报告仍为need_human、kb_grounded=false，不据复核改写原状态。"
+          }
+        ],
+        "report_sha256": "b5e93ad2983e8fea630b49fab25c7aff6e6ee167b55ea8dee046ad3ffbfd24b8"
+      },
+      "knowledge_off": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "提出主缺陷疑点（待确认）",
+            "seed_match": true,
+            "reason": "定位到200等于门槛却预期未达门槛这一主缺陷位置，要求确认≥或>规则；未获得产品规则，原报告为need_human，不算已采纳的确定修正。"
+          },
+          {
+            "issue_no": 2,
+            "decision": "重复主缺陷疑点（有争议）",
+            "seed_match": true,
+            "reason": "同样定位门槛等值边界，但仅作条件性建议；原报告disputed，关于严格超过门槛分支的修改建议并不能验证原等值边界，不作为完整正确修正。"
+          }
+        ],
+        "report_sha256": "835605155e2ec5dedf86b24a11b1f9a4a93d03b2982f33da7204aef3223214c1"
+      },
+      "comparison_note": "两组都提出门槛边界疑点；启用组有已采纳且知识校验通过的明确修正，另1条重复项仍待复核。禁用组两条为同一疑点，分别待确认/有争议，没有得到已采纳的规则结论。提出疑点与已确认结论分开统计。"
+    },
+    "ORDER-C06": {
+      "knowledge_on": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "命中主缺陷",
+            "seed_match": true,
+            "reason": "明确指出创建订单不扣库存，正确将10变8修正为仍为10。"
+          },
+          {
+            "issue_no": 2,
+            "decision": "重复主缺陷（引用校验未通过）",
+            "seed_match": true,
+            "reason": "与问题1为同一创建阶段错误扣库存预期，修正方向正确；原报告need_human、kb_grounded=false，保留该限制。"
+          }
+        ],
+        "report_sha256": "aaae4dc2ebce8888d7ea27f17981ac0c5351a8e1535a6c7ca25af38320c1e992"
+      },
+      "knowledge_off": {
+        "seed_detected": false,
+        "issues": [],
+        "report_sha256": "c44f1a1996e791e3bae5550ff66f615bd9f9723d14b898a67d2154f3334048a0"
+      },
+      "comparison_note": "启用组根据创建/支付职责划分纠正库存断言，输出2条同根因问题，其中1条知识校验未通过；禁用组完整评审后本轮未提出问题。"
+    },
+    "ORDER-C07": {
+      "knowledge_on": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "命中主缺陷",
+            "seed_match": true,
+            "reason": "明确纠正创建订单会删除购物车项的错误预期，给出仍存在且quantity=2。"
+          },
+          {
+            "issue_no": 2,
+            "decision": "重复主缺陷",
+            "seed_match": true,
+            "reason": "与问题1为同一下单不清空购物车规则冲突，修正相同，不增加独立缺陷计数。"
+          }
+        ],
+        "report_sha256": "1c38ed76bded339f0ece8a89585a92e9f51c4b7ab653ca0afb01343fcc05c112"
+      },
+      "knowledge_off": {
+        "seed_detected": false,
+        "issues": [],
+        "report_sha256": "795acdb14944439f6e88daea9a0f7c5c05fad3b89c8688938b363adec27bb0ac"
+      },
+      "comparison_note": "启用组识别并修正购物车保留规则冲突，但存在重复输出；禁用组完整评审后本轮未提出问题。"
+    },
+    "ORDER-C08": {
+      "knowledge_on": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "命中主缺陷（原报告待复核）",
+            "seed_match": true,
+            "reason": "准确指出expected为空，响应校验没有通过/失败标准；属通用用例质量主缺陷，原报告need_human，不冒充已采纳。"
+          },
+          {
+            "issue_no": 2,
+            "decision": "重复主缺陷（原报告待复核）",
+            "seed_match": true,
+            "reason": "同样指出expected=null，属于问题1的重复；修正应补充可判定预期，列出的详细响应字段及订单号格式不是独立缺陷，未逐项作为复核结论背书。"
+          }
+        ],
+        "report_sha256": "361a523e8e8a907938efcb26072564802a1ffec36e4b9212deadaa43068617f4"
+      },
+      "knowledge_off": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "命中主缺陷（原报告待复核）",
+            "seed_match": true,
+            "reason": "不依赖专门业务规则即识别缺少预期结果、无法判断通过与否；原报告need_human，保留状态。"
+          },
+          {
+            "issue_no": 2,
+            "decision": "重复主缺陷（原报告待复核）",
+            "seed_match": true,
+            "reason": "明确指出expected=null，与问题1同一根因；补充预期的建议不增加独立缺陷计数。"
+          }
+        ],
+        "report_sha256": "763e2bd928e1b501836408f9b9e60b3050f15a706df0b1f4a69642a9c675f21b"
+      },
+      "comparison_note": "两组均提出缺少预期结果这一通用质量缺陷，各输出2条重复问题，原报告均待复核。启用组建议更详细，但本条主缺陷的识别不依赖知识库。"
+    },
+    "ORDER-C09": {
+      "knowledge_on": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "命中主缺陷（部分说明过宽）",
+            "seed_match": true,
+            "reason": "定位标题/验收对象SKU1与实际sku_id=2不一致并要求统一，命中主缺陷；另称SKU1对应ID未说明的措辞过宽，不另算独立缺陷。"
+          },
+          {
+            "issue_no": 2,
+            "decision": "重复主缺陷（原报告待复核）",
+            "seed_match": true,
+            "reason": "同样指出实际验证SKU2而非声明的SKU1，并给出改为sku_id=1或改标题的修正；与问题1同根因，保留need_human状态。"
+          }
+        ],
+        "report_sha256": "57dfade8ac0d34df2f7bc68616241b20126f9e3b2ef2c7e2fc878339c195eac7"
+      },
+      "knowledge_off": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "命中主缺陷",
+            "seed_match": true,
+            "reason": "准确识别SKU1验收对象与SKU2操作/断言冲突，给出统一请求/断言或统一目的的正确修正。"
+          },
+          {
+            "issue_no": 2,
+            "decision": "重复主缺陷",
+            "seed_match": true,
+            "reason": "与问题1同为验收对象不符，并非第二个独立缺陷。"
+          }
+        ],
+        "report_sha256": "9d3db5dabcc3201c01fb061a9e319d10f9c10267dda1f154bbda81b5bef87b74"
+      },
+      "comparison_note": "两组均识别同一通用质量缺陷，各输出2条重复问题。禁用组两条均采纳；启用组一条采纳、一条待复核，且第一条附带的ID未说明判断过宽，本例不体现知识库检出优势。"
+    },
+    "ORDER-C10": {
+      "knowledge_on": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "命中主缺陷（投票未完成）",
+            "seed_match": true,
+            "reason": "正确纠正未支付/无写操作却预期PAID，应保持PENDING_PAYMENT；虽然原状态adopted且有知识依据，但投票0/2且预算耗尽，不能视作完整双模型已确认结果。"
+          },
+          {
+            "issue_no": 2,
+            "decision": "重复主缺陷（投票未完成）",
+            "seed_match": true,
+            "reason": "与问题1同一状态矛盾，修正方向一致；原报告need_human，且本任务投票0/2，本复核不补写缺失投票或升级原结论。"
+          }
+        ],
+        "report_sha256": "6b998e6ca059a920e3d30211bc4081ea20c78682f1425e0679b090ce3041038f"
+      },
+      "knowledge_off": {
+        "seed_detected": true,
+        "issues": [
+          {
+            "issue_no": 1,
+            "decision": "命中主缺陷",
+            "seed_match": true,
+            "reason": "仅凭步骤前后关系即可识别无写操作却从PENDING_PAYMENT变为PAID的矛盾，正确建议保持状态一致。"
+          },
+          {
+            "issue_no": 2,
+            "decision": "重复主缺陷（原报告待复核）",
+            "seed_match": true,
+            "reason": "与问题1同根因，建议保持PENDING_PAYMENT或另建支付用例；不额外计独立缺陷，保留need_human状态。"
+          }
+        ],
+        "report_sha256": "885724d193da7ef9b14206ef525be593d569a85b9e9a0822b882800317451d6e"
+      },
+      "comparison_note": "两组都提出状态矛盾。启用组预算耗尽、盲评2/2但投票0/2；即使原complete=true也按不完整处理，本条排除出完整配对子集。禁用组盲评与投票均2/2，完整。所有原始状态和意见保留，不通过追加预算重跑挑选结果。"
+    }
+  }
+}

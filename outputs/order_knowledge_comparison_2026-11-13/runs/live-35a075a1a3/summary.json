@@ -1,0 +1,79 @@
+{
+  "run_id": "live-35a075a1a3",
+  "cases": 10,
+  "reports": 20,
+  "complete_pairs": 9,
+  "actual_models": [
+    "deepseek-flash",
+    "qwen3.8-max"
+  ],
+  "actual_roles": [
+    "chief_blind",
+    "jury_a"
+  ],
+  "same_input_and_request": true,
+  "independent_human_validation": false,
+  "conditions": {
+    "knowledge_on": {
+      "reports": 10,
+      "complete": 9,
+      "seed_proposed_cases": 10,
+      "seed_adopted_cases": 9,
+      "issue_rows": 18,
+      "duplicate_rows": 8,
+      "extra_rows": 0,
+      "issues_need_human": 6,
+      "issues_disputed": 0,
+      "business_seed_proposed": 7,
+      "generic_seed_proposed": 3,
+      "estimated_chat_cost_yuan": 5.523693,
+      "chat_tokens": 304754,
+      "unknown_ledger_entries": 0,
+      "model_run_records": 56,
+      "model_run_records_non_ok": 2,
+      "placeholder_error_records": 2,
+      "budget_exhausted_reports": 1,
+      "incomplete_cases": [
+        "ORDER-C10"
+      ],
+      "complete_pair_seed_proposed": 9,
+      "complete_pair_seed_adopted": 8
+    },
+    "knowledge_off": {
+      "reports": 10,
+      "complete": 10,
+      "seed_proposed_cases": 4,
+      "seed_adopted_cases": 2,
+      "issue_rows": 9,
+      "duplicate_rows": 4,
+      "extra_rows": 1,
+      "issues_need_human": 4,
+      "issues_disputed": 1,
+      "business_seed_proposed": 1,
+      "generic_seed_proposed": 3,
+      "estimated_chat_cost_yuan": 3.814477,
+      "chat_tokens": 181065,
+      "unknown_ledger_entries": 0,
+      "model_run_records": 55,
+      "model_run_records_non_ok": 0,
+      "placeholder_error_records": 0,
+      "budget_exhausted_reports": 0,
+      "incomplete_cases": [],
+      "complete_pair_seed_proposed": 3,
+      "complete_pair_seed_adopted": 1
+    }
+  },
+  "complete_pair_cases": [
+    "ORDER-C01",
+    "ORDER-C02",
+    "ORDER-C03",
+    "ORDER-C04",
+    "ORDER-C05",
+    "ORDER-C06",
+    "ORDER-C07",
+    "ORDER-C08",
+    "ORDER-C09"
+  ],
+  "cost_note": "聊天配置价格的账面估算，未核对供应商账单，不含向量查询费用。",
+  "temporary_database_removed": true
+}

@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "mode": "live",
+  "run_id": "live-35a075a1a3",
+  "cases": 10,
+  "reports": 20,
+  "complete_pairs": 9,
+  "output": "outputs/order_knowledge_comparison_2026-11-13/MiniShop_下单10条缺陷用例_知识库启用禁用评审对比.xlsx",
+  "output_sha256": "61ee303ca11634be2388fe6401245c24c012c2e7ffea05eb78b866c3279f3d1f",
+  "all_cells_nonformula": true,
+  "independent_human_validation": false
+}

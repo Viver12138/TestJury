@@ -61,3 +61,5 @@ python scripts/check_contracts.py --json     # 机器可读输出
 - `benchmark_queue.py`：需要可创建临时库的 PostgreSQL 连接（`VERIFY_ADMIN_DATABASE_URL`）；以 Mock 模型测量服务层提交与队列并发，保存任务数、耗时及清理证据，不包含 HTTP、真实知识检索或供应商耗时。
 - `serve_local.py`：升级数据库结构、加载验收过的本地知识版本并启动 Excel 上传网页；默认仅本机免凭证，可用 `LOCAL_REQUIRE_API_KEY=true` 恢复凭证要求；不清空数据，保留已有启用版本。
 - `verify_minishop_gold.py`：在临时 SQLite 数据库验证归档 MiniShop 的 15 个黄金集业务事实，认证使用测试身份，不连接原项目数据库；支持 `--dataset` 与 `--output`，修订数据集时另存证据，不覆盖旧版记录。
+- `compare_order_knowledge.py`：读取冻结的下单缺陷用例，对同一输入执行知识库启用/禁用的成对双模型评审；`--mode mock` 验证流程，`--mode live` 需要供应商密钥并产生费用。仅使用独立临时 PostgreSQL 数据库，正常完成后清理；中断保留数据库供诊断，不影响本地应用库。
+- `export_order_comparison.py`：从已完成的真实成对评审与逐条 AI 复核记录生成对比 Excel，验证原始报告哈希、输入一致性与导出内容；标明评审不完整、重复项和样本限制，不调用模型。
