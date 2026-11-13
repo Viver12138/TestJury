@@ -24,6 +24,7 @@ from app.core.enums import (
     Stage,
     StageStatus,
 )
+from app.core.knowledge_review import knowledge_review
 from app.core.observability import observe_stage
 from app.knowledge.gaps import report_gaps
 from app.knowledge.runtime import KnowledgeService
@@ -607,7 +608,8 @@ class ReviewPipeline:
         schema = load_report_schema(self.settings.report_schema_version)
         if evidence_pack:
             report["appendix"]["knowledge_pack"] = evidence_pack
-        report["kb_gaps"] = report_gaps(case, report["issues"], covered=kb_covered)
+        report["appendix"]["knowledge_review"] = knowledge_review(report)
+        report["kb_gaps"] = report_gaps(case, report["issues"], covered=bool((evidence_pack or {}).get("evidence")))
         report["appendix"]["recovery"] = {"reused_outputs": checkpoints.reused, "attempt": job.attempt_count}
         budget = active_budget.get()
         if budget is not None:

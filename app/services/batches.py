@@ -13,6 +13,7 @@ from app.config import Settings
 from app.core.auth import Principal
 from app.core.errors import ApiError, ErrorCode
 from app.core.idempotency import compute_idempotency_key, compute_input_hash
+from app.core.knowledge_review import knowledge_review
 from app.core.versioning import Versions
 from app.pipeline.input_check import validate_request
 from app.services.reviews import ReviewService
@@ -189,6 +190,7 @@ class BatchService:
                     "status": job.status,
                     "ai_verdict": job.ai_verdict,
                     "human_status": job.human_status,
+                    "knowledge_review": knowledge_review(job.report_json, frozen_version=job.kb_build_version),
                 }
                 for job in jobs
             ],

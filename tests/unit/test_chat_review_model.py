@@ -271,6 +271,15 @@ async def test_evidence_quote_must_exist_and_grounded_is_not_trusted() -> None:
     assert any("kb_refs_not_in_pack" in warning for warning in opinion.warnings)
 
 
+async def test_generic_review_prompt_limits_unverified_product_claims():
+    model, adapter = _model(json.dumps({"overall": {"comment": "未见明确问题"}, "issues": []}))
+    await model.review("chief_blind", {"title": "登录", "steps": [{"index": 1, "action": "提交登录"}]})
+    prompt = "\n".join(message.content for message in adapter.requests[0].messages)
+    assert "无相关知识的通用评审" in prompt
+    assert "不得按常识猜测产品的具体接口状态码" in prompt
+    assert "kb_grounded=false" in prompt
+
+
 @pytest.mark.asyncio
 async def test_case_scope_issue_requires_null_step_index() -> None:
     base = {

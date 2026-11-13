@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.core.knowledge_review import knowledge_review
+
 VERDICT_LABELS = {
     "blocked": "存在阻断问题（blocked）",
     "conditional": "有条件可用（conditional）",
@@ -46,6 +48,9 @@ def render_markdown(report: dict[str, Any]) -> str:
     )
     degraded = report.get("degraded_reasons") or []
     lines.append(f"- 降级/限制：{', '.join(degraded) if degraded else '无'}")
+    coverage = knowledge_review(report)
+    lines.append(f"- 评审方式：{coverage['label']}")
+    lines.append(f"- 知识覆盖：{coverage['message']}")
     completeness = report.get("review_completeness") or {}
     lines.append(
         f"- 评审完整性：complete={str(completeness.get('complete')).lower()}"

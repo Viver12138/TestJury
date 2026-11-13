@@ -8,6 +8,8 @@
 
 Excel 报告导出版本：`excel_report_export_2026-11-13/` 保存单条及整批工作簿、浏览器验证和字段一致性校验；`container_smoke_excel_report_2026-11-13.json` 对应最终镜像；`delegated_verification/testjury_verify_3e564398fc29/` 完整回归 455 项通过。原报告、旧验证记录均保留。
 
+无相关知识降级版本：`delegated_verification/testjury_verify_5d82ce6d4ccd/` 完整回归 460 项通过，覆盖逐条降级、混合批次、空检索和结果标注；`container_smoke_general_2026-11-13.json` 校验对应镜像与当前源码。用户提供的工作簿和完整报告仅在本机保存。
+
 | 证据 | 证明范围 |
 |---|---|
 | `source_snapshots/`、`manual_review/` | 冻结源码归档和原始人工确认工作簿，保留原件 |

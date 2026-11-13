@@ -12,6 +12,7 @@ from typing import Any
 
 from app.config import Settings
 from app.core.auth import Principal
+from app.core.enums import DegradedReason
 from app.core.errors import ApiError, ErrorCode
 from app.core.idempotency import compute_idempotency_key, compute_input_hash
 from app.core.versioning import Versions
@@ -134,8 +135,9 @@ class ReviewService:
                            "batch_cost": self.settings.batch_budget_cost, "daily_cost": self.settings.daily_budget_cost},
             },
             input_quality={},
-            degraded=False,
-            degraded_reasons=list(normalized.warnings),
+            degraded=release is None,
+            degraded_reasons=list(normalized.warnings) + ([DegradedReason.KB_MODULE_MISSING.value]
+                                                         if release is None else []),
             kb_content_version=versions.kb_content_version,
             kb_build_version=versions.kb_build_version,
             rubric_version=self.versions.rubric,

@@ -12,6 +12,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
+from app.core.knowledge_review import knowledge_review
 from app.storage.models import ReviewJob
 
 MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -98,8 +99,8 @@ def render_excel(jobs: list[ReviewJob], *, batch_id: str | None = None, total: i
     writer = _Sheets()
     summary = writer.sheet("评审汇总", ["用例编号", "用例标题", "任务状态", "AI结论", "人工审批状态",
         "报告完整性", "发现数量", "阻断数量", "重要数量", "建议数量", "评审ID", "来源工作表", "来源行",
-        "提交时间（北京时间）", "完成时间（北京时间）", "知识版本", "说明"],
-        [26, 42, 25, 40, 20, 20, 12, 12, 12, 12, 40, 24, 20, 24, 24, 40, 50])
+        "提交时间（北京时间）", "完成时间（北京时间）", "知识版本", "说明", "评审方式", "知识覆盖说明"],
+        [26, 42, 25, 40, 20, 20, 12, 12, 12, 12, 40, 24, 20, 24, 24, 40, 50, 30, 85])
     steps = writer.sheet("用例步骤", ["用例编号", "用例标题", "前置条件", "步骤编号", "操作步骤", "预期结果", "测试数据"],
                          [26, 40, 55, 12, 75, 65, 55])
     issues = writer.sheet("问题明细", ["用例编号", "用例标题", "问题编号", "步骤编号", "维度", "严重程度", "类别",
@@ -131,13 +132,14 @@ def render_excel(jobs: list[ReviewJob], *, batch_id: str | None = None, total: i
         if not report:
             counts = [None] * 4
         reasons = list(report.get("degraded_reasons") or job.degraded_reasons)
+        coverage = knowledge_review(job.report_json, frozen_version=job.kb_build_version)
         if job.status == "failed":
             reasons.append("任务失败，请在页面查看任务状态后处理；未导出内部错误日志。")
         writer.append(summary, [job.case_id, title, STATUSES.get(job.status, job.status),
             VERDICTS.get(report.get("ai_verdict"), "未形成结论"), HUMAN.get(job.human_status, job.human_status),
             label, *counts, job.id, source.get("sheet"), ", ".join(map(str, source.get("rows", []))),
             _time(job.created_at), _time(job.finished_at), report.get("versions", {}).get("kb") or job.kb_build_version,
-            "\n".join(reasons)])
+            "\n".join(reasons), coverage["label"], coverage["message"]])
         conditions = case.get("preconditions") or []
         conditions = "\n".join(map(str, conditions)) if isinstance(conditions, list) else str(conditions)
         authored_steps = case.get("steps") or [{"action": case.get("raw_text") or "未提供步骤", "expected": None}]
@@ -155,6 +157,8 @@ def render_excel(jobs: list[ReviewJob], *, batch_id: str | None = None, total: i
         for source in (report.get("appendix", {}).get("knowledge_pack") or {}).get("evidence", []):
             writer.append(sources, [job.case_id, source.get("chunk_id"), source.get("doc_id"),
                                     source.get("heading_path"), source.get("source_ref"), source.get("text")])
+        if coverage["mode"] in {"general", "unrecorded"}:
+            writer.append(sources, [job.case_id, "", "", "", "", coverage["message"]])
     if total is not None and total > len(jobs):
         for index in range(total - len(jobs)):
             writer.append(summary, [f"未创建任务-{index + 1}", "", "任务尚未创建", "未形成结论", "", "报告未生成",
